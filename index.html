@@ -7286,8 +7286,8 @@ function renderSettings() {
                 <p>Your progress syncs automatically across devices.</p>
               </div>
             </div>
-            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-              <button class="btn btn-secondary" onclick="syncPullFromCloud().then(() => showToast('Sync complete'))">
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+              <button class="btn btn-secondary" onclick="syncPullFromCloud()">
                 <i data-lucide="refresh-cw" style="width:14px;height:14px"></i>
                 Sync Now
               </button>
@@ -7296,6 +7296,22 @@ function renderSettings() {
                 Sign Out
               </button>
             </div>
+            <details style="margin-top:0.5rem;font-size:0.8rem">
+              <summary style="cursor:pointer;color:var(--text-muted);font-weight:600">Manual sync controls (advanced)</summary>
+              <p style="font-size:0.78rem;color:var(--text-secondary);margin:0.5rem 0 0.75rem;line-height:1.5">
+                Use these if automatic sync didn't work. <strong>Force Push</strong> uploads this device's progress, overwriting the cloud. <strong>Force Pull</strong> downloads cloud progress, replacing this device.
+              </p>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                <button class="btn btn-secondary" onclick="forceCloudPush()" style="background:var(--orange-light);color:var(--orange);border:1px solid var(--orange)">
+                  <i data-lucide="upload-cloud" style="width:14px;height:14px"></i>
+                  Force Push to Cloud
+                </button>
+                <button class="btn btn-secondary" onclick="forceCloudPull()" style="background:var(--blue-light);color:var(--blue);border:1px solid var(--blue)">
+                  <i data-lucide="download-cloud" style="width:14px;height:14px"></i>
+                  Force Pull from Cloud
+                </button>
+              </div>
+            </details>
           `;
         } else if (configured) {
           return `
@@ -10456,6 +10472,47 @@ async function cloudSignOut() {
 
 // ---------- SYNC ----------
 // Pull the latest state from cloud and merge if cloud is newer.
+// Check if a state object has any real progress (vs being a fresh/empty device).
+// Used to decide whether to prefer cloud or local during initial sync.
+function hasRealProgress(s) {
+  if (!s) return false;
+  const xp = s.xp || 0;
+  const completed = s.completedLessons ? Object.keys(s.completedLessons).length : 0;
+  const attempts = s.lessonScores
+    ? Object.values(s.lessonScores).reduce((sum, l) => sum + (l && l.attempts ? l.attempts : 0), 0)
+    : 0;
+  const logs = Array.isArray(s.practiceLog) ? s.practiceLog.length : 0;
+  return xp > 0 || completed > 0 || attempts > 0 || logs > 0;
+}
+
+function isLocalStateEmpty() {
+  return !hasRealProgress(state);
+}
+
+// Merge a cloud state blob into the current local state, then persist to
+// localStorage without triggering another cloud push.
+function mergeCloudIntoLocal(cloudState) {
+  PERSISTED_KEYS.forEach(k => {
+    if (cloudState[k] !== undefined) {
+      if (k === 'settings' && typeof cloudState[k] === 'object') {
+        state.settings = Object.assign({}, state.settings, cloudState[k]);
+      } else {
+        state[k] = cloudState[k];
+      }
+    }
+  });
+  // Persist without triggering another push
+  try {
+    const toSave = {};
+    PERSISTED_KEYS.forEach(k => {
+      if (state[k] !== undefined) toSave[k] = state[k];
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch (e) {
+    console.warn('Failed to persist merged state:', e);
+  }
+}
+
 async function syncPullFromCloud() {
   if (!supabaseClient || !currentUser) return;
   try {
@@ -10468,42 +10525,42 @@ async function syncPullFromCloud() {
 
     if (error) {
       console.warn('Sync pull error:', error);
+      showToast('Sync failed: ' + (error.message || 'unknown error'));
       return;
     }
-    if (!data || !data.state) {
-      // First-time login — no cloud state yet. Push local state up.
+
+    const cloudHasData = data && data.state && hasRealProgress(data.state);
+    const localHasData = !isLocalStateEmpty();
+
+    // Case 1: Cloud is empty AND local is empty — fresh user on fresh device
+    if (!cloudHasData && !localHasData) {
+      showToast('Connected — start practicing and your progress will sync');
+      return;
+    }
+
+    // Case 2: Cloud is empty but local has data — push local up for the first time
+    if (!cloudHasData && localHasData) {
       await syncPushToCloud(true);
       showToast('Cloud sync initialized — your progress is now backed up');
       return;
     }
-    // Compare timestamps to decide which side is newer
+
+    // Case 3: Cloud has data but local is empty — ALWAYS pull from cloud (no timestamp check)
+    // This is the critical fix: a fresh device should never overwrite the cloud with its empty state.
+    if (cloudHasData && !localHasData) {
+      mergeCloudIntoLocal(data.state);
+      showToast('Progress loaded from cloud');
+      setTimeout(() => { applyTheme(); handleRoute(); }, 300);
+      return;
+    }
+
+    // Case 4: Both sides have data — use timestamps to pick the newer one
     const cloudMod = data.state.lastModified ? new Date(data.state.lastModified).getTime() : 0;
     const localMod = state.lastModified ? new Date(state.lastModified).getTime() : 0;
     if (cloudMod > localMod) {
-      // Cloud is newer — merge cloud state into local
-      PERSISTED_KEYS.forEach(k => {
-        if (data.state[k] !== undefined) {
-          if (k === 'settings' && typeof data.state[k] === 'object') {
-            state.settings = Object.assign({}, state.settings, data.state[k]);
-          } else {
-            state[k] = data.state[k];
-          }
-        }
-      });
-      // Persist locally without triggering another push
-      try {
-        const toSave = {};
-        PERSISTED_KEYS.forEach(k => {
-          if (state[k] !== undefined) toSave[k] = state[k];
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-      } catch (e) {}
+      mergeCloudIntoLocal(data.state);
       showToast('Progress synced from cloud');
-      // Re-render the current view to reflect the new state
-      setTimeout(() => {
-        applyTheme();
-        handleRoute();
-      }, 300);
+      setTimeout(() => { applyTheme(); handleRoute(); }, 300);
     }
     // If local is newer or equal, do nothing — next push will sync it up
   } catch (e) {
@@ -10514,6 +10571,8 @@ async function syncPullFromCloud() {
 }
 
 // Push the current local state to cloud (debounced to avoid hammering).
+// Will NOT push empty local state if the cloud already has real progress —
+// this prevents a fresh device from wiping out the cloud accidentally.
 async function syncPushToCloud(immediate) {
   if (!supabaseClient || !currentUser) return;
   if (isPullingFromCloud) return; // Avoid feedback loop
@@ -10522,11 +10581,26 @@ async function syncPushToCloud(immediate) {
   clearTimeout(syncPushTimer);
   const push = async () => {
     try {
+      // Safety: if local is empty, don't blindly overwrite cloud — peek first
+      if (isLocalStateEmpty()) {
+        try {
+          const { data } = await supabaseClient
+            .from('user_states')
+            .select('state')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+          if (data && data.state && hasRealProgress(data.state)) {
+            // Cloud has data, local is empty — DO NOT push. Pull instead.
+            console.warn('Refused to push empty local state over real cloud data.');
+            return;
+          }
+        } catch (e) { /* fall through and push anyway */ }
+      }
+
       const payload = {};
       PERSISTED_KEYS.forEach(k => {
         if (state[k] !== undefined) payload[k] = state[k];
       });
-      // Ensure lastModified is set so the other device can detect this push is newer
       if (!payload.lastModified) payload.lastModified = new Date().toISOString();
 
       const { error } = await supabaseClient
@@ -10549,6 +10623,80 @@ async function syncPushToCloud(immediate) {
     await push();
   } else {
     syncPushTimer = setTimeout(push, 500);
+  }
+}
+
+// ---------- MANUAL SYNC (Force Push / Force Pull) ----------
+// Force Push: overwrite cloud with local, bypassing all safety checks.
+// Use this on the device that has the "source of truth" data.
+async function forceCloudPush() {
+  if (!supabaseClient || !currentUser) {
+    showToast('Sign in first');
+    return;
+  }
+  const xp = state.xp || 0;
+  const completed = Object.keys(state.completedLessons || {}).length;
+  if (!confirm(`FORCE PUSH will OVERWRITE the cloud copy with this device's progress:\n\n• ${xp} XP\n• ${completed} lessons completed\n\nAny data on other devices will be REPLACED with this device's state.\n\nContinue?`)) return;
+
+  try {
+    const payload = {};
+    PERSISTED_KEYS.forEach(k => {
+      if (state[k] !== undefined) payload[k] = state[k];
+    });
+    payload.lastModified = new Date().toISOString();
+
+    const { error } = await supabaseClient
+      .from('user_states')
+      .upsert({
+        user_id: currentUser.id,
+        state: payload,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+
+    if (error) {
+      showToast('Force push failed: ' + error.message);
+      return;
+    }
+    playMastery();
+    showToast(`Pushed ${xp} XP and ${completed} lessons to cloud`);
+  } catch (e) {
+    showToast('Force push failed: ' + e.message);
+  }
+}
+
+// Force Pull: replace local with cloud, bypassing all safety checks.
+// Use this on a device where you want to load whatever is in the cloud.
+async function forceCloudPull() {
+  if (!supabaseClient || !currentUser) {
+    showToast('Sign in first');
+    return;
+  }
+  if (!confirm(`FORCE PULL will REPLACE this device's progress with whatever is in the cloud.\n\nAny progress on this device that hasn't synced yet will be LOST.\n\nContinue?`)) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('user_states')
+      .select('state, updated_at')
+      .eq('user_id', currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      showToast('Force pull failed: ' + error.message);
+      return;
+    }
+    if (!data || !data.state) {
+      showToast('Cloud has no data yet. Practice on another device first, or click Force Push here.');
+      return;
+    }
+
+    mergeCloudIntoLocal(data.state);
+    const xp = state.xp || 0;
+    const completed = Object.keys(state.completedLessons || {}).length;
+    playMastery();
+    showToast(`Pulled ${xp} XP and ${completed} lessons from cloud`);
+    setTimeout(() => { applyTheme(); handleRoute(); }, 300);
+  } catch (e) {
+    showToast('Force pull failed: ' + e.message);
   }
 }
 
