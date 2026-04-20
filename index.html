@@ -467,8 +467,30 @@ button { font-family: var(--font-body); cursor: pointer; border: none; }
   transition: all 0.2s;
 }
 .continue-card:hover { box-shadow: var(--shadow-md); }
-.continue-info h3 { margin-bottom: 0.15rem; }
-.continue-info p { color: var(--text-secondary); font-size: 0.85rem; }
+.continue-card-smart {
+  display: flex; align-items: center; gap: 0.85rem;
+  padding: 1rem 1.1rem;
+}
+.continue-icon {
+  flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.continue-info { flex: 1; min-width: 0; }
+.continue-reason {
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+.continue-info h3 {
+  margin-bottom: 0.1rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.continue-info p {
+  color: var(--text-secondary); font-size: 0.82rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .stats-grid {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem; margin-bottom: 1.5rem;
@@ -531,6 +553,29 @@ button { font-family: var(--font-body); cursor: pointer; border: none; }
   opacity: 0.75;
 }
 .lesson-item.lesson-preview:hover { opacity: 1; }
+/* Star (favorites) button */
+.lesson-star-btn {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.15s, transform 0.15s, background 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+}
+.lesson-star-btn:hover {
+  color: var(--gold);
+  background: var(--gold-light);
+  transform: scale(1.1);
+}
+.lesson-star-btn.active {
+  color: var(--gold);
+}
+.lesson-star-btn.active i { fill: var(--gold); }
+
 .lesson-preview-tag {
   font-size: 0.65rem;
   font-weight: 700;
@@ -2260,6 +2305,166 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   margin-top: -0.1rem;
 }
 
+/* Session History Feed */
+.history-filters {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+.history-filter-row {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
+}
+.history-filter-label {
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); min-width: 50px;
+}
+.history-chip {
+  padding: 0.28rem 0.65rem;
+  border-radius: 14px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.75rem; font-weight: 600;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.history-chip:hover { background: var(--border); color: var(--text-primary); }
+.history-chip.active {
+  background: var(--teal);
+  color: #fff;
+  border-color: var(--teal);
+}
+.history-list {
+  display: flex; flex-direction: column; gap: 0.4rem;
+  max-height: 480px; overflow-y: auto;
+}
+.history-empty {
+  padding: 1rem; text-align: center;
+  font-size: 0.85rem; color: var(--text-muted);
+  background: var(--bg-secondary); border-radius: var(--radius-sm);
+}
+.history-entry {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.12s;
+}
+.history-entry:hover {
+  background: var(--bg-primary);
+  transform: translateY(-1px);
+}
+.history-score-pill {
+  flex-shrink: 0;
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 800; font-size: 0.85rem;
+  border: 2px solid;
+}
+.history-score-mastery { background: var(--green-light); color: var(--green); border-color: var(--green); }
+.history-score-pass { background: var(--teal-light); color: var(--teal); border-color: var(--teal); }
+.history-score-fail { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
+.history-entry-body { flex: 1; min-width: 0; }
+.history-entry-head {
+  display: flex; align-items: center; gap: 0.35rem;
+  margin-bottom: 0.1rem;
+}
+.history-entry-title {
+  font-size: 0.88rem; font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-badge {
+  font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 0.12rem 0.4rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.history-badge-drill { background: var(--gold-light); color: var(--gold); }
+.history-entry-meta {
+  font-size: 0.72rem; color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+.history-entry-prompt {
+  font-size: 0.78rem; color: var(--text-secondary);
+  font-style: italic;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* History detail overlay */
+.history-overlay .modal-card { max-width: 560px; }
+.history-detail-header {
+  text-align: left; margin-bottom: 1rem;
+}
+.history-detail-date {
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.history-detail-header h2 {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.25rem; margin: 0.2rem 0 0.15rem;
+}
+.history-detail-sub {
+  font-size: 0.82rem; color: var(--text-secondary);
+}
+.history-detail-score {
+  border: 3px solid; border-radius: var(--radius-md);
+  padding: 0.75rem 1rem; margin-bottom: 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.history-detail-score-num {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.75rem;
+}
+.history-detail-score-tier {
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.history-detail-breakdown {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem; margin-bottom: 1rem;
+}
+.history-detail-section { margin-bottom: 1rem; }
+.history-detail-label {
+  font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); margin-bottom: 0.35rem;
+}
+.history-detail-prompt {
+  background: var(--teal-light); color: var(--teal);
+  padding: 0.6rem 0.8rem; border-radius: var(--radius-sm);
+  font-size: 0.9rem; font-style: italic;
+  border-left: 3px solid var(--teal);
+}
+.history-detail-response {
+  background: var(--bg-secondary);
+  padding: 0.65rem 0.85rem; border-radius: var(--radius-sm);
+  font-size: 0.88rem; line-height: 1.55;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  max-height: 200px; overflow-y: auto;
+}
+.history-detail-meta-row {
+  display: flex; gap: 0.75rem; flex-wrap: wrap;
+  font-size: 0.75rem; color: var(--text-muted);
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary); border-radius: var(--radius-sm);
+}
+.history-detail-meta-row span {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+}
+.history-detail-actions {
+  display: flex; gap: 0.5rem; justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 /* Reflection Journal list */
 .journal-list {
   display: flex; flex-direction: column; gap: 0.6rem;
@@ -2470,6 +2675,38 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   margin-left: 0.25rem;
 }
 .update-toast-btn:hover { background: rgba(255,255,255,0.3); }
+
+/* Pull-to-refresh indicator (Stage 3.5 touch gestures) */
+.pull-refresh-indicator {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  z-index: 150;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.1s;
+  pointer-events: none;
+  border: 1px solid var(--border);
+  border-top: none;
+}
+.pull-refresh-indicator.ready {
+  background: var(--teal);
+  color: #fff;
+  border-color: var(--teal);
+}
+.pull-refresh-indicator.ready i { animation: spin 0.8s linear infinite; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 .update-toast-dismiss {
   background: transparent;
   color: rgba(255,255,255,0.8);
@@ -3569,6 +3806,8 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 
       <div id="review-section"></div>
 
+      <div id="starred-section"></div>
+
       <div id="continue-section"></div>
 
       <div class="stats-grid">
@@ -3668,7 +3907,7 @@ const state = {
   reflections: [],           // [{ date, lessonId, lessonTitle, score, note }]
   lastWarmupDate: null,      // ISO date string — last date user did a voice warmup
   onboardingComplete: false, // true after user finishes or skips the onboarding tour
-  favorites: [],             // [lessonId] bookmarked lessons (reserved for future use)
+  favorites: [],             // [lessonId] bookmarked lessons — shown as "Starred" on dashboard
   achievements: [],          // [{ id, unlockedAt }] — unlocked achievements
   lastModified: null,        // ISO timestamp of last local modification — used for cloud sync merge
   settings: {
@@ -3681,6 +3920,9 @@ const state = {
     skipReflection: false,     // auto-advance past checklist
     confettiEnabled: true,     // fire confetti on 85+ scores
     soundEffects: true,        // UI sound effects on actions
+    hapticsEnabled: true,      // Subtle vibrations on iOS/Android at key moments
+    reminderEnabled: false,    // Daily practice reminder notifications
+    reminderTime: '08:30',     // HH:MM format, 24-hour, local time
     theme: 'auto',             // 'light', 'dark', 'auto'
     aiReviewEnabled: true,     // show the "Deep AI Review" button on the score screen
     aiReviewEndpoint: '/.netlify/functions/score-response' // where to call for AI scoring
@@ -6929,12 +7171,36 @@ function playTone(freq, duration, type, volume) {
   }
 }
 
-function playClick() { playTone(880, 0.06, 'sine', 0.04); }
-function playPass()  { playTone(660, 0.09, 'sine', 0.1); setTimeout(() => playTone(990, 0.15, 'sine', 0.1), 90); }
+function playClick() { playTone(880, 0.06, 'sine', 0.04); haptic('tick'); }
+function playPass()  { playTone(660, 0.09, 'sine', 0.1); setTimeout(() => playTone(990, 0.15, 'sine', 0.1), 90); haptic('pass'); }
 function playMastery() {
   [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'sine', 0.08), i * 120));
+  haptic('mastery');
 }
-function playFail() { playTone(220, 0.22, 'sine', 0.06); }
+function playFail() { playTone(220, 0.22, 'sine', 0.06); haptic('fail'); }
+
+// ========== HAPTIC FEEDBACK ==========
+// Uses navigator.vibrate where supported (Android, some Chromium browsers).
+// iOS Safari doesn't expose Vibration API reliably, but AudioContext click sounds
+// serve as the iOS equivalent. Controlled by state.settings.hapticsEnabled.
+function haptic(kind) {
+  if (!state.settings || !state.settings.hapticsEnabled) return;
+  if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+  try {
+    // Pattern units are milliseconds. Alternating on/off for multi-pulse patterns.
+    const patterns = {
+      tick:     [8],              // faintest — for button taps / submissions
+      pass:     [30],             // single firm tap — lesson passed
+      mastery:  [25, 40, 25, 40, 60], // celebratory triple pulse
+      fail:     [60],             // soft buzz — below pass mark
+      attack:   [12, 20, 12],     // staccato — devil's advocate
+      unlock:   [40, 60, 40]      // double pulse — something just unlocked
+    };
+    navigator.vibrate(patterns[kind] || patterns.tick);
+  } catch (e) {
+    // Non-fatal — some browsers block without user gesture
+  }
+}
 
 // ========== FRAMEWORK FLASHCARD REVIEW ==========
 // Study mode: quick quizzes to reinforce framework element memory.
@@ -7522,6 +7788,139 @@ function getNextLesson() {
   return null;
 }
 
+// ---------- FAVORITES / PIN ----------
+function isFavorite(lessonId) {
+  return Array.isArray(state.favorites) && state.favorites.includes(lessonId);
+}
+
+function toggleFavorite(lessonId, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (!Array.isArray(state.favorites)) state.favorites = [];
+  const idx = state.favorites.indexOf(lessonId);
+  if (idx >= 0) {
+    state.favorites.splice(idx, 1);
+    showToast('Unstarred');
+  } else {
+    state.favorites.push(lessonId);
+    haptic('tick');
+    showToast('Starred — find it on the dashboard');
+  }
+  saveState();
+  // Re-render whichever view is showing so the icon toggles
+  if (state.currentView === 'tracks') renderTracks();
+  else if (state.currentView === 'dashboard') renderDashboard();
+  else if (state.currentView === 'lesson') {
+    // Lesson header has a star button — re-render just the header
+    const starBtn = document.querySelector('.lesson-star-btn');
+    if (starBtn) {
+      starBtn.classList.toggle('active');
+      starBtn.querySelector('i')?.setAttribute('data-lucide', isFavorite(lessonId) ? 'star' : 'star');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  }
+}
+
+// Returns up to `limit` favorite lessons (with track metadata) in the user's pin order.
+function getFavoriteLessons(limit) {
+  if (!Array.isArray(state.favorites)) return [];
+  const out = [];
+  for (const lessonId of state.favorites) {
+    const [tStr, iStr] = lessonId.split('-');
+    const trackId = parseInt(tStr);
+    const lessonIndex = parseInt(iStr) - 1;
+    const track = TRACKS.find(t => t.id === trackId);
+    const lesson = track?.lessons[lessonIndex];
+    if (track && lesson) out.push({ track, lesson, lessonIndex });
+    if (limit && out.length >= limit) break;
+  }
+  return out;
+}
+
+// Smart recommendation engine — returns the best action for the user right now.
+// Priority order:
+//   1. Daily challenge if not yet done today
+//   2. Overdue review (Review & Improve candidate, weakest first)
+//   3. Next sequential lesson (the classic "Continue" behavior)
+//   4. Retry a lesson below mastery if the sequential is exhausted
+function getSmartContinueTarget() {
+  // 1. Daily challenge
+  const dc = (typeof getDailyChallenge === 'function') ? getDailyChallenge() : null;
+  if (dc && !dc.completed) {
+    const track = TRACKS.find(t => t.id === dc.trackId);
+    const lesson = track?.lessons[dc.lessonIndex];
+    if (track && lesson) {
+      return {
+        reason: '⚡ Daily Challenge · 2× XP',
+        title: lesson.title,
+        subtitle: `${track.name} · available today only`,
+        icon: 'zap',
+        iconBg: 'var(--gold-light)',
+        iconColor: 'var(--gold)',
+        onclick: "startDailyChallenge()"
+      };
+    }
+  }
+
+  // 2. Review & Improve — weakest passed-but-not-mastered lesson
+  if (typeof getReviewCandidates === 'function') {
+    const candidates = getReviewCandidates(1);
+    if (candidates.length > 0) {
+      const c = candidates[0];
+      return {
+        reason: '🔄 Review & Improve',
+        title: c.lesson.title,
+        subtitle: `${c.track.name} · best so far: ${c.best} pts`,
+        icon: 'refresh-cw',
+        iconBg: 'var(--orange-light)',
+        iconColor: 'var(--orange)',
+        onclick: `navigate('lesson', { trackId: ${c.trackId}, lessonIndex: ${c.lessonIndex} })`
+      };
+    }
+  }
+
+  // 3. Next sequential lesson
+  const next = getNextLesson();
+  if (next) {
+    return {
+      reason: '▶ Continue your curriculum',
+      title: next.lesson.title,
+      subtitle: `${next.track.name} · ${next.lesson.subtitle}`,
+      icon: 'play',
+      iconBg: 'var(--teal-light)',
+      iconColor: 'var(--teal)',
+      onclick: `navigate('lesson', { trackId: ${next.track.id}, lessonIndex: ${next.index} })`
+    };
+  }
+
+  // 4. Fallback: retry a lesson below mastery (all lessons passed already)
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const masteryMark = Math.min(95, passMark + 15);
+  let weakest = null;
+  for (const [lessonId, data] of Object.entries(state.lessonScores)) {
+    if (!data || typeof data.best !== 'number') continue;
+    if (data.best >= masteryMark) continue;
+    if (!weakest || data.best < weakest.best) {
+      const [tStr, iStr] = lessonId.split('-');
+      const track = TRACKS.find(t => t.id === parseInt(tStr));
+      const lesson = track?.lessons[parseInt(iStr) - 1];
+      if (lesson) weakest = { track, lesson, lessonIndex: parseInt(iStr) - 1, best: data.best };
+    }
+  }
+  if (weakest) {
+    return {
+      reason: '⬆️ Push toward mastery',
+      title: weakest.lesson.title,
+      subtitle: `${weakest.track.name} · ${weakest.best} pts → aim for ${masteryMark}+`,
+      icon: 'trending-up',
+      iconBg: 'var(--teal-light)',
+      iconColor: 'var(--teal)',
+      onclick: `navigate('lesson', { trackId: ${weakest.track.id}, lessonIndex: ${weakest.lessonIndex} })`
+    };
+  }
+
+  return null;
+}
+
 function getElementColorVar(colorName) {
   const map = { teal: '--teal', orange: '--orange', gold: '--gold', blue: '--blue', red: '--red', green: '--green' };
   return map[colorName] || '--teal';
@@ -7640,15 +8039,22 @@ function renderDashboard() {
   // Review & Improve section (spaced repetition)
   renderReviewSection();
 
-  // Continue section
+  // Starred lessons section (favorites)
+  renderStarredSection();
+
+  // Smart "Continue where you left off" — picks the best next action for this moment
   const continueSection = document.getElementById('continue-section');
-  const next = getNextLesson();
-  if (next) {
+  const smart = getSmartContinueTarget();
+  if (smart) {
     continueSection.innerHTML = `
-      <div class="continue-card" onclick="navigate('lesson', { trackId: ${next.track.id}, lessonIndex: ${next.index} })">
+      <div class="continue-card continue-card-smart" onclick="${smart.onclick}">
+        <div class="continue-icon" style="background:${smart.iconBg};color:${smart.iconColor}">
+          <i data-lucide="${smart.icon}" style="width:20px;height:20px"></i>
+        </div>
         <div class="continue-info">
-          <h3>Continue: ${next.lesson.title}</h3>
-          <p>${next.track.name} · ${next.lesson.subtitle}</p>
+          <div class="continue-reason">${smart.reason}</div>
+          <h3>${smart.title}</h3>
+          <p>${smart.subtitle}</p>
         </div>
         <i data-lucide="chevron-right" style="width:20px;height:20px;color:var(--teal)"></i>
       </div>
@@ -7710,6 +8116,41 @@ function renderWarmupEntry() {
         <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-muted)"></i>
       `}
     </button>
+  `;
+  lucide.createIcons();
+}
+
+function renderStarredSection() {
+  const container = document.getElementById('starred-section');
+  if (!container) return;
+  const favs = getFavoriteLessons(5);
+  if (favs.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = `
+    <div class="review-section">
+      <div class="review-header">
+        <i data-lucide="star" style="width:14px;height:14px;color:var(--gold)"></i>
+        <span class="review-title" style="color:var(--gold)">Starred</span>
+        <span class="review-subtitle">${favs.length} pinned lesson${favs.length !== 1 ? 's' : ''}</span>
+      </div>
+      ${favs.map(f => {
+        const score = state.lessonScores[f.lesson.id];
+        return `
+          <div class="review-card" style="border-left-color:var(--gold)" onclick="navigate('lesson', { trackId: ${f.track.id}, lessonIndex: ${f.lessonIndex} })">
+            <div class="review-card-info">
+              <div class="review-card-title">${f.lesson.title}</div>
+              <div class="review-card-meta">${f.track.name}${score ? ` · best ${score.best} pts` : ''}</div>
+            </div>
+            <button class="lesson-star-btn active" onclick="toggleFavorite('${f.lesson.id}', event)" aria-label="Unstar">
+              <i data-lucide="star" style="width:14px;height:14px"></i>
+            </button>
+            <i data-lucide="chevron-right" style="width:18px;height:18px" class="review-card-arrow"></i>
+          </div>
+        `;
+      }).join('')}
+    </div>
   `;
   lucide.createIcons();
 }
@@ -7906,6 +8347,7 @@ function renderTracks() {
             const clickHandler = lessonUnlocked
               ? `navigate('lesson', { trackId: ${track.id}, lessonIndex: ${li} })`
               : `openLessonPreview(${track.id}, ${li})`;
+            const starred = isFavorite(lesson.id);
             return `
               <div class="lesson-item ${lessonUnlocked ? '' : 'lesson-preview'}"
                    onclick="${clickHandler}">
@@ -7918,6 +8360,7 @@ function renderTracks() {
                   <p>${lesson.subtitle}</p>
                 </div>
                 ${score ? `<span class="lesson-score">${score.best}pts</span>` : ''}
+                ${lessonUnlocked ? `<button class="lesson-star-btn ${starred ? 'active' : ''}" onclick="toggleFavorite('${lesson.id}', event)" title="${starred ? 'Unstar' : 'Star this lesson'}" aria-label="${starred ? 'Unstar' : 'Star this lesson'}"><i data-lucide="star" style="width:14px;height:14px"></i></button>` : ''}
                 ${lessonCompleted ? `<button class="btn btn-ghost" style="padding:0.25rem 0.5rem;font-size:0.7rem" onclick="event.stopPropagation();startDrillFromTrack(${track.id},${li})"><i data-lucide="zap" style="width:12px;height:12px"></i></button>` : ''}
                 ${!lessonUnlocked ? `<span class="lesson-preview-tag">Preview</span>` : ''}
               </div>
@@ -8112,6 +8555,42 @@ function renderSettings() {
           <div class="setting-toggle ${s.soundEffects ? 'on' : ''}"
             onclick="toggleSetting('soundEffects')"></div>
         </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label-line">
+          <div>
+            <div class="setting-label">Haptic Feedback</div>
+            <div class="setting-desc">Subtle vibrations on button taps, passing, and completing lessons. Android and some Chromium browsers only — iOS doesn't support this.</div>
+          </div>
+          <div class="setting-toggle ${s.hapticsEnabled ? 'on' : ''}"
+            onclick="toggleSetting('hapticsEnabled')"></div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label-line">
+          <div>
+            <div class="setting-label">Daily Practice Reminder</div>
+            <div class="setting-desc">
+              A local notification once per day at your chosen time — but only if you haven't already practiced today. Works best when the app is open or installed to your home screen. <strong>iOS 16.4+ required for background reminders when installed.</strong>
+            </div>
+          </div>
+          <div class="setting-toggle ${s.reminderEnabled ? 'on' : ''}"
+            onclick="toggleReminder()"></div>
+        </div>
+        ${s.reminderEnabled ? `
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;padding:0.5rem 0.75rem;background:var(--bg-secondary);border-radius:var(--radius-sm)">
+            <i data-lucide="clock" style="width:14px;height:14px;color:var(--text-secondary)"></i>
+            <label style="font-size:0.82rem;color:var(--text-secondary)" for="reminder-time-input">Remind me at</label>
+            <input type="time" id="reminder-time-input" value="${s.reminderTime || '08:30'}"
+              onchange="updateReminderTime(this.value)"
+              style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.5rem;color:var(--text-primary);font-family:var(--font-body);font-size:0.85rem">
+            ${getNotificationPermission() !== 'granted' ? `
+              <span style="font-size:0.72rem;color:var(--orange);margin-left:auto">⚠ Permission not granted</span>
+            ` : ''}
+          </div>
+        ` : ''}
       </div>
 
       <div class="setting-row">
@@ -8484,6 +8963,20 @@ function renderProgress() {
     </div>
 
     <div class="progress-section">
+      <h3><i data-lucide="history" style="width:16px;height:16px"></i> Session History
+        ${state.practiceLog.length > 0 ? `<span class="badge badge-teal" style="margin-left:0.35rem;vertical-align:middle">${state.practiceLog.length}</span>` : ''}
+      </h3>
+      ${state.practiceLog.length === 0 ? `
+        <p style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:1rem 0">
+          Your past practice sessions will show up here after you complete your first attempt.
+        </p>
+      ` : `
+        <div id="history-filters" class="history-filters"></div>
+        <div id="history-list" class="history-list"></div>
+      `}
+    </div>
+
+    <div class="progress-section">
       <h3><i data-lucide="pen-square" style="width:16px;height:16px"></i> Reflection Journal
         ${state.reflections.length > 0 ? `<span class="badge badge-teal" style="margin-left:0.35rem;vertical-align:middle">${state.reflections.length}</span>` : ''}
       </h3>
@@ -8544,6 +9037,12 @@ function renderProgress() {
     if (state.xpHistory.length > 0) renderXPChart();
     if (Object.keys(state.lessonScores).length > 0) renderScoreChart();
   }, 50);
+
+  // Render session history feed
+  if (state.practiceLog.length > 0) {
+    renderHistoryFilters();
+    renderHistoryList();
+  }
 
   // Render achievements grid
   renderAchievementsGrid();
@@ -8756,6 +9255,230 @@ function toggleTimelineEntry(idx) {
   playClick();
   _timelineFilters.expandedEntry = _timelineFilters.expandedEntry === idx ? null : idx;
   renderTimeline();
+}
+
+// ---------- SESSION HISTORY FEED ----------
+// Ephemeral filter state — lives for the lifetime of the Progress view render.
+const _historyFilters = {
+  track: 'all',    // 'all' | '1' ... '6'
+  range: 'all',    // 'all' | 'today' | 'week' | 'month'
+  result: 'all',   // 'all' | 'pass' | 'fail' | 'mastery'
+  mode: 'all'      // 'all' | 'practice' | 'drill'
+};
+
+function renderHistoryFilters() {
+  const container = document.getElementById('history-filters');
+  if (!container) return;
+  const f = _historyFilters;
+  const chip = (key, value, label) => `
+    <button class="history-chip ${f[key] === value ? 'active' : ''}"
+      onclick="setHistoryFilter('${key}','${value}')">${label}</button>
+  `;
+  container.innerHTML = `
+    <div class="history-filter-row">
+      <span class="history-filter-label">Track</span>
+      ${chip('track', 'all', 'All')}
+      ${TRACKS.map(t => chip('track', String(t.id), String(t.id))).join('')}
+    </div>
+    <div class="history-filter-row">
+      <span class="history-filter-label">When</span>
+      ${chip('range', 'all', 'All time')}
+      ${chip('range', 'today', 'Today')}
+      ${chip('range', 'week', '7 days')}
+      ${chip('range', 'month', '30 days')}
+    </div>
+    <div class="history-filter-row">
+      <span class="history-filter-label">Result</span>
+      ${chip('result', 'all', 'Any')}
+      ${chip('result', 'mastery', 'Mastery')}
+      ${chip('result', 'pass', 'Passed')}
+      ${chip('result', 'fail', 'Below pass')}
+    </div>
+    <div class="history-filter-row">
+      <span class="history-filter-label">Type</span>
+      ${chip('mode', 'all', 'All')}
+      ${chip('mode', 'practice', 'Practice')}
+      ${chip('mode', 'drill', 'Drill')}
+    </div>
+  `;
+}
+
+function setHistoryFilter(key, value) {
+  _historyFilters[key] = value;
+  renderHistoryFilters();
+  renderHistoryList();
+}
+
+function filterHistoryEntries() {
+  const f = _historyFilters;
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const masteryMark = Math.min(95, passMark + 15);
+  const now = Date.now();
+  const DAY = 86400000;
+  return [...state.practiceLog].reverse().filter(entry => {
+    if (f.track !== 'all' && String(entry.trackId) !== f.track) return false;
+    if (f.mode !== 'all' && (entry.mode || 'practice') !== f.mode) return false;
+    if (f.range !== 'all') {
+      const age = now - new Date(entry.date).getTime();
+      if (f.range === 'today' && age > DAY) return false;
+      if (f.range === 'week' && age > 7 * DAY) return false;
+      if (f.range === 'month' && age > 30 * DAY) return false;
+    }
+    if (f.result !== 'all') {
+      const s = entry.score || 0;
+      if (f.result === 'mastery' && s < masteryMark) return false;
+      if (f.result === 'pass' && (s < passMark || s >= masteryMark)) return false;
+      if (f.result === 'fail' && s >= passMark) return false;
+    }
+    return true;
+  });
+}
+
+function renderHistoryList() {
+  const container = document.getElementById('history-list');
+  if (!container) return;
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const masteryMark = Math.min(95, passMark + 15);
+  const entries = filterHistoryEntries();
+
+  if (entries.length === 0) {
+    container.innerHTML = `
+      <div class="history-empty">No sessions match your filters. Try widening the range.</div>
+    `;
+    return;
+  }
+
+  container.innerHTML = entries.map((entry, idx) => {
+    // We pass the reversed-array index back through the handler so we can find
+    // this exact log entry again. Since we reversed, translate to original index.
+    const originalIdx = state.practiceLog.length - 1 - state.practiceLog.indexOf(entry);
+    const realIdx = state.practiceLog.lastIndexOf(entry);
+
+    const d = new Date(entry.date);
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const score = entry.score || 0;
+    const tierClass = score >= masteryMark ? 'mastery' : score >= passMark ? 'pass' : 'fail';
+    const track = TRACKS.find(t => t.id === entry.trackId);
+    const trackName = track ? track.name : '';
+    const mode = entry.mode || 'practice';
+    const promptSnippet = (entry.prompt || '').slice(0, 80) + ((entry.prompt && entry.prompt.length > 80) ? '…' : '');
+
+    return `
+      <button class="history-entry" onclick="openHistoryEntry(${realIdx})">
+        <div class="history-score-pill history-score-${tierClass}">${score}</div>
+        <div class="history-entry-body">
+          <div class="history-entry-head">
+            <span class="history-entry-title">${escapeHtmlSafe(entry.lessonTitle || 'Practice')}</span>
+            ${mode === 'drill' ? '<span class="history-badge history-badge-drill">Drill</span>' : ''}
+          </div>
+          <div class="history-entry-meta">${escapeHtmlSafe(trackName)}${track ? ' · ' : ''}${dateStr} · ${timeStr}</div>
+          ${promptSnippet ? `<div class="history-entry-prompt">"${escapeHtmlSafe(promptSnippet)}"</div>` : ''}
+        </div>
+        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-muted)"></i>
+      </button>
+    `;
+  }).join('');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Open a full-screen viewer for a specific log entry. Shows the prompt, response,
+// score breakdown, signals, and lets the user reopen the lesson to re-attempt if wanted.
+function openHistoryEntry(logIndex) {
+  const entry = state.practiceLog[logIndex];
+  if (!entry) return;
+  playClick && playClick();
+
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const masteryMark = Math.min(95, passMark + 15);
+  const score = entry.score || 0;
+  const tier = score >= masteryMark ? { label: 'Mastery', color: 'var(--green)' }
+    : score >= passMark ? { label: 'Passed', color: 'var(--teal)' }
+    : { label: 'Below Pass', color: 'var(--orange)' };
+  const d = new Date(entry.date);
+  const dateStr = d.toLocaleString();
+  const track = TRACKS.find(t => t.id === entry.trackId);
+
+  const signalsHTML = (entry.signals || []).map(sig => {
+    const t = sig.type || 'partial';
+    const icon = t === 'hit' ? 'check' : t === 'partial' ? 'minus' : 'x';
+    return `
+      <div class="signal ${t}">
+        <div class="signal-icon"><i data-lucide="${icon}" style="width:10px;height:10px"></i></div>
+        <div class="signal-body">
+          <div class="signal-text">${escapeHtmlSafe(sig.msg || '')}</div>
+          ${sig.quote ? `<div class="signal-quote">"${escapeHtmlSafe(sig.quote)}"</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay history-overlay';
+  overlay.innerHTML = `
+    <div class="modal-card history-detail-card">
+      <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+        <i data-lucide="x" style="width:18px;height:18px"></i>
+      </button>
+
+      <div class="history-detail-header">
+        <span class="history-detail-date">${dateStr}</span>
+        <h2>${escapeHtmlSafe(entry.lessonTitle || 'Practice')}</h2>
+        <div class="history-detail-sub">${escapeHtmlSafe(track?.name || '')}${entry.lessonSubtitle ? ' · ' + escapeHtmlSafe(entry.lessonSubtitle) : ''}${entry.mode === 'drill' ? ' · Drill' : ''}</div>
+      </div>
+
+      <div class="history-detail-score" style="border-color:${tier.color};color:${tier.color}">
+        <span class="history-detail-score-num">${score}</span>
+        <span class="history-detail-score-tier">${tier.label}</span>
+      </div>
+
+      <div class="history-detail-breakdown">
+        <div class="score-item"><div class="score-item-label">Structure</div><div class="score-item-value">${entry.structure ?? '—'}/40</div></div>
+        <div class="score-item"><div class="score-item-label">Clarity</div><div class="score-item-value">${entry.clarity ?? '—'}/30</div></div>
+        <div class="score-item"><div class="score-item-label">Depth</div><div class="score-item-value">${entry.depth ?? '—'}/20</div></div>
+        <div class="score-item"><div class="score-item-label">Completion</div><div class="score-item-value">${entry.completion ?? 10}/10</div></div>
+      </div>
+
+      ${entry.prompt ? `
+        <div class="history-detail-section">
+          <div class="history-detail-label">You were asked</div>
+          <div class="history-detail-prompt">"${escapeHtmlSafe(entry.prompt)}"</div>
+        </div>
+      ` : ''}
+
+      ${entry.response ? `
+        <div class="history-detail-section">
+          <div class="history-detail-label">Your response</div>
+          <div class="history-detail-response">${escapeHtmlSafe(entry.response)}</div>
+        </div>
+      ` : ''}
+
+      ${signalsHTML ? `
+        <div class="history-detail-section">
+          <div class="history-detail-label">Feedback at the time</div>
+          <div class="score-signals" style="margin:0">${signalsHTML}</div>
+        </div>
+      ` : ''}
+
+      <div class="history-detail-meta-row">
+        ${entry.timeSpent ? `<span><i data-lucide="clock" style="width:12px;height:12px"></i> ${entry.timeSpent}s</span>` : ''}
+        ${entry.wpm ? `<span><i data-lucide="gauge" style="width:12px;height:12px"></i> ${entry.wpm} wpm</span>` : ''}
+        ${entry.inputMode ? `<span><i data-lucide="${entry.inputMode === 'speaking' ? 'mic' : 'keyboard'}" style="width:12px;height:12px"></i> ${entry.inputMode}</span>` : ''}
+      </div>
+
+      <div class="history-detail-actions">
+        <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">Close</button>
+        ${(entry.trackId && typeof entry.lessonIndex === 'number') ? `
+          <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove(); navigate('lesson', { trackId: ${entry.trackId}, lessonIndex: ${entry.lessonIndex} })">
+            <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Practice Again
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 }
 
 function renderXPChart() {
@@ -10195,17 +10918,28 @@ function renderScore(container, lesson) {
     history
   };
 
-  // Log practice for export
+  // Log practice session — full record so History Feed can re-render the score screen
   state.practiceLog.push({
     lessonId,
     lessonTitle: lesson.title,
+    lessonSubtitle: lesson.subtitle || '',
     trackId,
+    lessonIndex,
     prompt: (state.currentPrompt && state.currentPrompt.text) || '',
     response: state.practiceText || '',
     score: s.total,
+    structure: s.structure,
+    clarity: s.clarity,
+    depth: s.depth,
+    completion: s.completion,
+    signals: (s.signals || []).slice(0, 8), // cap per entry to avoid storage bloat
+    wpm: s.wpm || 0,
+    inputMode: s.inputMode || state.inputMode || 'typing',
+    timeSpent: state.timerSeconds || 0,
+    mode: 'practice', // practice | drill
     date: new Date().toISOString()
   });
-  if (state.practiceLog.length > 100) state.practiceLog.shift(); // Cap at 100
+  if (state.practiceLog.length > 200) state.practiceLog.shift(); // Larger cap now that we have history
 
   // Multi-attempt progression: the lesson unlocks the NEXT one once the rolling
   // average of the last N attempts meets the pass mark (N = practiceAttempts setting).
@@ -10895,17 +11629,28 @@ function scoreDrillRound() {
     history: prev?.history ? [...prev.history, total] : [total]
   };
 
-  // Log drill practice
+  // Log drill practice — same schema as practice for the History Feed
   state.practiceLog.push({
     lessonId,
-    lessonTitle: lesson.title + ' (Drill)',
+    lessonTitle: lesson.title,
+    lessonSubtitle: lesson.subtitle || '',
     trackId: state.currentLesson.trackId,
+    lessonIndex: state.currentLesson.lessonIndex,
     prompt: (state.currentPrompt && state.currentPrompt.text) || '',
     response: state.practiceText || '',
     score: total,
+    structure: auto.structure || 0,
+    clarity: auto.clarity || 0,
+    depth: auto.depth || 0,
+    completion: auto.completion || 10,
+    signals: (auto.signals || []).slice(0, 8),
+    wpm: auto.wpm || 0,
+    inputMode: auto.inputMode || state.inputMode || 'typing',
+    timeSpent: state.timerSeconds || 0,
+    mode: 'drill',
     date: new Date().toISOString()
   });
-  if (state.practiceLog.length > 100) state.practiceLog.shift();
+  if (state.practiceLog.length > 200) state.practiceLog.shift();
 
   state.xp += Math.round(total * 0.5);
   state.xpHistory.push({ date: new Date().toISOString().slice(0,10), xp: state.xp });
@@ -11998,6 +12743,126 @@ function init() {
   } else {
     updateAuthIndicator();
   }
+
+  // Schedule the next practice reminder if enabled
+  scheduleNextReminder();
+}
+
+// ========== TOUCH GESTURES (Stage 3.5) ==========
+// Two gestures:
+//   1. Swipe down on a modal overlay to dismiss it
+//   2. Pull down at the top of the dashboard to sync (or reload) progress
+// Only engages on touch devices — mouse users get no change.
+
+function initTouchGestures() {
+  let touchStartY = 0;
+  let touchStartX = 0;
+  let touchTargetOverlay = null;
+  let pullToRefreshActive = false;
+  let pullDistance = 0;
+  const SWIPE_THRESHOLD = 80; // Pixels of vertical swipe before we dismiss
+
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+
+    // Is the touch inside a modal overlay? If so, remember which one.
+    touchTargetOverlay = null;
+    const overlayClasses = ['.model-overlay', '.ai-mode-overlay', '.history-overlay', '.cloud-config-overlay', '.login-overlay', '.import-overlay'];
+    for (const cls of overlayClasses) {
+      const el = e.target.closest(cls);
+      if (el) { touchTargetOverlay = el; break; }
+    }
+
+    // Only activate pull-to-refresh at the very top of the dashboard
+    pullToRefreshActive = false;
+    pullDistance = 0;
+    if (state.currentView === 'dashboard' && window.scrollY === 0 && !touchTargetOverlay) {
+      pullToRefreshActive = true;
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1 || !pullToRefreshActive) return;
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - touchStartY;
+    if (deltaY > 0) {
+      pullDistance = deltaY;
+      showPullIndicator(Math.min(1, deltaY / 100));
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    // Use changedTouches for touchend (touches is empty at that point)
+    const touch = e.changedTouches && e.changedTouches[0];
+    if (!touch) return;
+    const endY = touch.clientY;
+    const endX = touch.clientX;
+    const deltaY = endY - touchStartY;
+    const deltaX = endX - touchStartX;
+
+    // Swipe down on overlay → dismiss (only if vertical movement dominates)
+    if (touchTargetOverlay && deltaY > SWIPE_THRESHOLD && Math.abs(deltaY) > Math.abs(deltaX) * 2) {
+      // Don't dismiss if the user is scrolling inside a scrollable child
+      const scrollableChild = touchTargetOverlay.querySelector('.modal-card, .model-card, .ai-mode-card');
+      const scrollTop = scrollableChild ? scrollableChild.scrollTop : 0;
+      if (scrollTop === 0) {
+        touchTargetOverlay.remove();
+        haptic('tick');
+      }
+    }
+
+    // Pull-to-refresh completion check
+    if (pullToRefreshActive && pullDistance > 80) {
+      triggerPullRefresh();
+    }
+    hidePullIndicator();
+    pullToRefreshActive = false;
+    pullDistance = 0;
+    touchTargetOverlay = null;
+  }, { passive: true });
+}
+
+function showPullIndicator(progress) {
+  let indicator = document.getElementById('pull-refresh-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'pull-refresh-indicator';
+    indicator.className = 'pull-refresh-indicator';
+    indicator.innerHTML = '<i data-lucide="refresh-cw" style="width:16px;height:16px"></i><span>Pull to refresh</span>';
+    document.body.appendChild(indicator);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+  const translated = Math.min(60, progress * 60);
+  indicator.style.transform = `translateX(-50%) translateY(${translated}px)`;
+  indicator.style.opacity = String(progress);
+  if (progress >= 1 && !indicator.classList.contains('ready')) {
+    indicator.classList.add('ready');
+    indicator.querySelector('span').textContent = 'Release to sync';
+    haptic('tick');
+  } else if (progress < 1 && indicator.classList.contains('ready')) {
+    indicator.classList.remove('ready');
+    indicator.querySelector('span').textContent = 'Pull to refresh';
+  }
+}
+
+function hidePullIndicator() {
+  const indicator = document.getElementById('pull-refresh-indicator');
+  if (indicator) indicator.remove();
+}
+
+async function triggerPullRefresh() {
+  haptic('pass');
+  showToast('Syncing…');
+  // If cloud sync is configured and logged in, pull latest state
+  if (typeof syncPullFromCloud === 'function' && currentUser) {
+    try {
+      await syncPullFromCloud();
+    } catch (e) {}
+  }
+  // Re-render the dashboard
+  if (typeof renderDashboard === 'function') renderDashboard();
 }
 
 // Wait for Lucide to load, then init
@@ -12008,6 +12873,8 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
   // Service worker registration happens after init so it doesn't block first paint
   registerServiceWorker();
+  // Touch gestures for swipe-to-dismiss and pull-to-refresh
+  initTouchGestures();
 });
 
 // ========== AI INTERACTIVE MODES (Stage 3) ==========
@@ -13232,6 +14099,137 @@ function applyPendingUpdate() {
 }
 
 // Manual "Check for Updates" — triggered from Settings → About.
+// ========== PRACTICE REMINDER NOTIFICATIONS ==========
+// Best-effort daily local reminder. Works reliably while the app is open in a
+// browser tab. On installed PWAs with notification permission granted, fires
+// even when the app is backgrounded. iOS requires iOS 16.4+ and PWA install.
+
+let _reminderTimer = null;
+
+function isNotificationSupported() {
+  return typeof Notification !== 'undefined';
+}
+
+function getNotificationPermission() {
+  if (!isNotificationSupported()) return 'unsupported';
+  return Notification.permission; // 'granted' | 'denied' | 'default'
+}
+
+async function requestReminderPermission() {
+  if (!isNotificationSupported()) {
+    showToast('Notifications are not supported on this browser.');
+    return false;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      showToast('Notifications enabled — reminders will fire while the app is open.');
+      return true;
+    } else if (perm === 'denied') {
+      showToast('You blocked notifications. Enable them in your browser settings to receive reminders.');
+      return false;
+    }
+    return false;
+  } catch (e) {
+    showToast('Could not request permission: ' + (e.message || e));
+    return false;
+  }
+}
+
+// Schedules the next reminder based on the configured time.
+// Called after saveState, on app load, and on settings changes.
+function scheduleNextReminder() {
+  // Clear any existing timer
+  if (_reminderTimer) {
+    clearTimeout(_reminderTimer);
+    _reminderTimer = null;
+  }
+
+  const s = state.settings;
+  if (!s || !s.reminderEnabled) return;
+  if (!isNotificationSupported() || getNotificationPermission() !== 'granted') return;
+
+  // Parse the target time (HH:MM)
+  const timeStr = s.reminderTime || '08:30';
+  const [hours, minutes] = timeStr.split(':').map(n => parseInt(n, 10));
+  if (isNaN(hours) || isNaN(minutes)) return;
+
+  // Compute the next fire time (today if still in future, otherwise tomorrow)
+  const now = new Date();
+  const fire = new Date();
+  fire.setHours(hours, minutes, 0, 0);
+  if (fire.getTime() <= now.getTime()) {
+    fire.setDate(fire.getDate() + 1);
+  }
+
+  const delay = fire.getTime() - now.getTime();
+  // setTimeout max is ~24.8 days (2^31-1 ms), we're always under 24h so we're safe
+  _reminderTimer = setTimeout(() => {
+    fireReminderNotification();
+    // Re-schedule for tomorrow
+    scheduleNextReminder();
+  }, delay);
+}
+
+function fireReminderNotification() {
+  // Skip if the user has already practiced today
+  const today = new Date().toISOString().slice(0, 10);
+  if (state.activityDays && state.activityDays.includes(today)) {
+    // Already practiced — no need to nag
+    return;
+  }
+  try {
+    const title = 'Time to practice speaking';
+    const body = state.streak > 0
+      ? `You're on a ${state.streak}-day streak — don't break it! A 5-minute lesson is enough.`
+      : 'Start your day sharper: one quick framework drill is waiting.';
+    const notification = new Notification(title, {
+      body,
+      icon: '/icons/icon-192.png', // graceful if missing
+      badge: '/icons/icon-192.png',
+      tag: 'speakmaster-reminder', // replaces any previous one
+      requireInteraction: false
+    });
+    notification.onclick = () => {
+      window.focus();
+      try { window.location.hash = 'dashboard'; } catch (e) {}
+      notification.close();
+    };
+  } catch (e) {
+    console.warn('Failed to fire reminder:', e);
+  }
+}
+
+// Helper for Settings UI — toggles the reminder on/off, handling permission flow.
+async function toggleReminder() {
+  const wasEnabled = state.settings.reminderEnabled;
+  if (!wasEnabled) {
+    // Enabling: request permission first
+    if (getNotificationPermission() !== 'granted') {
+      const ok = await requestReminderPermission();
+      if (!ok) return; // Abort enabling if permission not granted
+    }
+    state.settings.reminderEnabled = true;
+    saveState();
+    scheduleNextReminder();
+    renderSettings(); // refresh UI to show new state
+  } else {
+    // Disabling
+    state.settings.reminderEnabled = false;
+    saveState();
+    if (_reminderTimer) { clearTimeout(_reminderTimer); _reminderTimer = null; }
+    renderSettings();
+  }
+}
+
+// Updates the reminder time from a time input control.
+function updateReminderTime(newTime) {
+  if (!newTime || !/^\d{2}:\d{2}$/.test(newTime)) return;
+  state.settings.reminderTime = newTime;
+  saveState();
+  scheduleNextReminder();
+}
+
 async function checkForUpdatesManually(btn) {
   if (!('serviceWorker' in navigator)) {
     showToast('Service worker not supported on this browser');
