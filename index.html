@@ -3879,6 +3879,184 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 .speed-tier-summary-row.failed { border-left: 3px solid var(--orange); }
 .speed-tier-summary-row.not-attempted { opacity: 0.5; }
 .speed-tier-summary-row .tier-status { font-weight: 600; }
+
+/* Framework Fusion */
+.fusion-framework-grid {
+  display: grid; grid-template-columns: 1fr; gap: 0.5rem;
+}
+@media (min-width: 600px) {
+  .fusion-framework-grid { grid-template-columns: 1fr 1fr; }
+}
+.fusion-chip {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem; background: var(--card-bg);
+  border: 2px solid var(--border); border-radius: 12px;
+  cursor: pointer; text-align: left;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.fusion-chip:hover { border-color: var(--teal); }
+.fusion-chip.selected {
+  border-color: var(--teal); background: var(--teal-light);
+}
+.fusion-chip.selected-2 {
+  border-color: var(--orange); background: var(--orange-light);
+}
+.fusion-chip-check {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--card-bg);
+}
+.fusion-chip.selected .fusion-chip-check {
+  background: var(--teal); border-color: var(--teal); color: white;
+}
+.fusion-chip.selected-2 .fusion-chip-check {
+  background: var(--orange); border-color: var(--orange); color: white;
+}
+.fusion-chip-info { flex: 1; min-width: 0; }
+.fusion-chip-title { font-weight: 600; font-size: 0.95rem; }
+.fusion-chip-sub {
+  font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.15rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.fusion-selection-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; padding: 0.65rem 0.85rem;
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.fusion-elements-ghost {
+  padding: 0.75rem 0.9rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 0.75rem; font-size: 0.8rem; line-height: 1.5;
+}
+.fusion-elements-ghost strong { display: block; margin-bottom: 0.25rem; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.fusion-score-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+@media (max-width: 520px) {
+  .fusion-score-grid { grid-template-columns: 1fr; }
+}
+.fusion-score-card {
+  padding: 1rem; background: var(--card-bg);
+  border: 2px solid var(--border); border-radius: 12px;
+}
+.fusion-score-card.primary { border-color: var(--teal); }
+.fusion-score-card.secondary { border-color: var(--orange); }
+.fusion-score-card-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+.fusion-score-card-framework { font-weight: 700; margin-top: 0.2rem; font-size: 0.95rem; }
+.fusion-score-coverage { margin-top: 0.5rem; display: flex; align-items: baseline; gap: 0.4rem; }
+.fusion-score-coverage-num { font-size: 1.75rem; font-weight: 800; }
+.fusion-score-coverage-denom { font-size: 1rem; color: var(--text-muted); }
+.fusion-score-coverage-label { font-size: 0.8rem; color: var(--text-secondary); }
+.fusion-element-list {
+  margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem;
+}
+.fusion-element-row {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.8rem; line-height: 1.3;
+}
+.fusion-element-row i { flex-shrink: 0; }
+.fusion-element-row.hit i { color: var(--green, #059669); }
+.fusion-element-row.miss i { color: var(--text-muted); }
+.fusion-element-row.miss .fusion-element-text { color: var(--text-muted); text-decoration: line-through; }
+
+/* Debate Mode */
+.debate-topic-list {
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.debate-topic-card {
+  padding: 0.75rem 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  cursor: pointer; text-align: left; font-size: 0.9rem;
+  transition: border-color 0.1s ease;
+}
+.debate-topic-card:hover { border-color: var(--teal); }
+.debate-topic-card.selected { border-color: var(--teal); border-width: 2px; background: var(--teal-light); }
+.debate-custom-wrap { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
+.debate-custom-input {
+  width: 100%; padding: 0.7rem 0.85rem;
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 10px; font: inherit; color: var(--text);
+}
+
+.debate-side-picker {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.debate-side-btn {
+  padding: 1rem; background: var(--card-bg);
+  border: 2px solid var(--border); border-radius: 12px;
+  cursor: pointer; text-align: center;
+  transition: border-color 0.15s ease;
+}
+.debate-side-btn:hover { border-color: var(--teal); }
+.debate-side-btn.selected-pro { border-color: var(--green, #059669); background: var(--green-light, #d1fae5); }
+.debate-side-btn.selected-con { border-color: var(--red, #dc2626); background: var(--red-light, #fee2e2); }
+.debate-side-label { font-weight: 700; font-size: 1.1rem; }
+.debate-side-sub { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.2rem; }
+
+.debate-round-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; padding: 0.6rem 0.9rem;
+  background: var(--card-bg); border-radius: 10px;
+  border: 1px solid var(--border); margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+.debate-round-dots { display: flex; gap: 0.3rem; }
+.debate-round-dot {
+  width: 22px; height: 5px; border-radius: 3px;
+  background: var(--border);
+}
+.debate-round-dot.current { background: var(--teal); }
+.debate-round-dot.done { background: var(--green, #059669); }
+
+.debate-log {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.debate-turn {
+  padding: 0.8rem 1rem; background: var(--card-bg);
+  border-radius: 10px; border-left: 3px solid var(--border);
+}
+.debate-turn.user { border-left-color: var(--teal); }
+.debate-turn.ai { border-left-color: var(--orange); }
+.debate-turn-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); font-weight: 600; margin-bottom: 0.3rem;
+}
+.debate-turn-body { font-size: 0.9rem; line-height: 1.45; }
+.debate-turn-meta {
+  margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);
+  font-style: italic;
+}
+
+.debate-verdict-hero {
+  padding: 1.25rem; background: var(--card-bg);
+  border: 2px solid var(--teal); border-radius: 14px;
+  margin-bottom: 1rem;
+}
+.debate-verdict-score {
+  display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.debate-verdict-score-num { font-size: 2.5rem; font-weight: 800; color: var(--teal); }
+.debate-verdict-score-label { color: var(--text-muted); font-size: 0.9rem; }
+.debate-verdict-summary { font-size: 0.95rem; line-height: 1.5; margin-bottom: 0.75rem; }
+
+.debate-verdict-detail {
+  padding: 0.75rem 0.9rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 0.5rem; font-size: 0.85rem; line-height: 1.45;
+}
+.debate-verdict-detail strong { display: block; margin-bottom: 0.2rem; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.debate-verdict-detail.strongest { border-left: 3px solid var(--green, #059669); }
+.debate-verdict-detail.weakest { border-left: 3px solid var(--orange); }
+.debate-verdict-detail.insight { border-left: 3px solid var(--teal); }
 </style>
 </head>
 <body>
@@ -4043,6 +4221,16 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <!-- SPEED TIER VIEW -->
     <div id="view-speed-tier" class="view">
       <div id="speed-tier-content"></div>
+    </div>
+
+    <!-- FRAMEWORK FUSION VIEW -->
+    <div id="view-fusion" class="view">
+      <div id="fusion-content"></div>
+    </div>
+
+    <!-- DEBATE MODE VIEW -->
+    <div id="view-debate" class="view">
+      <div id="debate-content"></div>
     </div>
 
     <!-- SETTINGS VIEW -->
@@ -7899,6 +8087,8 @@ function handleRoute() {
       if (viewName === 'settings') renderSettings();
       if (viewName === 'focus') renderFocusEntry();
       if (viewName === 'speed-tier') renderSpeedTierEntry();
+      if (viewName === 'fusion') renderFusionEntry();
+      if (viewName === 'debate') renderDebateEntry();
     } else {
       document.getElementById('view-dashboard').classList.add('active');
       state.currentView = 'dashboard';
@@ -13041,6 +13231,953 @@ document.addEventListener('DOMContentLoaded', () => {
   initTouchGestures();
 });
 
+// ========== STAGE 4A: FRAMEWORK FUSION MODE ==========
+// User picks 2 unlocked frameworks, then writes a response that hits elements
+// of BOTH. Score screen breaks down coverage per framework.
+
+let _fusionSession = null;
+
+function getUnlockedFrameworkLessons() {
+  const out = [];
+  const seen = new Set();
+  for (const track of TRACKS) {
+    if (!isTrackUnlocked(track.id)) continue;
+    for (let i = 0; i < track.lessons.length; i++) {
+      const l = track.lessons[i];
+      if (!isLessonUnlocked(l.id)) continue;
+      if (!Array.isArray(l.elements) || l.elements.length === 0) continue;
+      // Dedupe by framework signature (element names, in order)
+      const sig = l.elements.map(e => e.name).join('|');
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+      out.push({ track, lesson: l, index: i });
+    }
+  }
+  return out;
+}
+
+function renderFusionEntry() {
+  const container = document.getElementById('fusion-content');
+  if (!container) return;
+
+  const frameworks = getUnlockedFrameworkLessons();
+  if (frameworks.length < 2) {
+    container.innerHTML = `
+      <div class="mode-header">
+        <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+          <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+        </button>
+        <div>
+          <h2>Framework Fusion</h2>
+          <p class="ai-mode-subtitle">Unlock at least 2 different frameworks to use this mode.</p>
+        </div>
+      </div>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
+  if (!_fusionSession || !_fusionSession.picking) {
+    _fusionSession = { picking: true, selected: [] };
+  }
+
+  renderFusionPicker();
+}
+
+function renderFusionPicker() {
+  const container = document.getElementById('fusion-content');
+  const frameworks = getUnlockedFrameworkLessons();
+  const sel = _fusionSession.selected || [];
+  const canStart = sel.length === 2;
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Framework Fusion</h2>
+        <p class="ai-mode-subtitle">Pick 2 frameworks. Build a single response that hits elements of both.</p>
+      </div>
+    </div>
+    <div class="fusion-selection-bar">
+      <span><strong>${sel.length}</strong>/2 frameworks selected</span>
+      <button class="btn btn-primary" ${canStart ? '' : 'disabled style="opacity:0.5;pointer-events:none"'} onclick="startFusionPractice()">
+        Start <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+    <div class="fusion-framework-grid">
+      ${frameworks.map((f, idx) => {
+        const selectedIdx = sel.findIndex(s => s.lessonId === f.lesson.id);
+        const cls = selectedIdx === 0 ? 'selected' : selectedIdx === 1 ? 'selected-2' : '';
+        return `
+          <button class="fusion-chip ${cls}" onclick="toggleFusionFramework('${f.lesson.id}')">
+            <div class="fusion-chip-check">
+              ${selectedIdx >= 0 ? '<i data-lucide="check" style="width:12px;height:12px"></i>' : ''}
+            </div>
+            <div class="fusion-chip-info">
+              <div class="fusion-chip-title">${f.lesson.title}</div>
+              <div class="fusion-chip-sub">${f.track.name} · ${f.lesson.elements.map(e => e.name).join(' → ')}</div>
+            </div>
+          </button>
+        `;
+      }).join('')}
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function toggleFusionFramework(lessonId) {
+  playClick();
+  if (!_fusionSession.selected) _fusionSession.selected = [];
+  const sel = _fusionSession.selected;
+  const idx = sel.findIndex(s => s.lessonId === lessonId);
+  if (idx >= 0) {
+    sel.splice(idx, 1);
+  } else {
+    if (sel.length >= 2) return; // cap
+    // Find the framework data
+    const frameworks = getUnlockedFrameworkLessons();
+    const f = frameworks.find(ff => ff.lesson.id === lessonId);
+    if (!f) return;
+    sel.push({ lessonId, trackId: f.track.id, lessonIndex: f.index, lesson: f.lesson });
+  }
+  renderFusionPicker();
+}
+
+function buildFusedLesson(selectedA, selectedB) {
+  // Construct a synthetic lesson with merged elements + a blended prompt list.
+  // autoScoreResponse uses lesson.elements + lesson.timeLimit + lesson.checklist.
+  const a = selectedA.lesson;
+  const b = selectedB.lesson;
+  // Merge elements, tagging which framework each came from
+  const elementsA = a.elements.map(e => ({ ...e, _frameworkId: a.id, _frameworkTitle: a.title }));
+  const elementsB = b.elements.map(e => ({ ...e, _frameworkId: b.id, _frameworkTitle: b.title }));
+  const mergedElements = [...elementsA, ...elementsB];
+
+  // Blended time limit: average of the two, capped at 120s base
+  const timeLimit = Math.min(120, Math.round((a.timeLimit + b.timeLimit) / 2));
+
+  // Prompt: take one from A (these are usually broader/situational)
+  const prompts = a.prompts || [];
+
+  // Checklist: merge both
+  const checklist = [
+    ...(a.checklist || []),
+    ...(b.checklist || [])
+  ];
+
+  return {
+    id: `fusion-${a.id}-${b.id}`,
+    title: `${a.title} + ${b.title}`,
+    subtitle: 'Fusion',
+    timeLimit,
+    elements: mergedElements,
+    prompts,
+    checklist,
+    _isFusion: true,
+    _frameworkA: selectedA,
+    _frameworkB: selectedB
+  };
+}
+
+function startFusionPractice() {
+  playClick();
+  const sel = _fusionSession.selected;
+  if (!sel || sel.length !== 2) return;
+  const fused = buildFusedLesson(sel[0], sel[1]);
+  const prompt = pickRandomPrompt(fused);
+  if (!prompt || !prompt.text) {
+    // Fallback: use framework B's prompts if A had none
+    const fallback = pickRandomPrompt(sel[1].lesson);
+    _fusionSession = {
+      picking: false,
+      fused,
+      frameworkA: sel[0],
+      frameworkB: sel[1],
+      prompt: fallback,
+      startTime: Date.now()
+    };
+  } else {
+    _fusionSession = {
+      picking: false,
+      fused,
+      frameworkA: sel[0],
+      frameworkB: sel[1],
+      prompt,
+      startTime: Date.now()
+    };
+  }
+  state.currentPrompt = _fusionSession.prompt;
+  renderFusionPractice();
+}
+
+function renderFusionPractice() {
+  const container = document.getElementById('fusion-content');
+  const sess = _fusionSession;
+  if (!container || !sess || sess.picking) return;
+
+  const effectiveLimit = getEffectiveTimeLimit(sess.fused);
+  state.timerSeconds = 0;
+  state.practiceStartTime = Date.now();
+  state.usedSpeech = false;
+  state.inputMode = (state.settings && state.settings.defaultInputMode) || 'typing';
+  clearAudioRecording();
+  state.practiceText = '';
+
+  const a = sess.frameworkA.lesson;
+  const b = sess.frameworkB.lesson;
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endFusion()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Fusion Practice</h2>
+        <p class="ai-mode-subtitle">${a.title} + ${b.title}</p>
+      </div>
+    </div>
+    <div class="fusion-elements-ghost">
+      <strong>Hit all of these</strong>
+      <div style="display:flex;flex-wrap:wrap;gap:0.35rem 0.75rem">
+        ${a.elements.map(e => `<span style="color:var(${getElementColorVar(e.color)})"><strong>[A]</strong> ${e.name}</span>`).join('')}
+        ${b.elements.map(e => `<span style="color:var(${getElementColorVar(e.color)})"><strong>[B]</strong> ${e.name}</span>`).join('')}
+      </div>
+    </div>
+    <div class="practice-area">
+      <div class="practice-area-header"><h3>Your Turn</h3></div>
+      <div class="practice-prompt">"${sess.prompt.text}"</div>
+      <div class="practice-meta">
+        <div class="timer" id="practice-timer">
+          <i data-lucide="clock" style="width:18px;height:18px"></i>
+          <span id="timer-display">0:00</span>
+          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
+        </div>
+        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+      </div>
+      <div class="practice-input-area">
+        <textarea class="practice-textarea" id="practice-input" oninput="updateWordCount()" autofocus></textarea>
+        <button class="record-btn" id="record-btn" onclick="toggleAudioRecording()" title="Record audio">
+          <i data-lucide="circle" style="width:20px;height:20px;fill:currentColor"></i>
+        </button>
+        <button class="mic-btn" id="mic-btn" onclick="toggleSpeechRecognition()" title="Transcribe">
+          <i data-lucide="mic" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+      <div class="mic-status" id="mic-status"></div>
+      <div class="practice-footer">
+        <div class="speaking-time">Target: ${effectiveLimit}s</div>
+        <button class="btn btn-primary" onclick="submitFusionPractice()">
+          Submit <i data-lucide="send" style="width:14px;height:14px"></i>
+        </button>
+      </div>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timerSeconds++;
+    const display = document.getElementById('timer-display');
+    const timerEl = document.getElementById('practice-timer');
+    if (display) {
+      display.textContent = formatTime(state.timerSeconds);
+      const ratio = state.timerSeconds / effectiveLimit;
+      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+    }
+  }, 1000);
+}
+
+// Returns coverage for a framework: { hit: [names], miss: [names], count, total }
+// Reuses the ELEMENT_PATTERNS logic already used by autoScoreResponse by running
+// a mini detection pass. We look at the score's signals for structure category
+// which lists "Missing: <element>" / "All elements detected".
+function computeFrameworkCoverage(responseText, framework) {
+  // Use autoScoreResponse to get signals for a synthetic lesson matching ONLY this framework
+  const synthetic = {
+    id: 'coverage-probe',
+    title: framework.title,
+    timeLimit: framework.timeLimit || 60,
+    elements: framework.elements,
+    prompts: [],
+    checklist: []
+  };
+  const probe = autoScoreResponse(responseText, synthetic, 0, 'typing');
+  const hit = [];
+  const miss = [];
+  // Inspect signals to determine per-element status
+  const sigs = (probe.signals || []).filter(s => s.category === 'structure');
+  const elementNames = framework.elements.map(e => e.name);
+
+  // Look for "All X elements detected" signal first
+  const allHit = sigs.some(s => /all\s+\d+\s+.*elements?\s+detected/i.test(s.msg || ''));
+  // Look for "Missing: X, Y" signals
+  const missingSigs = sigs.filter(s => /missing/i.test(s.msg || '') && s.type === 'miss');
+  const missingElements = new Set();
+  missingSigs.forEach(s => {
+    const m = (s.msg || '').match(/Missing(?:\s+elements?)?:?\s*(.+)/i);
+    if (m) {
+      m[1].split(/[,&]| and /).forEach(name => {
+        const n = name.replace(/[()]/g, '').trim();
+        if (n) missingElements.add(n.toLowerCase());
+      });
+    }
+  });
+
+  elementNames.forEach(name => {
+    if (allHit) { hit.push(name); return; }
+    if (missingElements.has(name.toLowerCase())) {
+      miss.push(name);
+    } else {
+      hit.push(name);
+    }
+  });
+
+  return { hit, miss, count: hit.length, total: elementNames.length };
+}
+
+function submitFusionPractice() {
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  state.totalPracticeSeconds += state.timerSeconds;
+
+  const input = document.getElementById('practice-input');
+  state.practiceText = input ? input.value : '';
+
+  const sess = _fusionSession;
+  if (!sess) return;
+  const score = autoScoreResponse(state.practiceText, sess.fused, state.timerSeconds, state.inputMode);
+  sess.score = score;
+  state.lastScore = score;
+
+  // Per-framework coverage
+  sess.coverageA = computeFrameworkCoverage(state.practiceText, sess.frameworkA.lesson);
+  sess.coverageB = computeFrameworkCoverage(state.practiceText, sess.frameworkB.lesson);
+
+  // Log
+  state.practiceLog.push({
+    lessonId: sess.fused.id,
+    lessonTitle: sess.fused.title,
+    lessonSubtitle: 'Fusion',
+    trackId: sess.frameworkA.trackId,
+    lessonIndex: sess.frameworkA.lessonIndex,
+    prompt: sess.prompt.text,
+    response: state.practiceText || '',
+    score: score.total,
+    structure: score.structure,
+    clarity: score.clarity,
+    depth: score.depth,
+    completion: score.completion,
+    signals: (score.signals || []).slice(0, 8),
+    wpm: score.wpm || 0,
+    inputMode: score.inputMode || state.inputMode || 'typing',
+    timeSpent: state.timerSeconds || 0,
+    mode: 'fusion',
+    frameworks: [sess.frameworkA.lessonId, sess.frameworkB.lessonId],
+    date: new Date().toISOString()
+  });
+  if (state.practiceLog.length > 200) state.practiceLog.shift();
+  saveState();
+
+  renderFusionScore();
+}
+
+function renderFusionScore() {
+  const container = document.getElementById('fusion-content');
+  const sess = _fusionSession;
+  if (!container || !sess || !sess.score) return;
+  const s = sess.score;
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const passed = s.total >= passMark;
+  const covA = sess.coverageA;
+  const covB = sess.coverageB;
+  const bothMostlyCovered = covA.count >= Math.ceil(covA.total * 0.75) && covB.count >= Math.ceil(covB.total * 0.75);
+
+  if (passed && bothMostlyCovered) {
+    if (state.settings && state.settings.soundEffects) playMastery();
+    haptic('mastery');
+    if (state.settings && state.settings.confettiEnabled && typeof confetti === 'function') {
+      confetti({ particleCount: 100, spread: 75, origin: { y: 0.6 } });
+    }
+  } else if (passed) {
+    if (state.settings && state.settings.soundEffects) playPass();
+    haptic('pass');
+  } else {
+    if (state.settings && state.settings.soundEffects) playFail();
+    haptic('fail');
+  }
+
+  function renderCoverageCard(label, framework, coverage, cls) {
+    return `
+      <div class="fusion-score-card ${cls}">
+        <div class="fusion-score-card-title">${label}</div>
+        <div class="fusion-score-card-framework">${framework.title}</div>
+        <div class="fusion-score-coverage">
+          <span class="fusion-score-coverage-num">${coverage.count}</span>
+          <span class="fusion-score-coverage-denom">/ ${coverage.total}</span>
+          <span class="fusion-score-coverage-label">elements hit</span>
+        </div>
+        <div class="fusion-element-list">
+          ${framework.elements.map(e => {
+            const isHit = coverage.hit.includes(e.name);
+            return `
+              <div class="fusion-element-row ${isHit ? 'hit' : 'miss'}">
+                <i data-lucide="${isHit ? 'check-circle' : 'circle'}" style="width:12px;height:12px"></i>
+                <span class="fusion-element-text">${e.name}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endFusion()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Fusion Result</h2>
+        <p class="ai-mode-subtitle">${sess.frameworkA.lesson.title} + ${sess.frameworkB.lesson.title}</p>
+      </div>
+    </div>
+
+    <div class="focus-score-hero" style="border-color:${passed ? 'var(--teal)' : 'var(--orange)'}">
+      <div class="focus-score-label">Combined score</div>
+      <div class="focus-score-value" style="color:${passed ? 'var(--teal)' : 'var(--orange)'}">
+        ${s.total}<span style="font-size:0.4em;color:var(--text-muted)">/100</span>
+      </div>
+      <div class="focus-score-tier ${passed ? 'pass' : 'fail'}">
+        ${passed ? (bothMostlyCovered ? '✓ Strong fusion' : '✓ Passed — deepen framework coverage') : 'Below pass mark'}
+      </div>
+    </div>
+
+    <div class="fusion-score-grid">
+      ${renderCoverageCard('Framework A', sess.frameworkA.lesson, covA, 'primary')}
+      ${renderCoverageCard('Framework B', sess.frameworkB.lesson, covB, 'secondary')}
+    </div>
+
+    <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="endFusion()">
+        <i data-lucide="home" style="width:14px;height:14px"></i> Home
+      </button>
+      <button class="btn btn-secondary" onclick="startFusionPractice()">
+        <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Same pair, new prompt
+      </button>
+      <button class="btn btn-primary" onclick="renderFusionEntry()">
+        New pair <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function endFusion() {
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  _fusionSession = null;
+  navigate('dashboard');
+}
+
+// ========== STAGE 4A: DEBATE MODE ==========
+// 3-round adversarial exchange. User picks topic + side; AI argues the opposite
+// and never concedes. Final round triggers an AI-generated verdict summary.
+
+let _debateSession = null;
+
+const DEBATE_TOPICS = [
+  'Remote work is more productive than working in an office.',
+  'Social media has done more harm than good to society.',
+  'AI will replace most creative jobs within 20 years.',
+  'A four-day work week should be the standard.',
+  'College degrees are losing their value.',
+  'Cities should ban private cars from downtown areas.',
+  'Annual performance reviews should be abolished.',
+  'Public speaking should be a required school subject.',
+  'The gig economy benefits workers more than it exploits them.',
+  'Companies should be legally required to pay employees to unplug on vacation.'
+];
+
+function renderDebateEntry() {
+  const container = document.getElementById('debate-content');
+  if (!container) return;
+
+  if (!_debateSession || !_debateSession.picking) {
+    _debateSession = { picking: true, selectedTopic: null, customTopic: '', side: null };
+  }
+  renderDebateTopicPicker();
+}
+
+function renderDebateTopicPicker() {
+  const container = document.getElementById('debate-content');
+  const sess = _debateSession;
+  const topic = sess.selectedTopic === '__custom__' ? (sess.customTopic || '') : sess.selectedTopic;
+  const canPickSide = !!topic && (sess.selectedTopic !== '__custom__' || (sess.customTopic && sess.customTopic.length > 10));
+  const canStart = canPickSide && sess.side;
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Debate Mode</h2>
+        <p class="ai-mode-subtitle">Pick a topic and a side. The AI takes the other side. 3 rounds.</p>
+      </div>
+    </div>
+    <h3 style="margin:0.5rem 0 0.5rem;font-size:0.95rem">1. Pick a topic</h3>
+    <div class="debate-topic-list">
+      ${DEBATE_TOPICS.map((t, i) => `
+        <div class="debate-topic-card ${sess.selectedTopic === t ? 'selected' : ''}" onclick="pickDebateTopic('${t.replace(/'/g, "\\'")}')">${t}</div>
+      `).join('')}
+      <div class="debate-topic-card ${sess.selectedTopic === '__custom__' ? 'selected' : ''}" onclick="pickDebateTopic('__custom__')">
+        <strong>Custom topic</strong> — write your own below
+      </div>
+    </div>
+    ${sess.selectedTopic === '__custom__' ? `
+      <div class="debate-custom-wrap">
+        <input class="debate-custom-input" id="debate-custom-input" maxlength="200"
+               placeholder="Write a debatable statement (e.g. 'X is better than Y')"
+               oninput="setDebateCustomTopic(this.value)"
+               value="${(sess.customTopic || '').replace(/"/g, '&quot;')}">
+      </div>
+    ` : ''}
+
+    <h3 style="margin:1.25rem 0 0.5rem;font-size:0.95rem">2. Pick your side</h3>
+    <div class="debate-side-picker" ${canPickSide ? '' : 'style="opacity:0.4;pointer-events:none"'}>
+      <button class="debate-side-btn ${sess.side === 'pro' ? 'selected-pro' : ''}" onclick="pickDebateSide('pro')">
+        <div class="debate-side-label">Pro</div>
+        <div class="debate-side-sub">You argue FOR the statement</div>
+      </button>
+      <button class="debate-side-btn ${sess.side === 'con' ? 'selected-con' : ''}" onclick="pickDebateSide('con')">
+        <div class="debate-side-label">Con</div>
+        <div class="debate-side-sub">You argue AGAINST the statement</div>
+      </button>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-top:1.5rem">
+      <button class="btn btn-primary btn-lg" ${canStart ? '' : 'disabled style="opacity:0.5;pointer-events:none"'} onclick="beginDebate()">
+        Start debate <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Preserve focus on custom input if user was typing
+  if (sess.selectedTopic === '__custom__') {
+    const el = document.getElementById('debate-custom-input');
+    if (el && document.activeElement !== el) el.focus();
+  }
+}
+
+function pickDebateTopic(t) {
+  playClick();
+  _debateSession.selectedTopic = t;
+  if (t !== '__custom__') _debateSession.customTopic = '';
+  renderDebateTopicPicker();
+}
+
+function setDebateCustomTopic(v) {
+  // Just mutate state; avoid re-render on every keystroke to keep cursor stable
+  _debateSession.customTopic = v;
+  // Re-enable/disable the Start button without full re-render
+  const startBtn = document.querySelector('#debate-content .btn-primary.btn-lg');
+  const sideBlock = document.querySelector('#debate-content .debate-side-picker');
+  const hasValidCustom = v && v.length > 10;
+  if (sideBlock) {
+    sideBlock.style.opacity = hasValidCustom ? '1' : '0.4';
+    sideBlock.style.pointerEvents = hasValidCustom ? '' : 'none';
+  }
+  if (startBtn) {
+    const canStart = hasValidCustom && _debateSession.side;
+    startBtn.disabled = !canStart;
+    startBtn.style.opacity = canStart ? '1' : '0.5';
+    startBtn.style.pointerEvents = canStart ? '' : 'none';
+  }
+}
+
+function pickDebateSide(side) {
+  playClick();
+  _debateSession.side = side;
+  renderDebateTopicPicker();
+}
+
+function beginDebate() {
+  const sess = _debateSession;
+  const topic = sess.selectedTopic === '__custom__' ? sess.customTopic : sess.selectedTopic;
+  if (!topic || !sess.side) return;
+
+  _debateSession = {
+    picking: false,
+    topic,
+    userSide: sess.side,
+    aiSide: sess.side === 'pro' ? 'con' : 'pro',
+    totalRounds: 3,
+    currentRound: 1,
+    turns: [], // { speaker: 'user'|'ai', text, round, meta? }
+    inFlight: false,
+    startTime: Date.now()
+  };
+  renderDebateRoundInput();
+}
+
+function renderDebateRoundInput() {
+  const container = document.getElementById('debate-content');
+  const sess = _debateSession;
+  if (!container || !sess) return;
+
+  const roundLabel = sess.currentRound === 1 ? 'Opening' : (sess.currentRound === sess.totalRounds ? 'Closing' : 'Rebuttal');
+  // Base time limit; scale by timerMultiplier. Each round gets ~60s * multiplier.
+  const mult = (state.settings && state.settings.timerMultiplier) || 1;
+  const tierLimit = Math.max(30, Math.round(60 * mult));
+
+  state.timerSeconds = 0;
+  state.practiceStartTime = Date.now();
+  state.usedSpeech = false;
+  state.inputMode = (state.settings && state.settings.defaultInputMode) || 'typing';
+  clearAudioRecording();
+  state.practiceText = '';
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endDebate()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Debate · Round ${sess.currentRound} (${roundLabel})</h2>
+        <p class="ai-mode-subtitle">You: ${sess.userSide.toUpperCase()} · AI: ${sess.aiSide.toUpperCase()}</p>
+      </div>
+    </div>
+    <div class="debate-round-header">
+      <span><strong>Topic:</strong> "${sess.topic}"</span>
+      <div class="debate-round-dots">
+        ${[1, 2, 3].map(r => `<div class="debate-round-dot ${r < sess.currentRound ? 'done' : r === sess.currentRound ? 'current' : ''}"></div>`).join('')}
+      </div>
+    </div>
+
+    ${sess.turns.length > 0 ? `
+      <div class="debate-log">
+        ${sess.turns.map(t => `
+          <div class="debate-turn ${t.speaker}">
+            <div class="debate-turn-label">${t.speaker === 'user' ? 'You' : 'Opponent'} · Round ${t.round}</div>
+            <div class="debate-turn-body">${escapeHtmlSafe(t.text)}</div>
+            ${t.meta ? `<div class="debate-turn-meta">${escapeHtmlSafe(t.meta)}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    <div class="practice-area">
+      <div class="practice-area-header"><h3>Your ${roundLabel}</h3></div>
+      <div class="practice-prompt">Argue the <strong>${sess.userSide.toUpperCase()}</strong> side: "${sess.topic}"</div>
+      <div class="practice-meta">
+        <div class="timer" id="practice-timer">
+          <i data-lucide="clock" style="width:18px;height:18px"></i>
+          <span id="timer-display">0:00</span>
+          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(tierLimit)}</span>
+        </div>
+        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+      </div>
+      <div class="practice-input-area">
+        <textarea class="practice-textarea" id="practice-input" oninput="updateWordCount()" autofocus></textarea>
+        <button class="record-btn" id="record-btn" onclick="toggleAudioRecording()" title="Record audio">
+          <i data-lucide="circle" style="width:20px;height:20px;fill:currentColor"></i>
+        </button>
+        <button class="mic-btn" id="mic-btn" onclick="toggleSpeechRecognition()" title="Transcribe">
+          <i data-lucide="mic" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+      <div class="mic-status" id="mic-status"></div>
+      <div class="practice-footer">
+        <div class="speaking-time">Target: ${tierLimit}s</div>
+        <button class="btn btn-primary" onclick="submitDebateRound()">
+          Submit <i data-lucide="send" style="width:14px;height:14px"></i>
+        </button>
+      </div>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timerSeconds++;
+    const display = document.getElementById('timer-display');
+    const timerEl = document.getElementById('practice-timer');
+    if (display) {
+      display.textContent = formatTime(state.timerSeconds);
+      const ratio = state.timerSeconds / tierLimit;
+      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+    }
+  }, 1000);
+}
+
+async function submitDebateRound() {
+  const sess = _debateSession;
+  if (!sess || sess.inFlight) return;
+  const input = document.getElementById('practice-input');
+  const text = (input && input.value || '').trim();
+  if (text.length < 15) {
+    showToast('Write at least a sentence before submitting.');
+    return;
+  }
+
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  state.totalPracticeSeconds += state.timerSeconds;
+
+  // Add user turn to log
+  sess.turns.push({ speaker: 'user', text, round: sess.currentRound });
+  sess.inFlight = true;
+
+  // Show "AI is thinking" state
+  renderDebateAIThinking();
+
+  try {
+    const result = await callAIChat({
+      mode: 'debate-turn',
+      topic: sess.topic,
+      userSide: sess.userSide,
+      aiSide: sess.aiSide,
+      round: sess.currentRound,
+      totalRounds: sess.totalRounds,
+      userLastArgument: text,
+      history: sess.turns.map(t => ({ speaker: t.speaker === 'user' ? 'User' : 'Opponent', text: t.text }))
+    });
+    sess.turns.push({
+      speaker: 'ai',
+      text: result.rebuttal || '(no rebuttal returned)',
+      round: sess.currentRound,
+      meta: result.targetedWeakness && result.targetedWeakness !== 'n/a'
+        ? `Attacked: ${result.targetedWeakness}`
+        : (result.strongestPoint ? `Key point: ${result.strongestPoint}` : '')
+    });
+  } catch (e) {
+    sess.turns.push({
+      speaker: 'ai',
+      text: `[AI call failed: ${e.message}]`,
+      round: sess.currentRound,
+      meta: 'Error — you can retry by submitting your next round.'
+    });
+  } finally {
+    sess.inFlight = false;
+  }
+
+  // If we're past the final round, go to verdict. Otherwise advance round.
+  if (sess.currentRound >= sess.totalRounds) {
+    renderDebateVerdictLoading();
+    await runDebateVerdict();
+  } else {
+    sess.currentRound++;
+    renderDebateRoundInput();
+  }
+}
+
+function renderDebateAIThinking() {
+  const container = document.getElementById('debate-content');
+  const sess = _debateSession;
+  if (!container || !sess) return;
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endDebate()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Debate · Round ${sess.currentRound}</h2>
+        <p class="ai-mode-subtitle">Opponent is responding…</p>
+      </div>
+    </div>
+    <div class="debate-log">
+      ${sess.turns.map(t => `
+        <div class="debate-turn ${t.speaker}">
+          <div class="debate-turn-label">${t.speaker === 'user' ? 'You' : 'Opponent'} · Round ${t.round}</div>
+          <div class="debate-turn-body">${escapeHtmlSafe(t.text)}</div>
+        </div>
+      `).join('')}
+      <div class="debate-turn ai">
+        <div class="debate-turn-label">Opponent</div>
+        <div class="debate-turn-body">
+          <span class="ai-dots"><span></span><span></span><span></span></span>
+        </div>
+      </div>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderDebateVerdictLoading() {
+  const container = document.getElementById('debate-content');
+  const sess = _debateSession;
+  if (!container || !sess) return;
+  container.innerHTML = `
+    <div class="mode-header">
+      <div>
+        <h2>Rendering verdict…</h2>
+        <p class="ai-mode-subtitle">The judge is reviewing the full debate.</p>
+      </div>
+    </div>
+    <div class="debate-log">
+      ${sess.turns.map(t => `
+        <div class="debate-turn ${t.speaker}">
+          <div class="debate-turn-label">${t.speaker === 'user' ? 'You' : 'Opponent'} · Round ${t.round}</div>
+          <div class="debate-turn-body">${escapeHtmlSafe(t.text)}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="debate-verdict-hero">
+      <div class="debate-turn-body"><span class="ai-dots"><span></span><span></span><span></span></span> Analyzing your arguments…</div>
+    </div>
+  `;
+}
+
+async function runDebateVerdict() {
+  const sess = _debateSession;
+  if (!sess) return;
+
+  try {
+    const result = await callAIChat({
+      mode: 'debate-verdict',
+      topic: sess.topic,
+      userSide: sess.userSide,
+      aiSide: sess.aiSide,
+      history: sess.turns.map(t => ({ speaker: t.speaker === 'user' ? 'User' : 'Opponent', text: t.text }))
+    });
+    sess.verdict = result;
+  } catch (e) {
+    sess.verdict = {
+      overallScore: null,
+      summary: 'Verdict failed to load: ' + e.message,
+      strongestTurn: null,
+      weakestTurn: null,
+      keyInsight: 'Try again after a moment — the AI judge may be temporarily unavailable.'
+    };
+  }
+
+  // Log the whole debate to practiceLog
+  state.practiceLog.push({
+    lessonId: 'debate',
+    lessonTitle: 'Debate: ' + sess.topic.slice(0, 60),
+    lessonSubtitle: `${sess.userSide.toUpperCase()} vs AI ${sess.aiSide.toUpperCase()}`,
+    trackId: 0,
+    lessonIndex: 0,
+    prompt: sess.topic,
+    response: sess.turns.filter(t => t.speaker === 'user').map((t, i) => `[Round ${t.round}] ${t.text}`).join('\n\n'),
+    score: sess.verdict && typeof sess.verdict.overallScore === 'number' ? sess.verdict.overallScore : 0,
+    structure: 0, clarity: 0, depth: 0, completion: 10,
+    signals: [],
+    wpm: 0,
+    inputMode: state.inputMode || 'typing',
+    timeSpent: Math.round((Date.now() - sess.startTime) / 1000),
+    mode: 'debate',
+    debateTopic: sess.topic,
+    debateUserSide: sess.userSide,
+    debateRounds: sess.turns.filter(t => t.speaker === 'user').length,
+    date: new Date().toISOString()
+  });
+  if (state.practiceLog.length > 200) state.practiceLog.shift();
+  saveState();
+
+  renderDebateVerdict();
+}
+
+function renderDebateVerdict() {
+  const container = document.getElementById('debate-content');
+  const sess = _debateSession;
+  if (!container || !sess || !sess.verdict) return;
+  const v = sess.verdict;
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const passed = typeof v.overallScore === 'number' && v.overallScore >= passMark;
+
+  if (passed) {
+    if (state.settings && state.settings.soundEffects) playPass();
+    haptic('pass');
+    if (state.settings && state.settings.confettiEnabled && typeof confetti === 'function') {
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+    }
+  } else {
+    if (state.settings && state.settings.soundEffects) playFail();
+    haptic('fail');
+  }
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endDebate()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Debate Verdict</h2>
+        <p class="ai-mode-subtitle">${sess.topic.slice(0, 80)}${sess.topic.length > 80 ? '…' : ''}</p>
+      </div>
+    </div>
+
+    <div class="debate-verdict-hero" style="border-color:${passed ? 'var(--teal)' : 'var(--orange)'}">
+      ${typeof v.overallScore === 'number' ? `
+        <div class="debate-verdict-score">
+          <span class="debate-verdict-score-num">${v.overallScore}</span>
+          <span class="debate-verdict-score-label">/ 100 · your debate performance</span>
+        </div>
+      ` : ''}
+      <div class="debate-verdict-summary">${escapeHtmlSafe(v.summary || '')}</div>
+    </div>
+
+    ${v.strongestTurn ? `
+      <div class="debate-verdict-detail strongest">
+        <strong>Strongest turn · Round ${v.strongestTurn.round || '?'}</strong>
+        ${escapeHtmlSafe(v.strongestTurn.why || '')}
+      </div>
+    ` : ''}
+    ${v.weakestTurn ? `
+      <div class="debate-verdict-detail weakest">
+        <strong>Weakest turn · Round ${v.weakestTurn.round || '?'}</strong>
+        ${escapeHtmlSafe(v.weakestTurn.why || '')}
+      </div>
+    ` : ''}
+    ${v.keyInsight ? `
+      <div class="debate-verdict-detail insight">
+        <strong>Key insight for next debate</strong>
+        ${escapeHtmlSafe(v.keyInsight)}
+      </div>
+    ` : ''}
+
+    <div style="margin-top:1rem">
+      <details>
+        <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-secondary);padding:0.5rem 0">Show full debate transcript</summary>
+        <div class="debate-log" style="margin-top:0.5rem">
+          ${sess.turns.map(t => `
+            <div class="debate-turn ${t.speaker}">
+              <div class="debate-turn-label">${t.speaker === 'user' ? 'You' : 'Opponent'} · Round ${t.round}</div>
+              <div class="debate-turn-body">${escapeHtmlSafe(t.text)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </details>
+    </div>
+
+    <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="endDebate()">
+        <i data-lucide="home" style="width:14px;height:14px"></i> Home
+      </button>
+      <button class="btn btn-primary" onclick="renderDebateEntry()">
+        New debate <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function endDebate() {
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  _debateSession = null;
+  navigate('dashboard');
+}
+
 // ========== STAGE 4A: FOCUS CHALLENGE MODE ==========
 // Single-skill drill. User picks one dimension (Structure, Clarity, or Depth).
 // Scoring prioritizes that dimension; others shown as context only.
@@ -13773,6 +14910,24 @@ function renderPracticeModesSection() {
         <div>
           <div class="practice-mode-title">Speed Tier</div>
           <div class="practice-mode-sub">Escalating pressure · 3 tiers</div>
+        </div>
+      </button>
+      <button class="practice-mode-card" onclick="navigate('fusion')">
+        <div class="practice-mode-icon" style="background:var(--gold-light);color:var(--gold)">
+          <i data-lucide="layers" style="width:20px;height:20px"></i>
+        </div>
+        <div>
+          <div class="practice-mode-title">Framework Fusion</div>
+          <div class="practice-mode-sub">Blend 2 frameworks · dual coverage</div>
+        </div>
+      </button>
+      <button class="practice-mode-card" onclick="navigate('debate')">
+        <div class="practice-mode-icon" style="background:var(--red-light, #fee2e2);color:var(--red, #dc2626)">
+          <i data-lucide="swords" style="width:20px;height:20px"></i>
+        </div>
+        <div>
+          <div class="practice-mode-title">Debate Mode</div>
+          <div class="practice-mode-sub">3 rounds · AI takes the other side</div>
         </div>
       </button>
     </div>
