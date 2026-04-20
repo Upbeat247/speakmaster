@@ -6,6 +6,12 @@
   publish = "."
   # No build command — everything is static.
   command = ""
+  # Where the serverless functions live (score-response.js, etc.)
+  functions = "netlify/functions"
+
+[functions]
+  # Node runtime is fine for our simple fetch-based proxy
+  node_bundler = "esbuild"
 
 # Cache headers.
 # The index.html and service worker must NEVER be cached by the browser.

@@ -2482,6 +2482,221 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 }
 .update-toast-dismiss:hover { color: #fff; }
 
+/* Deep AI Review panel */
+.ai-review-btn {
+  background: linear-gradient(135deg, #e6f3f3, #fdf8eb) !important;
+  color: var(--teal) !important;
+  border: 1px solid var(--teal) !important;
+}
+[data-theme="dark"] .ai-review-btn {
+  background: linear-gradient(135deg, #0a2e30, #2e2810) !important;
+  color: #6ecfd4 !important;
+}
+.ai-review-btn:hover { filter: brightness(1.05); }
+
+.ai-review {
+  background: var(--bg-card);
+  border: 1px solid var(--teal);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: left;
+  animation: aiFadeIn 0.4s ease-out;
+}
+@keyframes aiFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ai-review-loading, .ai-review-error { border-color: var(--border); }
+.ai-review-header {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.ai-review-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+.ai-review-score {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.ai-review-verdict {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--teal);
+}
+.ai-review-breakdown {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.ai-review-chip {
+  flex: 1;
+  min-width: 90px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.6rem;
+  text-align: center;
+}
+.ai-chip-label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.ai-chip-val {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.ai-review-section {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.ai-review-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.ai-coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.4rem;
+}
+.ai-coverage-item {
+  display: flex; align-items: flex-start; gap: 0.4rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+.ai-coverage-item.covered {
+  background: var(--green-light);
+  color: var(--green);
+}
+.ai-coverage-item.missing {
+  background: var(--red-light);
+  color: var(--red);
+}
+.ai-coverage-item strong {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.ai-coverage-evidence {
+  font-weight: 400;
+  font-size: 0.72rem;
+  opacity: 0.85;
+  margin-top: 0.15rem;
+}
+.ai-signal {
+  display: flex; align-items: flex-start; gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.84rem;
+}
+.ai-signal:last-child { border-bottom: none; }
+.ai-signal-icon {
+  flex-shrink: 0;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 0.1rem;
+}
+.ai-signal-hit .ai-signal-icon { background: var(--green-light); color: var(--green); }
+.ai-signal-partial .ai-signal-icon { background: var(--gold-light); color: var(--gold); }
+.ai-signal-miss .ai-signal-icon { background: var(--red-light); color: var(--red); }
+.ai-signal-body { flex: 1; min-width: 0; }
+.ai-signal-meta {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+.ai-signal-msg { color: var(--text-primary); line-height: 1.4; }
+.ai-signal-quote {
+  margin-top: 0.3rem;
+  padding: 0.3rem 0.55rem;
+  background: var(--bg-primary);
+  border-left: 3px solid var(--border);
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.ai-signal-hit .ai-signal-quote { border-left-color: var(--green); }
+.ai-signal-partial .ai-signal-quote { border-left-color: var(--gold); }
+.ai-signal-miss .ai-signal-quote { border-left-color: var(--red); }
+.ai-signal-suggestion {
+  margin-top: 0.3rem;
+  padding: 0.3rem 0.55rem;
+  background: var(--teal-light);
+  color: var(--teal);
+  border-radius: 4px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.ai-signal-suggestion strong {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.68rem;
+}
+.ai-rewrite {
+  background: var(--gold-light);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+.ai-review-footer {
+  margin-top: 0.75rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-align: right;
+  font-family: monospace;
+}
+.ai-review-error-msg {
+  padding: 0.5rem 0.75rem;
+  background: var(--red-light);
+  color: var(--red);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+.ai-review-shimmer {
+  height: 14px;
+  background: linear-gradient(90deg, var(--bg-secondary) 0%, var(--border) 50%, var(--bg-secondary) 100%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  animation: aiShimmer 1.5s ease-in-out infinite;
+}
+.ai-review-shimmer.short { width: 60%; }
+@keyframes aiShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 @media (max-width: 640px) {
   .mastery-grid { grid-template-columns: repeat(3, 1fr); }
   .progress-stat-row { grid-template-columns: repeat(2, 1fr); }
@@ -2883,6 +3098,8 @@ const state = {
     confettiEnabled: true,     // fire confetti on 85+ scores
     soundEffects: true,        // UI sound effects on actions
     theme: 'auto',             // 'light', 'dark', 'auto'
+    aiReviewEnabled: true,     // show the "Deep AI Review" button on the score screen
+    aiReviewEndpoint: '/.netlify/functions/score-response' // where to call for AI scoring
   }
 };
 
@@ -7299,6 +7516,17 @@ function renderSettings() {
             onclick="toggleSetting('soundEffects')"></div>
         </div>
       </div>
+
+      <div class="setting-row">
+        <div class="setting-label-line">
+          <div>
+            <div class="setting-label">Deep AI Review (beta)</div>
+            <div class="setting-desc">Adds a "Deep AI Review" button on the score screen. Uses your OpenRouter credits via a secure Netlify Function. Heuristic scoring still runs first — this is an on-demand richer second opinion. Only available when the app is deployed (not on file://).</div>
+          </div>
+          <div class="setting-toggle ${s.aiReviewEnabled ? 'on' : ''}"
+            onclick="toggleSetting('aiReviewEnabled')"></div>
+        </div>
+      </div>
     </div>
 
     <!-- CLOUD SYNC -->
@@ -9757,6 +9985,11 @@ function renderScore(container, lesson) {
           <button class="btn btn-secondary" onclick="showModelAnswer()" title="See what a strong answer looks like">
             <i data-lucide="sparkles" style="width:14px;height:14px"></i> See Model Answer
           </button>
+          ${(state.settings && state.settings.aiReviewEnabled && location.protocol.startsWith('http')) ? `
+            <button class="btn btn-secondary ai-review-btn" onclick="requestDeepAIReview(this)" title="Get AI-powered feedback on your response">
+              <i data-lucide="brain-circuit" style="width:14px;height:14px"></i> Deep AI Review
+            </button>
+          ` : ''}
           <button class="btn btn-secondary" onclick="startDrill()" title="3 rapid-fire prompts">
             <i data-lucide="zap" style="width:14px;height:14px"></i> Speed Drill
           </button>
@@ -9773,6 +10006,11 @@ function renderScore(container, lesson) {
           <button class="btn btn-secondary" onclick="showModelAnswer()" title="See what a strong answer looks like">
             <i data-lucide="sparkles" style="width:14px;height:14px"></i> See Model Answer
           </button>
+          ${(state.settings && state.settings.aiReviewEnabled && location.protocol.startsWith('http')) ? `
+            <button class="btn btn-secondary ai-review-btn" onclick="requestDeepAIReview(this)" title="Get AI-powered feedback on your response">
+              <i data-lucide="brain-circuit" style="width:14px;height:14px"></i> Deep AI Review
+            </button>
+          ` : ''}
           <button class="btn btn-ghost" onclick="exportSessionAsPDF()" title="Print-friendly session export">
             <i data-lucide="file-text" style="width:14px;height:14px"></i> Export PDF
           </button>
@@ -9781,6 +10019,7 @@ function renderScore(container, lesson) {
           </button>
         `}
       </div>
+      <div id="ai-review-panel"></div>
     </div>
   `;
 
@@ -11141,6 +11380,223 @@ document.addEventListener('DOMContentLoaded', () => {
   // Service worker registration happens after init so it doesn't block first paint
   registerServiceWorker();
 });
+
+// ========== AI DEEP REVIEW (OpenRouter via Netlify Function) ==========
+// Calls a server-side function that proxies OpenRouter so the API key stays
+// on the server. The function returns a structured JSON with AI-graded scores,
+// evidence-based signals, and a rewrite suggestion.
+
+let _aiReviewInFlight = false;
+let _lastAIReview = null;
+
+async function requestDeepAIReview(btn) {
+  if (_aiReviewInFlight) return;
+  const lesson = state.currentLesson && state.currentLesson.lesson;
+  const score = state.lastScore;
+  const promptObj = state.currentPrompt;
+  if (!lesson || !score || !promptObj) {
+    showToast('No practice session to review');
+    return;
+  }
+  if (!state.practiceText || state.practiceText.trim().length < 10) {
+    showToast('Response is too short to review');
+    return;
+  }
+
+  const endpoint = (state.settings && state.settings.aiReviewEndpoint) || '/.netlify/functions/score-response';
+
+  // Only makes sense when the app is served over http(s) — local file:// can't reach the function.
+  if (!location.protocol.startsWith('http')) {
+    showToast('AI review requires the app to be deployed (visit the Netlify URL).');
+    return;
+  }
+
+  _aiReviewInFlight = true;
+  const originalHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader-2" style="width:14px;height:14px"></i> Analyzing…';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  // Render a "thinking" placeholder immediately so the user sees progress
+  renderAIReviewPanel({ loading: true });
+
+  const payload = {
+    prompt: promptObj.text || '',
+    response: state.practiceText,
+    lessonTitle: lesson.title,
+    framework: lesson.elements.map(e => e.name),
+    elementDescriptions: lesson.elements.map(e => ({ name: e.name, description: e.desc || '' })),
+    expertTip: lesson.expertTip || '',
+    passMark: (state.settings && state.settings.passMark) || 70,
+    timeLimit: getEffectiveTimeLimit ? getEffectiveTimeLimit(lesson) : lesson.timeLimit,
+    timeSpent: state.timerSeconds || 0,
+    inputMode: state.inputMode || 'typing',
+    wordCount: (state.practiceText || '').trim().split(/\s+/).filter(Boolean).length,
+    wpm: score.wpm || 0
+  };
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s ceiling
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      let errMsg = `AI review failed (${res.status})`;
+      try {
+        const errBody = await res.json();
+        if (errBody && errBody.error) errMsg = errBody.error + (errBody.detail ? ' — ' + errBody.detail : '');
+      } catch (e) {}
+      renderAIReviewPanel({ error: errMsg });
+      showToast(errMsg);
+      return;
+    }
+
+    const data = await res.json();
+    _lastAIReview = data;
+    renderAIReviewPanel({ review: data });
+    playPass && playPass();
+    showToast('AI review complete');
+  } catch (e) {
+    const msg = e && e.name === 'AbortError' ? 'AI review timed out (45s).' : 'AI review failed: ' + (e && e.message ? e.message : 'unknown');
+    renderAIReviewPanel({ error: msg });
+    showToast(msg);
+  } finally {
+    _aiReviewInFlight = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  }
+}
+
+// Render the AI review output into a container on the score screen.
+function renderAIReviewPanel(options) {
+  const container = document.getElementById('ai-review-panel');
+  if (!container) return;
+
+  if (options.loading) {
+    container.innerHTML = `
+      <div class="ai-review ai-review-loading">
+        <div class="ai-review-header">
+          <i data-lucide="sparkles" style="width:16px;height:16px"></i>
+          <span class="ai-review-title">AI Coach is thinking…</span>
+        </div>
+        <div class="ai-review-shimmer"></div>
+        <div class="ai-review-shimmer"></div>
+        <div class="ai-review-shimmer short"></div>
+      </div>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
+  if (options.error) {
+    container.innerHTML = `
+      <div class="ai-review ai-review-error">
+        <div class="ai-review-header">
+          <i data-lucide="alert-triangle" style="width:16px;height:16px;color:var(--red)"></i>
+          <span class="ai-review-title">AI Review Failed</span>
+        </div>
+        <div class="ai-review-error-msg">${escapeHtmlSafe(options.error)}</div>
+        <div style="margin-top:0.5rem;font-size:0.78rem;color:var(--text-muted)">
+          Check that your Netlify Function is deployed and that OPENROUTER_API_KEY is set as an environment variable.
+        </div>
+      </div>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
+  const r = options.review;
+  if (!r) { container.innerHTML = ''; return; }
+
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const tierColor = r.total >= Math.min(95, passMark + 15) ? 'var(--green)'
+    : r.total >= passMark ? 'var(--teal)'
+    : r.total >= Math.max(40, passMark - 20) ? 'var(--gold)'
+    : 'var(--orange)';
+
+  const signalsHTML = (r.signals || []).map(sig => {
+    const type = sig.type || 'partial';
+    const cat = sig.category || 'structure';
+    const icon = type === 'hit' ? 'check' : type === 'partial' ? 'minus' : 'x';
+    return `
+      <div class="ai-signal ai-signal-${type}">
+        <div class="ai-signal-icon"><i data-lucide="${icon}" style="width:10px;height:10px"></i></div>
+        <div class="ai-signal-body">
+          <div class="ai-signal-meta">${escapeHtmlSafe(cat)}</div>
+          <div class="ai-signal-msg">${escapeHtmlSafe(sig.msg || '')}</div>
+          ${sig.quote ? `<div class="ai-signal-quote">"${escapeHtmlSafe(sig.quote)}"</div>` : ''}
+          ${sig.suggestion ? `<div class="ai-signal-suggestion"><strong>Try:</strong> ${escapeHtmlSafe(sig.suggestion)}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const coverageHTML = (r.frameworkCoverage || []).map(c => `
+    <div class="ai-coverage-item ${c.covered ? 'covered' : 'missing'}">
+      <i data-lucide="${c.covered ? 'check-circle' : 'circle'}" style="width:14px;height:14px"></i>
+      <div>
+        <strong>${escapeHtmlSafe(c.element || '')}</strong>
+        ${c.evidence ? `<div class="ai-coverage-evidence">${escapeHtmlSafe(c.evidence)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  container.innerHTML = `
+    <div class="ai-review">
+      <div class="ai-review-header">
+        <i data-lucide="sparkles" style="width:16px;height:16px;color:${tierColor}"></i>
+        <span class="ai-review-title">AI Coach Review</span>
+        <span class="ai-review-score" style="color:${tierColor}">${r.total}/100</span>
+      </div>
+      ${r.verdict ? `<div class="ai-review-verdict">${escapeHtmlSafe(r.verdict)}</div>` : ''}
+
+      <div class="ai-review-breakdown">
+        <div class="ai-review-chip"><span class="ai-chip-label">Structure</span><span class="ai-chip-val">${r.structure}/40</span></div>
+        <div class="ai-review-chip"><span class="ai-chip-label">Clarity</span><span class="ai-chip-val">${r.clarity}/30</span></div>
+        <div class="ai-review-chip"><span class="ai-chip-label">Depth</span><span class="ai-chip-val">${r.depth}/20</span></div>
+        <div class="ai-review-chip"><span class="ai-chip-label">Completion</span><span class="ai-chip-val">${r.completion}/10</span></div>
+      </div>
+
+      ${(r.frameworkCoverage && r.frameworkCoverage.length) ? `
+        <div class="ai-review-section">
+          <div class="ai-review-section-title">Framework Coverage</div>
+          <div class="ai-coverage-grid">${coverageHTML}</div>
+        </div>
+      ` : ''}
+
+      ${signalsHTML ? `
+        <div class="ai-review-section">
+          <div class="ai-review-section-title">Detailed Feedback</div>
+          ${signalsHTML}
+        </div>
+      ` : ''}
+
+      ${r.rewrite ? `
+        <div class="ai-review-section">
+          <div class="ai-review-section-title">Suggested Rewrite</div>
+          <div class="ai-rewrite">${escapeHtmlSafe(r.rewrite)}</div>
+        </div>
+      ` : ''}
+
+      ${r.model ? `<div class="ai-review-footer">Reviewed by ${escapeHtmlSafe(r.model)}${r.usage && r.usage.total_tokens ? ` · ${r.usage.total_tokens} tokens` : ''}</div>` : ''}
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  // Scroll the review into view so the user sees it
+  setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
 
 // ========== SERVICE WORKER (offline caching + update detection) ==========
 // App version shown in Settings → About. Bump this when you ship a new version.
