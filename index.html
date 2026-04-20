@@ -2449,6 +2449,39 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
+/* Update-available toast (service worker) */
+.update-toast {
+  background: var(--teal);
+  color: #fff;
+  padding: 0.65rem 0.85rem;
+  gap: 0.5rem;
+  align-items: center;
+}
+.update-toast-btn {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-left: 0.25rem;
+}
+.update-toast-btn:hover { background: rgba(255,255,255,0.3); }
+.update-toast-dismiss {
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.update-toast-dismiss:hover { color: #fff; }
+
 @media (max-width: 640px) {
   .mastery-grid { grid-template-columns: repeat(3, 1fr); }
   .progress-stat-row { grid-template-columns: repeat(2, 1fr); }
@@ -7373,6 +7406,32 @@ function renderSettings() {
       </div>
     </div>
 
+    <!-- ABOUT / VERSION -->
+    <div class="settings-group">
+      <div class="settings-group-title">
+        <i data-lucide="info" style="width:16px;height:16px"></i>
+        About
+      </div>
+      <div class="setting-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0">
+        <div>
+          <div class="setting-label">App Version</div>
+          <div class="setting-desc">
+            <code style="font-family:monospace;font-size:0.82rem;background:var(--bg-secondary);padding:0.1rem 0.4rem;border-radius:4px">${APP_VERSION}</code>
+            <span style="color:var(--text-muted);margin-left:0.5rem">${('serviceWorker' in navigator && location.protocol.startsWith('http')) ? 'Offline-ready' : 'Online only (served from file://)'}</span>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem;margin-top:0.5rem">
+        If you know I've shipped a new version, use this button to fetch it immediately. Otherwise the app checks for updates automatically every 5 minutes.
+      </p>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="checkForUpdatesManually(this)">
+          <i data-lucide="refresh-cw" style="width:14px;height:14px"></i>
+          Check for Updates
+        </button>
+      </div>
+    </div>
+
     <!-- DATA MANAGEMENT -->
     <div class="settings-group">
       <div class="settings-group-title">
@@ -11079,7 +11138,120 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
   }
   init();
+  // Service worker registration happens after init so it doesn't block first paint
+  registerServiceWorker();
 });
+
+// ========== SERVICE WORKER (offline caching + update detection) ==========
+// App version shown in Settings → About. Bump this when you ship a new version.
+const APP_VERSION = '2.0.0-stage1';
+
+// Reference to a waiting service worker — user taps "Update" to activate it.
+let _waitingWorker = null;
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  // Only register when served over http(s). file:// doesn't support SWs.
+  if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+
+  navigator.serviceWorker.register('./sw.js').then((reg) => {
+    // Listen for new versions becoming available in the background.
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        // 'installed' + an existing controller = update waiting (not first install)
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          _waitingWorker = newWorker;
+          showUpdateAvailableToast();
+        }
+      });
+    });
+
+    // Check for updates periodically (every 5 minutes while the app is open)
+    setInterval(() => {
+      reg.update().catch(() => {});
+    }, 5 * 60 * 1000);
+  }).catch((err) => {
+    console.warn('[SW] Registration failed:', err);
+  });
+
+  // When the new SW takes control, reload to pick up the fresh assets.
+  let _reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (_reloading) return;
+    _reloading = true;
+    window.location.reload();
+  });
+}
+
+function showUpdateAvailableToast() {
+  // Dismiss any existing update toast
+  const existing = document.querySelector('.update-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast update-toast show';
+  toast.innerHTML = `
+    <i data-lucide="download-cloud" style="width:16px;height:16px"></i>
+    <span>New version available</span>
+    <button class="update-toast-btn" onclick="applyPendingUpdate()">Update</button>
+    <button class="update-toast-dismiss" onclick="this.closest('.toast').remove()" aria-label="Dismiss">
+      <i data-lucide="x" style="width:12px;height:12px"></i>
+    </button>
+  `;
+  document.body.appendChild(toast);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function applyPendingUpdate() {
+  if (_waitingWorker) {
+    _waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    // The page will reload automatically once the new worker takes control.
+    const toast = document.querySelector('.update-toast');
+    if (toast) toast.remove();
+    showToast('Updating…');
+  }
+}
+
+// Manual "Check for Updates" — triggered from Settings → About.
+async function checkForUpdatesManually(btn) {
+  if (!('serviceWorker' in navigator)) {
+    showToast('Service worker not supported on this browser');
+    return;
+  }
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader-2" style="width:14px;height:14px"></i> Checking…';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      showToast('Service worker not registered yet — reload the page once, then try again.');
+      return;
+    }
+    await reg.update();
+    // Give the update event a moment to fire if a new version is found
+    await new Promise((r) => setTimeout(r, 1200));
+    if (_waitingWorker) {
+      showToast('Update found! Tap the notification to apply.');
+    } else {
+      showToast(`You're on the latest version (${APP_VERSION}).`);
+    }
+  } catch (e) {
+    showToast('Update check failed: ' + (e && e.message ? e.message : 'unknown'));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  }
+}
 </script>
 
 </body>
