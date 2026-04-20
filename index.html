@@ -4150,6 +4150,168 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 }
 .packs-entry-title { font-weight: 700; font-size: 0.98rem; }
 .packs-entry-sub { font-size: 0.77rem; color: var(--text-secondary); margin-top: 0.15rem; }
+
+/* ========== STAGE 5A: 30-DAY FLUENCY PROGRAM ========== */
+.fluency-hero {
+  padding: 1.25rem; background: linear-gradient(135deg, var(--teal-light), var(--gold-light));
+  border: 1px solid var(--border); border-radius: 14px; margin-bottom: 1rem;
+}
+.fluency-hero-top {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;
+}
+.fluency-hero-badge {
+  width: 44px; height: 44px; border-radius: 12px; background: white;
+  display: flex; align-items: center; justify-content: center; color: var(--teal);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.fluency-hero-title { font-size: 1.15rem; font-weight: 800; margin: 0; }
+.fluency-hero-sub { font-size: 0.85rem; color: var(--text-secondary); margin: 0.1rem 0 0; }
+
+.fluency-progress-bar-wrap {
+  height: 8px; border-radius: 4px; background: rgba(0,0,0,0.08);
+  overflow: hidden; margin-top: 0.5rem;
+}
+.fluency-progress-bar-fill {
+  height: 100%; background: var(--teal); transition: width 0.3s ease;
+}
+.fluency-progress-label {
+  display: flex; justify-content: space-between; font-size: 0.78rem;
+  color: var(--text-secondary); margin-top: 0.4rem;
+}
+
+.fluency-day-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.35rem;
+}
+@media (max-width: 500px) {
+  .fluency-day-grid { grid-template-columns: repeat(5, 1fr); gap: 0.3rem; }
+}
+.fluency-day-tile {
+  aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; font-size: 0.7rem;
+  font-weight: 700; cursor: pointer; text-align: center;
+  border: 1px solid var(--border); background: var(--card-bg);
+  color: var(--text-muted); transition: transform 0.1s ease, border-color 0.1s ease;
+  position: relative;
+}
+.fluency-day-tile:hover:not(.locked) { transform: scale(1.05); border-color: var(--teal); }
+.fluency-day-tile .day-num { font-size: 1rem; line-height: 1; margin-bottom: 0.1rem; }
+.fluency-day-tile .day-lbl { font-size: 0.6rem; font-weight: 500; }
+.fluency-day-tile.completed {
+  background: var(--green-light, #d1fae5); color: var(--green, #059669);
+  border-color: var(--green, #059669);
+}
+.fluency-day-tile.current {
+  background: var(--teal); color: white; border-color: var(--teal);
+  box-shadow: 0 2px 10px rgba(0, 165, 165, 0.35);
+}
+.fluency-day-tile.locked { opacity: 0.45; cursor: not-allowed; }
+.fluency-day-tile.current .day-lbl { color: rgba(255,255,255,0.85); }
+
+.fluency-day-card {
+  padding: 1.25rem; background: var(--card-bg);
+  border: 2px solid var(--teal); border-radius: 14px;
+  margin-bottom: 1rem;
+}
+.fluency-day-card .theme { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.fluency-day-card .day-pill {
+  display: inline-block; padding: 0.15rem 0.55rem; border-radius: 10px;
+  background: var(--teal-light); color: var(--teal);
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em;
+  margin-bottom: 0.5rem;
+}
+.fluency-day-card .blurb { font-size: 0.95rem; line-height: 1.5; margin: 0.5rem 0 0.75rem; }
+.fluency-day-card .activity-meta {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.65rem 0.85rem; background: var(--teal-light); color: var(--teal);
+  border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+}
+
+.fluency-day-completion-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 1rem;
+  animation: fadeInOverlay 0.2s ease;
+}
+@keyframes fadeInOverlay { from { opacity: 0 } to { opacity: 1 } }
+.fluency-day-completion-card {
+  max-width: 440px; width: 100%;
+  background: var(--card-bg); border-radius: 16px;
+  padding: 1.5rem; text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+}
+.fluency-day-completion-check {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--green-light, #d1fae5); color: var(--green, #059669);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 0.75rem;
+}
+.fluency-day-completion-why {
+  padding: 0.75rem 0.9rem; background: var(--teal-light);
+  border-radius: 10px; font-size: 0.85rem; line-height: 1.4;
+  margin: 1rem 0; text-align: left;
+}
+
+.fluency-graduation-hero {
+  padding: 2rem 1.5rem; text-align: center;
+  background: linear-gradient(135deg, var(--gold-light), var(--teal-light));
+  border: 2px solid var(--gold); border-radius: 18px;
+  margin-bottom: 1rem;
+}
+.fluency-graduation-hero .icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: white; color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.fluency-graduation-hero h2 { margin: 0; font-size: 1.6rem; }
+.fluency-graduation-hero p { margin: 0.3rem 0 0; color: var(--text-secondary); }
+
+.fluency-graduation-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+@media (min-width: 600px) { .fluency-graduation-stats { grid-template-columns: repeat(4, 1fr); } }
+.fluency-grad-stat {
+  padding: 0.85rem 0.6rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 12px; text-align: center;
+}
+.fluency-grad-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--teal); }
+.fluency-grad-stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* Dashboard fluency card */
+.fluency-dashboard-card {
+  display: flex; align-items: center; gap: 0.85rem;
+  padding: 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 14px;
+  cursor: pointer; text-align: left; width: 100%;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+  position: relative; overflow: hidden;
+}
+.fluency-dashboard-card:hover { transform: translateY(-1px); border-color: var(--teal); }
+.fluency-dashboard-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--teal), var(--gold));
+}
+.fluency-dashboard-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--teal-light), var(--gold-light));
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal); flex-shrink: 0;
+}
+.fluency-dashboard-body { flex: 1; min-width: 0; }
+.fluency-dashboard-title { font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; gap: 0.4rem; }
+.fluency-dashboard-sub { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.2rem; }
+.fluency-dashboard-ring {
+  width: 44px; height: 44px; position: relative; flex-shrink: 0;
+}
+.fluency-dashboard-ring svg { transform: rotate(-90deg); }
+.fluency-dashboard-ring circle { fill: none; stroke-width: 4; }
+.fluency-dashboard-ring .bg { stroke: var(--border); }
+.fluency-dashboard-ring .fill { stroke: var(--teal); stroke-linecap: round; transition: stroke-dashoffset 0.3s ease; }
+.fluency-dashboard-ring .pct {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--teal);
+}
 </style>
 </head>
 <body>
@@ -4254,6 +4416,8 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 
       <div id="content-packs-section"></div>
 
+      <div id="fluency-program-section"></div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value" id="stat-lessons">0</div>
@@ -4333,6 +4497,11 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
       <div id="packs-content"></div>
     </div>
 
+    <!-- FLUENCY PROGRAM VIEW -->
+    <div id="view-fluency" class="view">
+      <div id="fluency-content"></div>
+    </div>
+
     <!-- SETTINGS VIEW -->
     <div id="view-settings" class="view">
       <div id="settings-content"></div>
@@ -4377,6 +4546,7 @@ const state = {
   favorites: [],             // [lessonId] bookmarked lessons — shown as "Starred" on dashboard
   achievements: [],          // [{ id, unlockedAt }] — unlocked achievements
   lastModified: null,        // ISO timestamp of last local modification — used for cloud sync merge
+  fluencyProgress: null,     // Stage 5A: 30-Day Fluency Program — null until user starts
   settings: {
     passMark: 70,              // 70–95 (%)
     practiceAttempts: 3,       // 1–5 — how many attempts must average passMark to complete a lesson
@@ -8183,6 +8353,11 @@ function handleRoute() {
     document.getElementById('view-packs').classList.add('active');
     state.currentView = 'packs';
     renderPackDetail(packId);
+  } else if (viewName === 'fluency' && parts[1] === 'day' && parts.length === 3) {
+    const dayNum = parseInt(parts[2], 10);
+    document.getElementById('view-fluency').classList.add('active');
+    state.currentView = 'fluency';
+    renderFluencyDayDetail(dayNum);
   } else {
     const viewEl = document.getElementById(`view-${viewName}`);
     if (viewEl) {
@@ -8197,6 +8372,7 @@ function handleRoute() {
       if (viewName === 'fusion') renderFusionEntry();
       if (viewName === 'debate') renderDebateEntry();
       if (viewName === 'packs') renderPacksList();
+      if (viewName === 'fluency') renderFluencyHub();
     } else {
       document.getElementById('view-dashboard').classList.add('active');
       state.currentView = 'dashboard';
@@ -8553,6 +8729,9 @@ function renderDashboard() {
 
   // Stage 4B: Industry Prompt Packs entry card
   if (typeof renderContentPacksSection === 'function') renderContentPacksSection();
+
+  // Stage 5A: 30-Day Fluency Program entry card
+  if (typeof renderFluencyProgramSection === 'function') renderFluencyProgramSection();
 }
 
 // ========== DASHBOARD SUB-RENDERERS ==========
@@ -11424,6 +11603,9 @@ function renderScore(container, lesson) {
   state.currentPackContext = null;
   if (state.practiceLog.length > 200) state.practiceLog.shift(); // Larger cap now that we have history
 
+  // Stage 5A: if this attempt was launched from a fluency day, mark that day complete
+  if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
+
   // Multi-attempt progression: the lesson unlocks the NEXT one once the rolling
   // average of the last N attempts meets the pass mark (N = practiceAttempts setting).
   // This means a single high score doesn't unlock — you must practice consistently.
@@ -13109,7 +13291,7 @@ const PERSISTED_KEYS = [
   'unlockedTracks', 'unlockedLessons', 'completedTracks', 'certificateDates',
   'xpHistory', 'practiceLog', 'customPrompts', 'dailyChallenge', 'settings',
   'weeklyGoal', 'reflections', 'lastWarmupDate', 'onboardingComplete', 'favorites',
-  'achievements', 'lastModified'
+  'achievements', 'lastModified', 'fluencyProgress'
 ];
 
 let saveTimer = null;
@@ -13359,6 +13541,640 @@ document.addEventListener('DOMContentLoaded', () => {
   // Touch gestures for swipe-to-dismiss and pull-to-refresh
   initTouchGestures();
 });
+
+// ========== STAGE 5A: 30-DAY FLUENCY PROGRAM ==========
+// Sequential 30-day program. Day N unlocks after Day N-1 is completed.
+// Missed days don't penalize — they just sit there waiting. Program is a
+// standalone overlay: completing a day logs to practiceLog normally and also
+// marks fluencyProgress.completedDays. Graduation = all 30 days done.
+//
+// Activity types:
+//   'lesson'      - full 5-step lesson flow for a given lessonId
+//   'focus'       - Focus Challenge on a chosen skill ('structure'|'clarity'|'depth')
+//   'speed-tier'  - Speed Tier on a chosen lessonId
+//   'fusion'      - Framework Fusion with a fixed pair of lessonIds
+//   'debate'      - Debate Mode with a curated topic and suggested side
+//   'pack-prompt' - Industry pack prompt (launches the linked lesson)
+
+const FLUENCY_CURRICULUM = [
+  // Week 1 — Foundations
+  { day: 1,  theme: 'Start with structure',          blurb: 'Every confident speaker has a beginning, middle, and end. Learn the 3-Part Answer — the simplest framework that prevents rambling.', activity: { type: 'lesson', lessonId: '1-1' },                       whyItMatters: 'This is the skeleton under every other framework you will learn. Master it first.' },
+  { day: 2,  theme: 'Isolate: Structure',            blurb: 'Now push the structure dimension. Hit every element in order — nothing else matters today.', activity: { type: 'focus', skill: 'structure' },                       whyItMatters: 'By focusing on one dimension, you rewire the habit of organizing before speaking.' },
+  { day: 3,  theme: 'Persuade with PREP',            blurb: 'Point, Reason, Example, Point. The go-to framework when you need to make a case in a meeting.', activity: { type: 'lesson', lessonId: '1-2' },                       whyItMatters: 'PREP is the framework of daily work — you will use it more than any other.' },
+  { day: 4,  theme: 'Isolate: Clarity',              blurb: 'Today is pacing, filler words, and landing on time. Your structure can be perfect and still flop if you ramble.', activity: { type: 'focus', skill: 'clarity' },                        whyItMatters: 'Audiences forgive weak structure before they forgive a mumbling delivery.' },
+  { day: 5,  theme: 'Introduce yourself',            blurb: 'Name, role, value, hook. Your 30-second self-introduction has to land every time.', activity: { type: 'lesson', lessonId: '1-3' },                       whyItMatters: 'You only introduce yourself once per interaction — make it count.' },
+  { day: 6,  theme: 'Isolate: Depth',                blurb: 'Swap vague phrases for numbers, names, and specifics. Today your bar is specificity.', activity: { type: 'focus', skill: 'depth' },                          whyItMatters: 'Specifics are the difference between sounding thoughtful and sounding like filler.' },
+  { day: 7,  theme: 'Consolidate under pressure',    blurb: 'Speed Tier on the 3-Part Answer. Can you hold your structure as the clock shrinks?', activity: { type: 'speed-tier', lessonId: '1-1' },                    whyItMatters: 'Real conversations have no time for warm-ups. Train structure under pressure.' },
+
+  // Week 2 — Storytelling
+  { day: 8,  theme: 'Tell a story with STAR',        blurb: 'Situation, Task, Action, Result — the gold standard for behavioral stories.', activity: { type: 'lesson', lessonId: '2-1' },                       whyItMatters: 'Every "tell me about a time" question deserves a STAR-shaped answer.' },
+  { day: 9,  theme: 'Tech-pack real-world drill',    blurb: 'Apply what you have learned to an actual workplace scenario.', activity: { type: 'pack-prompt', packId: 'tech', promptIndex: 0 },   whyItMatters: 'Practiced prompts stick because they mirror the real thing.' },
+  { day: 10, theme: 'Problem → Solution → Impact',   blurb: 'The framework that creates urgency. Lead with pain, present the fix, show why it matters.', activity: { type: 'lesson', lessonId: '2-2' },                       whyItMatters: 'Used right, this turns any update into a persuasion.' },
+  { day: 11, theme: 'Structure re-challenge',        blurb: 'Another Structure-focus round with a harder lesson underneath. You have the building blocks now.', activity: { type: 'focus', skill: 'structure' },                       whyItMatters: 'Layering structure on top of storytelling is where fluency begins.' },
+  { day: 12, theme: 'Open a meeting with purpose',   blurb: 'The first 60 seconds of a meeting set the tone for the rest. Own them.', activity: { type: 'lesson', lessonId: '2-3' },                       whyItMatters: 'Most meetings fail at the opening. Leaders own the first minute.' },
+  { day: 13, theme: 'Fusion: 3-Part + PREP',         blurb: 'Blend two frameworks into one response. Scoring checks coverage of both.', activity: { type: 'fusion', lessonIdA: '1-1', lessonIdB: '1-2' },     whyItMatters: 'Frameworks are tools, not rules — knowing how to combine them is the real skill.' },
+  { day: 14, theme: 'Speed Tier on STAR',            blurb: 'Can you deliver a STAR story in half the normal time without losing the structure?', activity: { type: 'speed-tier', lessonId: '2-1' },                    whyItMatters: 'Rushing is when structure usually collapses. Train it under a shorter clock.' },
+
+  // Week 3 — Persuasion under pressure
+  { day: 15, theme: 'Persuade with AIDA',            blurb: 'Attention → Interest → Desire → Action. The framework for when you need a "yes".', activity: { type: 'lesson', lessonId: '3-1' },                       whyItMatters: 'AIDA teaches emotional progression, not just logical structure.' },
+  { day: 16, theme: 'Pyramid Principle',             blurb: 'Lead with the answer, then support it. McKinsey standard for executive communication.', activity: { type: 'lesson', lessonId: '3-2' },                       whyItMatters: 'Executives want the bottom line in the first sentence. Give it to them.' },
+  { day: 17, theme: 'Startup-pack pitch',            blurb: 'A 90-second elevator pitch to a tier-1 investor. Put the structure to work.', activity: { type: 'pack-prompt', packId: 'startup', promptIndex: 0 },whyItMatters: 'Pitching is the most-scored real-world speaking test. Practice it cold.' },
+  { day: 18, theme: 'Debate Mode (gentle)',          blurb: 'Take a side on a low-stakes topic and defend it through 3 rounds. The AI argues the opposite.', activity: { type: 'debate', topic: 'A four-day work week should be the standard.', suggestedSide: 'pro' }, whyItMatters: 'Defending a position under pushback is where persuasion is truly tested.' },
+  { day: 19, theme: 'Bridging techniques',           blurb: 'Acknowledge → Bridge → Deliver. Redirect a question without dodging it.', activity: { type: 'lesson', lessonId: '4-2' },                       whyItMatters: 'Bridging is how executives stay on-message under adversarial questioning.' },
+  { day: 20, theme: 'Sales-pack objection',          blurb: 'Price objection from a buyer. You cannot discount. You must still move the deal forward.', activity: { type: 'pack-prompt', packId: 'sales', promptIndex: 3 },  whyItMatters: 'Objection handling is persuasion without the luxury of preparation.' },
+  { day: 21, theme: 'Fusion: STAR + AIDA',           blurb: 'Tell a STAR story and wrap it in AIDA. The story becomes the persuasion.', activity: { type: 'fusion', lessonIdA: '2-1', lessonIdB: '3-1' },     whyItMatters: 'The best executives always tell stories that end in a call to action.' },
+
+  // Week 4 — Leadership & nuance
+  { day: 22, theme: 'Executive presence',            blurb: 'Eliminate hedging. Replace weak language with power language.', activity: { type: 'lesson', lessonId: '5-1' },                       whyItMatters: 'How you say something determines whether you are heard — word choice is presence.' },
+  { day: 23, theme: 'Deliver bad news',              blurb: 'Direct → Context → Path Forward → Support. Respect the audience with clarity.', activity: { type: 'lesson', lessonId: '5-2' },                       whyItMatters: 'Burying the news and surprising the team is the fastest way to lose trust.' },
+  { day: 24, theme: 'Leadership-pack tough feedback',blurb: 'Give a high performer tough feedback about their abrasive behavior. Clear, not cruel.', activity: { type: 'pack-prompt', packId: 'leadership', promptIndex: 0 }, whyItMatters: 'Avoiding hard feedback is the most expensive leadership mistake.' },
+  { day: 25, theme: 'Influence without authority',   blurb: 'Align → Frame → Ask → Reciprocate. Persuade without a title.', activity: { type: 'lesson', lessonId: '5-3' },                       whyItMatters: 'Most of your career you will need other people to say yes — without power over them.' },
+  { day: 26, theme: 'Debate Mode (harder)',          blurb: 'A tougher debate topic. 3 rounds. Hold your ground.', activity: { type: 'debate', topic: 'AI will replace most creative jobs within 20 years.', suggestedSide: 'con' }, whyItMatters: 'Debating a position you are not sure you hold is how you test the strength of your reasoning.' },
+  { day: 27, theme: 'Handle hostile Q&A',            blurb: 'Validate → Answer → Bridge → Close. The pattern for surviving tough questions.', activity: { type: 'lesson', lessonId: '5-4' },                       whyItMatters: 'Q&A is where most speakers lose composure. Have a pattern ready.' },
+  { day: 28, theme: 'Leadership-pack town hall',     blurb: 'Open a 500-person town hall. First 60 seconds. Set the tone.', activity: { type: 'pack-prompt', packId: 'leadership', promptIndex: 5 }, whyItMatters: 'Your opening seconds determine how the rest of the meeting feels to the room.' },
+
+  // Final stretch
+  { day: 29, theme: 'Speed Tier on AIDA',            blurb: 'Persuade in half the normal time. You have all the building blocks now.', activity: { type: 'speed-tier', lessonId: '3-1' },                    whyItMatters: 'Pressure reveals what is practiced versus what is just known.' },
+  { day: 30, theme: 'Capstone: 10-min presentation', blurb: 'The full 10-minute presentation. Hook → Agenda → 3 Points → Summary → CTA. Pull it all together.', activity: { type: 'lesson', lessonId: '6-1' },                       whyItMatters: 'This is graduation. Everything you have practiced for 29 days comes together here.' }
+];
+
+// ---------- State helpers ----------
+
+function ensureFluencyProgress() {
+  if (!state.fluencyProgress) {
+    state.fluencyProgress = {
+      currentDay: 1,
+      completedDays: [],
+      startedAt: null,
+      completedAt: null
+    };
+  }
+  return state.fluencyProgress;
+}
+
+function startFluencyProgram() {
+  playClick();
+  state.fluencyProgress = {
+    currentDay: 1,
+    completedDays: [],
+    startedAt: new Date().toISOString(),
+    completedAt: null
+  };
+  saveState();
+  navigate('fluency');
+}
+
+function resetFluencyProgram() {
+  if (!confirm('Reset the 30-Day Fluency Program? Your past practice history will NOT be deleted — only the program progress resets to Day 1.')) return;
+  playClick();
+  state.fluencyProgress = {
+    currentDay: 1,
+    completedDays: [],
+    startedAt: new Date().toISOString(),
+    completedAt: null
+  };
+  saveState();
+  renderFluencyHub();
+}
+
+function getFluencyDay(n) {
+  return FLUENCY_CURRICULUM.find(d => d.day === n);
+}
+
+function isFluencyDayUnlocked(n) {
+  const p = state.fluencyProgress;
+  if (!p) return false;
+  if (p.completedDays.includes(n)) return true;
+  return n === p.currentDay;
+}
+
+function isFluencyDayCompleted(n) {
+  const p = state.fluencyProgress;
+  if (!p) return false;
+  return p.completedDays.includes(n);
+}
+
+// Called from each activity's success path. If a fluency day is active AND
+// matches the day we're on, mark it complete.
+function markFluencyDayIfActive() {
+  const activeDay = state.fluencyActiveDay;
+  if (!activeDay) return false;
+  // Clear before anything else to prevent double-mark on re-entry
+  state.fluencyActiveDay = null;
+  const p = ensureFluencyProgress();
+  if (p.completedDays.includes(activeDay)) {
+    // Already marked — just clear and move on
+    saveState();
+    return false;
+  }
+  if (activeDay !== p.currentDay) {
+    // Out of order (shouldn't happen with sequential gating) — ignore
+    return false;
+  }
+  p.completedDays.push(activeDay);
+  if (activeDay >= 30) {
+    p.completedAt = new Date().toISOString();
+    p.currentDay = 31; // sentinel: graduated
+  } else {
+    p.currentDay = activeDay + 1;
+  }
+  saveState();
+  // Defer overlay so the activity's own score/result screen renders first
+  setTimeout(() => showFluencyDayCompleteOverlay(activeDay), 400);
+  return true;
+}
+
+function showFluencyDayCompleteOverlay(completedDay) {
+  // Clean up any existing overlay
+  const existing = document.querySelector('.fluency-day-completion-overlay');
+  if (existing) existing.remove();
+
+  const p = state.fluencyProgress;
+  if (!p) return;
+  const graduated = completedDay >= 30;
+  const dayData = getFluencyDay(completedDay);
+  const nextDay = graduated ? null : getFluencyDay(completedDay + 1);
+
+  // Haptic + sound
+  if (state.settings && state.settings.soundEffects) {
+    if (graduated) playMastery(); else playPass();
+  }
+  haptic(graduated ? 'mastery' : 'pass');
+  if (state.settings && state.settings.confettiEnabled && typeof confetti === 'function') {
+    confetti({ particleCount: graduated ? 200 : 80, spread: graduated ? 100 : 70, origin: { y: 0.6 } });
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'fluency-day-completion-overlay';
+  overlay.innerHTML = `
+    <div class="fluency-day-completion-card">
+      <div class="fluency-day-completion-check">
+        <i data-lucide="${graduated ? 'award' : 'check'}" style="width:30px;height:30px"></i>
+      </div>
+      <h2 style="margin:0 0 0.25rem;font-size:1.3rem">
+        ${graduated ? 'Program Complete!' : `Day ${completedDay} complete`}
+      </h2>
+      <p style="margin:0;color:var(--text-secondary);font-size:0.9rem">
+        ${graduated ? 'You finished all 30 days of the Fluency Program.' : (dayData ? dayData.theme : '')}
+      </p>
+      ${dayData && dayData.whyItMatters && !graduated ? `
+        <div class="fluency-day-completion-why">
+          <strong style="display:block;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.2rem">Why today mattered</strong>
+          ${dayData.whyItMatters}
+        </div>
+      ` : ''}
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin-top:1rem">
+        <button class="btn btn-ghost" onclick="closeFluencyDayOverlay()">Close</button>
+        ${graduated
+          ? `<button class="btn btn-primary" onclick="closeFluencyDayOverlay(); navigate('fluency')">See Graduation</button>`
+          : `<button class="btn btn-primary" onclick="closeFluencyDayOverlay(); navigate('fluency/day/${completedDay + 1}')">
+               Start Day ${completedDay + 1} <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+             </button>`
+        }
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeFluencyDayOverlay();
+  });
+}
+
+function closeFluencyDayOverlay() {
+  const overlay = document.querySelector('.fluency-day-completion-overlay');
+  if (overlay) overlay.remove();
+}
+
+// ---------- Hub ----------
+
+function renderFluencyHub() {
+  const container = document.getElementById('fluency-content');
+  if (!container) return;
+
+  const p = state.fluencyProgress;
+  if (!p) {
+    // Not started yet — show intro card
+    renderFluencyIntro(container);
+    return;
+  }
+
+  const graduated = p.currentDay > 30;
+  if (graduated) {
+    renderFluencyGraduation(container);
+    return;
+  }
+
+  const completedCount = p.completedDays.length;
+  const percent = Math.round((completedCount / 30) * 100);
+  const currentDay = getFluencyDay(p.currentDay);
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>30-Day Fluency Program</h2>
+        <p class="ai-mode-subtitle">One themed activity per day. Finish to unlock the next.</p>
+      </div>
+    </div>
+
+    <div class="fluency-hero">
+      <div class="fluency-hero-top">
+        <div class="fluency-hero-badge">
+          <i data-lucide="trending-up" style="width:22px;height:22px"></i>
+        </div>
+        <div style="flex:1">
+          <h3 class="fluency-hero-title">Day ${p.currentDay} of 30</h3>
+          <p class="fluency-hero-sub">${currentDay ? currentDay.theme : ''}</p>
+        </div>
+      </div>
+      <div class="fluency-progress-bar-wrap">
+        <div class="fluency-progress-bar-fill" style="width:${percent}%"></div>
+      </div>
+      <div class="fluency-progress-label">
+        <span>${completedCount}/30 days complete</span>
+        <span>${percent}%</span>
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%;margin-top:0.85rem" onclick="navigate('fluency/day/${p.currentDay}')">
+        Start Day ${p.currentDay} <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+
+    <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:1.25rem 0 0.5rem;font-weight:600">All 30 Days</h3>
+    <div class="fluency-day-grid">
+      ${FLUENCY_CURRICULUM.map(d => {
+        const isCurrent = d.day === p.currentDay;
+        const isCompleted = p.completedDays.includes(d.day);
+        const isLocked = d.day > p.currentDay;
+        const cls = isCompleted ? 'completed' : isCurrent ? 'current' : isLocked ? 'locked' : '';
+        const onclick = isLocked ? '' : `onclick="navigate('fluency/day/${d.day}')"`;
+        const lbl = isCompleted ? '✓' : isCurrent ? 'today' : '';
+        return `
+          <div class="fluency-day-tile ${cls}" ${onclick}>
+            <div class="day-num">${d.day}</div>
+            ${lbl ? `<div class="day-lbl">${lbl}</div>` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);text-align:center">
+      <button class="btn btn-ghost" onclick="resetFluencyProgram()" style="font-size:0.8rem;color:var(--text-muted)">
+        <i data-lucide="rotate-ccw" style="width:12px;height:12px"></i> Reset program
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderFluencyIntro(container) {
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>30-Day Fluency Program</h2>
+        <p class="ai-mode-subtitle">A guided path through everything SpeakMaster teaches.</p>
+      </div>
+    </div>
+
+    <div class="fluency-hero">
+      <div class="fluency-hero-top">
+        <div class="fluency-hero-badge">
+          <i data-lucide="trending-up" style="width:22px;height:22px"></i>
+        </div>
+        <div style="flex:1">
+          <h3 class="fluency-hero-title">One themed activity per day</h3>
+          <p class="fluency-hero-sub">~10 minutes. No calendar pressure — go at your pace.</p>
+        </div>
+      </div>
+      <p style="font-size:0.9rem;line-height:1.5;margin:0.75rem 0 0">
+        The program pulls from every mode you already have access to: framework lessons,
+        focus challenges, speed tiers, framework fusions, debates, and industry pack prompts.
+        Each day has a <strong>theme</strong> and a <strong>why it matters</strong> coaching note.
+      </p>
+      <button class="btn btn-primary btn-lg" style="width:100%;margin-top:1rem" onclick="startFluencyProgram()">
+        Begin Day 1 <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+
+    <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:1.25rem 0 0.5rem;font-weight:600">What's in the 30 days</h3>
+    <ul style="margin:0 0 1rem;padding-left:1.2rem;font-size:0.9rem;line-height:1.6;color:var(--text-secondary)">
+      <li><strong>Week 1</strong> — Foundations: 3-Part Answer, PREP, Self-Intro, and focus drills on Structure/Clarity/Depth</li>
+      <li><strong>Week 2</strong> — Storytelling: STAR, Problem-Solution-Impact, meeting openings, framework fusion</li>
+      <li><strong>Week 3</strong> — Persuasion under pressure: AIDA, Pyramid, debate rounds, sales objections</li>
+      <li><strong>Week 4</strong> — Leadership & nuance: executive presence, tough feedback, town halls, Q&A</li>
+      <li><strong>Final days</strong> — Speed Tier + Capstone 10-minute presentation</li>
+    </ul>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderFluencyGraduation(container) {
+  const p = state.fluencyProgress;
+  // Stats: total program time, avg score, best score, days completed
+  // We approximate "program attempts" by filtering practiceLog entries dated after startedAt.
+  const start = p.startedAt ? new Date(p.startedAt).getTime() : 0;
+  const programAttempts = (state.practiceLog || []).filter(e => {
+    const t = new Date(e.date).getTime();
+    return t >= start;
+  });
+  const totalSeconds = programAttempts.reduce((s, e) => s + (e.timeSpent || 0), 0);
+  const scores = programAttempts.map(e => e.score).filter(s => typeof s === 'number');
+  const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  const bestScore = scores.length ? Math.max(...scores) : 0;
+  const mins = Math.round(totalSeconds / 60);
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Graduation</h2>
+        <p class="ai-mode-subtitle">30 days of deliberate practice, complete.</p>
+      </div>
+    </div>
+
+    <div class="fluency-graduation-hero">
+      <div class="icon"><i data-lucide="award" style="width:38px;height:38px"></i></div>
+      <h2>You graduated the 30-Day Fluency Program</h2>
+      <p>Every framework, every mode, every real-world pack prompt — practiced.</p>
+    </div>
+
+    <div class="fluency-graduation-stats">
+      <div class="fluency-grad-stat">
+        <div class="fluency-grad-stat-value">30</div>
+        <div class="fluency-grad-stat-label">Days done</div>
+      </div>
+      <div class="fluency-grad-stat">
+        <div class="fluency-grad-stat-value">${programAttempts.length}</div>
+        <div class="fluency-grad-stat-label">Attempts logged</div>
+      </div>
+      <div class="fluency-grad-stat">
+        <div class="fluency-grad-stat-value">${avgScore || '—'}</div>
+        <div class="fluency-grad-stat-label">Avg score</div>
+      </div>
+      <div class="fluency-grad-stat">
+        <div class="fluency-grad-stat-value">${mins}m</div>
+        <div class="fluency-grad-stat-label">Practice time</div>
+      </div>
+    </div>
+
+    <div style="padding:1rem 1.1rem;background:var(--card-bg);border:1px dashed var(--border);border-radius:12px;font-size:0.9rem;line-height:1.55;color:var(--text-secondary);margin-bottom:1rem">
+      Graduation is the start, not the end. The modes you used here — Focus, Speed Tier, Fusion, Debate, Packs — are all still available on the dashboard. Keep practicing.
+    </div>
+
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="navigate('dashboard')">
+        <i data-lucide="home" style="width:14px;height:14px"></i> Home
+      </button>
+      <button class="btn btn-primary" onclick="resetFluencyProgram()">
+        <i data-lucide="rotate-ccw" style="width:14px;height:14px"></i> Retake program
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ---------- Day detail ----------
+
+function renderFluencyDayDetail(dayNum) {
+  const container = document.getElementById('fluency-content');
+  if (!container) return;
+  const p = ensureFluencyProgress();
+  const day = getFluencyDay(dayNum);
+  if (!day) {
+    container.innerHTML = `<div class="mode-header"><button class="lesson-back" onclick="navigate('fluency')"><i data-lucide="arrow-left" style="width:18px;height:18px"></i></button><div><h2>Day not found</h2></div></div>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+  const unlocked = isFluencyDayUnlocked(dayNum);
+  const completed = isFluencyDayCompleted(dayNum);
+
+  // Describe the activity in plain English
+  const activityDesc = describeFluencyActivity(day.activity);
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('fluency')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Day ${dayNum}${completed ? ' ✓' : ''}</h2>
+        <p class="ai-mode-subtitle">${unlocked || completed ? day.theme : 'Locked — finish earlier days first'}</p>
+      </div>
+    </div>
+
+    <div class="fluency-day-card">
+      <div class="day-pill">Day ${dayNum} of 30</div>
+      <h3 class="theme">${day.theme}</h3>
+      <p class="blurb">${day.blurb}</p>
+      <div class="activity-meta">
+        <i data-lucide="${activityDesc.icon}" style="width:16px;height:16px"></i>
+        <span>${activityDesc.label}</span>
+      </div>
+      ${day.whyItMatters ? `
+        <div style="margin-top:0.85rem;padding:0.65rem 0.85rem;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;font-size:0.82rem;line-height:1.45;color:var(--text-secondary)">
+          <strong style="display:block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.25rem">Why today matters</strong>
+          ${day.whyItMatters}
+        </div>
+      ` : ''}
+    </div>
+
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-ghost" onclick="navigate('fluency')">
+        Back to program
+      </button>
+      ${!unlocked && !completed ? `
+        <button class="btn btn-primary" disabled style="opacity:0.5;cursor:not-allowed">
+          <i data-lucide="lock" style="width:14px;height:14px"></i> Locked
+        </button>
+      ` : completed ? `
+        <button class="btn btn-secondary" onclick="launchFluencyDay(${dayNum})">
+          <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Repeat day
+        </button>
+      ` : `
+        <button class="btn btn-primary btn-lg" onclick="launchFluencyDay(${dayNum})">
+          Start today's activity <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+        </button>
+      `}
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function describeFluencyActivity(a) {
+  switch (a.type) {
+    case 'lesson': {
+      const l = findLessonById(a.lessonId);
+      return { icon: 'book-open', label: `Framework lesson: ${l ? l.lesson.title : a.lessonId}` };
+    }
+    case 'focus':
+      return { icon: 'target', label: `Focus Challenge: ${a.skill.charAt(0).toUpperCase() + a.skill.slice(1)}` };
+    case 'speed-tier': {
+      const l = findLessonById(a.lessonId);
+      return { icon: 'timer', label: `Speed Tier: ${l ? l.lesson.title : a.lessonId}` };
+    }
+    case 'fusion': {
+      const la = findLessonById(a.lessonIdA);
+      const lb = findLessonById(a.lessonIdB);
+      return { icon: 'layers', label: `Fusion: ${la ? la.lesson.title : a.lessonIdA} + ${lb ? lb.lesson.title : a.lessonIdB}` };
+    }
+    case 'debate':
+      return { icon: 'swords', label: `Debate: "${(a.topic || '').slice(0, 50)}${(a.topic || '').length > 50 ? '…' : ''}"` };
+    case 'pack-prompt': {
+      const pack = INDUSTRY_PACKS.find(p => p.id === a.packId);
+      return { icon: 'briefcase', label: `${pack ? pack.name : a.packId} pack prompt` };
+    }
+    default:
+      return { icon: 'circle', label: 'Activity' };
+  }
+}
+
+// ---------- Launchers ----------
+
+function launchFluencyDay(dayNum) {
+  const day = getFluencyDay(dayNum);
+  if (!day) return;
+  if (!isFluencyDayUnlocked(dayNum) && !isFluencyDayCompleted(dayNum)) {
+    showToast('This day is still locked.');
+    return;
+  }
+  // Stamp the active day so the activity's submit path can mark it complete
+  state.fluencyActiveDay = dayNum;
+  // Ensure program progress exists (handles edge case where user somehow navigates here without hub init)
+  ensureFluencyProgress();
+
+  const a = day.activity;
+  switch (a.type) {
+    case 'lesson': {
+      const l = findLessonById(a.lessonId);
+      if (!l) { showToast('Lesson not found'); state.fluencyActiveDay = null; return; }
+      navigate('lesson', { trackId: l.track.id, lessonIndex: l.index });
+      return;
+    }
+    case 'focus': {
+      // Jump straight to Focus Challenge, skill pre-selected
+      navigate('focus');
+      setTimeout(() => { if (typeof pickFocusSkill === 'function') pickFocusSkill(a.skill); }, 50);
+      return;
+    }
+    case 'speed-tier': {
+      const l = findLessonById(a.lessonId);
+      if (!l) { showToast('Lesson not found'); state.fluencyActiveDay = null; return; }
+      navigate('speed-tier');
+      setTimeout(() => { if (typeof beginSpeedTier === 'function') beginSpeedTier(l.track.id, l.index); }, 50);
+      return;
+    }
+    case 'fusion': {
+      // Pre-select both frameworks and jump to practice
+      const la = findLessonById(a.lessonIdA);
+      const lb = findLessonById(a.lessonIdB);
+      if (!la || !lb) { showToast('Framework not found'); state.fluencyActiveDay = null; return; }
+      navigate('fusion');
+      setTimeout(() => {
+        _fusionSession = {
+          picking: true,
+          selected: [
+            { lessonId: la.lesson.id, trackId: la.track.id, lessonIndex: la.index, lesson: la.lesson },
+            { lessonId: lb.lesson.id, trackId: lb.track.id, lessonIndex: lb.index, lesson: lb.lesson }
+          ]
+        };
+        if (typeof startFusionPractice === 'function') startFusionPractice();
+      }, 50);
+      return;
+    }
+    case 'debate': {
+      // Pre-seed debate topic and side, then start
+      navigate('debate');
+      setTimeout(() => {
+        _debateSession = {
+          picking: true,
+          selectedTopic: a.topic,
+          customTopic: '',
+          side: a.suggestedSide || 'pro'
+        };
+        if (typeof beginDebate === 'function') beginDebate();
+      }, 50);
+      return;
+    }
+    case 'pack-prompt': {
+      const pack = INDUSTRY_PACKS.find(p => p.id === a.packId);
+      if (!pack) { showToast('Pack not found'); state.fluencyActiveDay = null; return; }
+      const flat = flattenPackPrompts(pack);
+      const pr = flat[a.promptIndex || 0];
+      if (!pr) { showToast('Prompt not found'); state.fluencyActiveDay = null; return; }
+      if (typeof startPackPrompt === 'function') {
+        startPackPrompt(pack.id, getPackPromptDoneKey(pack.id, pr.text), pr.lessonId, pr.text);
+      }
+      return;
+    }
+  }
+  // Unknown type
+  state.fluencyActiveDay = null;
+  showToast('Unknown activity type');
+}
+
+// ---------- Dashboard entry card ----------
+
+function renderFluencyProgramSection() {
+  const container = document.getElementById('fluency-program-section');
+  if (!container) return;
+  const p = state.fluencyProgress;
+
+  if (!p) {
+    // Not started
+    container.innerHTML = `
+      <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:1rem 0 0.5rem;font-weight:600">Structured Program</h3>
+      <button class="fluency-dashboard-card" onclick="navigate('fluency')">
+        <div class="fluency-dashboard-icon"><i data-lucide="trending-up" style="width:20px;height:20px"></i></div>
+        <div class="fluency-dashboard-body">
+          <div class="fluency-dashboard-title">30-Day Fluency Program <span style="font-size:0.68rem;background:var(--teal);color:white;padding:0.1rem 0.45rem;border-radius:8px;font-weight:700;letter-spacing:0.04em">NEW</span></div>
+          <div class="fluency-dashboard-sub">A guided 30-day path through every framework and mode</div>
+        </div>
+        <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--text-muted);flex-shrink:0"></i>
+      </button>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
+  const graduated = p.currentDay > 30;
+  const done = p.completedDays.length;
+  const percent = Math.round((done / 30) * 100);
+  const circumference = 2 * Math.PI * 18;
+  const offset = circumference * (1 - percent / 100);
+  const currentDay = getFluencyDay(p.currentDay);
+
+  container.innerHTML = `
+    <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:1rem 0 0.5rem;font-weight:600">Structured Program</h3>
+    <button class="fluency-dashboard-card" onclick="navigate('fluency')">
+      <div class="fluency-dashboard-icon"><i data-lucide="${graduated ? 'award' : 'trending-up'}" style="width:20px;height:20px"></i></div>
+      <div class="fluency-dashboard-body">
+        <div class="fluency-dashboard-title">30-Day Fluency Program</div>
+        <div class="fluency-dashboard-sub">
+          ${graduated
+            ? `✓ Graduated · ${done}/30 complete`
+            : `Day ${p.currentDay} · ${currentDay ? currentDay.theme : ''}`}
+        </div>
+      </div>
+      <div class="fluency-dashboard-ring">
+        <svg width="44" height="44">
+          <circle class="bg" cx="22" cy="22" r="18"></circle>
+          <circle class="fill" cx="22" cy="22" r="18"
+                  stroke-dasharray="${circumference}"
+                  stroke-dashoffset="${offset}"></circle>
+        </svg>
+        <div class="pct">${percent}%</div>
+      </div>
+    </button>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
 
 // ========== STAGE 4B: INDUSTRY PROMPT PACKS ==========
 // Curated packs of industry-specific prompts. Each prompt is hard-linked to
@@ -14093,6 +14909,9 @@ function submitFusionPractice() {
   if (state.practiceLog.length > 200) state.practiceLog.shift();
   saveState();
 
+  // Stage 5A fluency hook
+  if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
+
   renderFusionScore();
 }
 
@@ -14594,6 +15413,9 @@ async function runDebateVerdict() {
   if (state.practiceLog.length > 200) state.practiceLog.shift();
   saveState();
 
+  // Stage 5A fluency hook
+  if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
+
   renderDebateVerdict();
 }
 
@@ -14894,6 +15716,9 @@ function submitFocusPractice() {
   });
   if (state.practiceLog.length > 200) state.practiceLog.shift();
   saveState();
+
+  // Stage 5A fluency hook
+  if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
 
   renderFocusScore();
 }
@@ -15323,6 +16148,9 @@ function renderSpeedTierSummary() {
   const container = document.getElementById('speed-tier-content');
   const sess = _speedTierSession;
   if (!container || !sess) return;
+
+  // Stage 5A fluency hook — reaching the summary means the user completed the day's activity
+  if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
 
   const tiersPassed = [1, 2, 3].filter(t =>
     sess.results.some(r => r.tier === t && r.passed)
