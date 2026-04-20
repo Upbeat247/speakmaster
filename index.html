@@ -2697,6 +2697,479 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   100% { background-position: 200% 0; }
 }
 
+/* ========== AI PRACTICE MODES (Stage 3) ========== */
+
+/* Launcher block on the score screen */
+.ai-modes-launcher {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: left;
+}
+.ai-modes-header {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+.ai-modes-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+.ai-modes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.5rem;
+}
+.ai-mode-launch-btn {
+  display: flex; align-items: flex-start; gap: 0.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+}
+.ai-mode-launch-btn:hover {
+  background: var(--bg-primary);
+  border-color: var(--teal);
+  transform: translateY(-1px);
+}
+.ai-mode-launch-icon {
+  flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.ai-mode-launch-icon.conv { background: var(--teal-light); color: var(--teal); }
+.ai-mode-launch-icon.devil { background: var(--red-light); color: var(--red); }
+.ai-mode-launch-icon.aud { background: var(--gold-light); color: var(--gold); }
+.ai-mode-launch-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ai-mode-launch-body strong {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ai-mode-launch-body span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  line-height: 1.3;
+}
+
+/* AI mode overlay (shared) */
+.ai-mode-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.55); display: flex;
+  align-items: center; justify-content: center;
+  padding: 1rem; backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+.ai-mode-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  max-width: 560px; width: 100%;
+  max-height: 92vh;
+  display: flex; flex-direction: column;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+.ai-mode-header {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-right: 2rem;
+}
+.ai-mode-header h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  margin-bottom: 0.1rem;
+}
+.ai-mode-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+.ai-mode-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ai-mode-icon.conversation { background: var(--teal-light); color: var(--teal); }
+.ai-mode-icon.devils { background: var(--red-light); color: var(--red); }
+.ai-mode-icon.audience { background: var(--gold-light); color: var(--gold); }
+
+/* Conversation log */
+.ai-conversation-log {
+  flex: 1;
+  min-height: 180px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.ai-turn {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.ai-turn-prompt {
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  align-self: stretch;
+  font-style: italic;
+}
+.ai-turn-user {
+  background: var(--teal);
+  color: #fff;
+  align-self: flex-end;
+  max-width: 85%;
+  border-bottom-right-radius: 2px;
+}
+.ai-turn-ai {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+  max-width: 90%;
+  border-bottom-left-radius: 2px;
+}
+.ai-turn-devils {
+  background: var(--red-light);
+  border: 1px solid var(--red);
+  color: var(--text-primary);
+  align-self: flex-start;
+  max-width: 90%;
+  border-bottom-left-radius: 2px;
+}
+[data-theme="dark"] .ai-turn-devils { color: var(--text-primary); }
+.ai-turn-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  margin-bottom: 0.25rem;
+}
+.ai-turn-body {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.ai-turn-ack {
+  opacity: 0.75;
+  font-size: 0.82rem;
+}
+
+/* Typing indicator dots */
+.ai-typing .ai-turn-body { padding: 0.4rem 0.25rem; }
+.ai-dots {
+  display: inline-flex; gap: 4px; align-items: center;
+}
+.ai-dots span {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-muted);
+  animation: aiDot 1.2s ease-in-out infinite;
+}
+.ai-dots span:nth-child(2) { animation-delay: 0.15s; }
+.ai-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes aiDot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* Input row + submit */
+.ai-mode-input-row {
+  display: flex; gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.ai-mode-textarea {
+  flex: 1;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 70px;
+  transition: border-color 0.15s;
+}
+.ai-mode-textarea:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+.ai-mode-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 0.5rem; flex-wrap: wrap;
+  padding-top: 0.5rem;
+}
+.ai-mode-turn-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Intensity slider (Devil's Advocate) */
+.intensity-slider-row {
+  background: var(--bg-secondary);
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+}
+.intensity-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+.intensity-label strong {
+  color: var(--red);
+  font-weight: 800;
+}
+.intensity-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--gold) 50%, var(--red) 100%);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.intensity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 3px solid var(--red);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.intensity-slider::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 3px solid var(--red);
+  cursor: pointer;
+}
+.intensity-ticks {
+  display: flex; justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Audience Simulator */
+.audience-card { max-width: 600px; }
+.audience-progress {
+  display: flex; justify-content: center; gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.audience-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800; font-size: 0.85rem;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  border: 2px solid var(--border);
+}
+.audience-dot.active {
+  background: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
+  transform: scale(1.1);
+}
+.audience-dot.done {
+  background: var(--green-light);
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.audience-persona-card {
+  background: var(--gold-light);
+  border-left: 4px solid var(--gold);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+.audience-persona-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+  margin-bottom: 0.2rem;
+}
+.audience-persona-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+.audience-persona-desc {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+.audience-persona-details {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.audience-persona-details div { margin-bottom: 0.15rem; }
+
+.audience-prompt-box {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 0.75rem;
+}
+.audience-prompt-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+.audience-prompt-text {
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.audience-response-label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.audience-summary-header {
+  text-align: center;
+  padding: 1rem 0 1.25rem;
+}
+.audience-summary-score {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 3rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.audience-summary-score span {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+.audience-summary-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+.audience-result-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+}
+.audience-result-header {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.audience-fit-score {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--gold);
+}
+.audience-result-verdict {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-style: italic;
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+}
+.audience-result-item {
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  margin-bottom: 0.45rem;
+  line-height: 1.5;
+}
+.audience-result-item strong {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+.audience-result-item.worked { background: var(--green-light); color: var(--green); }
+.audience-result-item.worked strong { color: var(--green); }
+.audience-result-item.missed { background: var(--red-light); color: var(--red); }
+.audience-result-item.missed strong { color: var(--red); }
+.audience-result-item.tweak { background: var(--teal-light); color: var(--teal); }
+.audience-result-item.tweak strong { color: var(--teal); }
+.audience-result-item div:not(strong) { color: var(--text-primary); }
+.audience-quote {
+  font-style: italic;
+  font-size: 0.78rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--bg-card);
+  border-radius: 4px;
+  margin: 0.25rem 0;
+  color: var(--text-primary) !important;
+}
+.audience-reason {
+  color: var(--text-secondary) !important;
+  font-size: 0.78rem;
+}
+
+/* Mobile responsive tuning for AI overlays */
+@media (max-width: 640px) {
+  .ai-mode-card { padding: 1rem; max-height: 94vh; }
+  .ai-mode-card h2 { font-size: 1.1rem; }
+  .ai-conversation-log { max-height: 300px; padding: 0.5rem; }
+  .ai-mode-input-row { flex-direction: column; }
+  .ai-mode-input-row .btn { width: 100%; }
+  .audience-summary-score { font-size: 2.25rem; }
+  .ai-modes-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 640px) {
   .mastery-grid { grid-template-columns: repeat(3, 1fr); }
   .progress-stat-row { grid-template-columns: repeat(2, 1fr); }
@@ -3899,7 +4372,7 @@ function showModelAnswer() {
       <div class="model-header">
         <span class="model-header-badge">
           <i data-lucide="sparkles" style="width:12px;height:12px"></i>
-          Model Answer
+          ${state.currentPrompt?._aiGenerated ? 'AI-Generated Model Answer' : 'Model Answer'}
         </span>
       </div>
       <div class="model-title">${lesson.title}</div>
@@ -3930,6 +4403,13 @@ function showModelAnswer() {
         `).join('')}
       </div>
 
+      ${state.currentPrompt?._aiExpertNote ? `
+        <div class="model-insight" style="background:var(--teal-light);color:var(--teal)">
+          <div class="model-insight-icon" style="color:var(--teal)"><i data-lucide="sparkles" style="width:16px;height:16px"></i></div>
+          <div><strong>AI Coach Note:</strong> ${escapeHtmlSafe(state.currentPrompt._aiExpertNote)}</div>
+        </div>
+      ` : ''}
+
       <div class="model-insight">
         <div class="model-insight-icon"><i data-lucide="lightbulb" style="width:16px;height:16px"></i></div>
         <div><strong>Expert Tip:</strong> ${lesson.expertTip}</div>
@@ -3939,6 +4419,12 @@ function showModelAnswer() {
         <button class="btn btn-ghost" onclick="this.closest('.model-overlay').remove()">
           Close
         </button>
+        ${(state.settings?.aiReviewEnabled && location.protocol.startsWith('http')) ? `
+          <button class="btn btn-secondary ai-review-btn" onclick="generateModelAnswerWithAI(this)" title="${isFallback ? 'Generate a model answer for YOUR prompt using AI' : 'Regenerate this model answer with AI'}">
+            <i data-lucide="sparkles" style="width:14px;height:14px"></i>
+            ${isFallback ? 'AI: Answer My Prompt' : 'Regenerate with AI'}
+          </button>
+        ` : ''}
         <button class="btn btn-primary" onclick="this.closest('.model-overlay').remove(); retryLesson()">
           <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Try Again
         </button>
@@ -10020,6 +10506,38 @@ function renderScore(container, lesson) {
         `}
       </div>
       <div id="ai-review-panel"></div>
+      ${(state.settings?.aiReviewEnabled && location.protocol.startsWith('http')) ? `
+        <div class="ai-modes-launcher">
+          <div class="ai-modes-header">
+            <i data-lucide="brain-circuit" style="width:14px;height:14px"></i>
+            <span>Practice With AI</span>
+          </div>
+          <p class="ai-modes-subtitle">Continue the practice into an interactive scenario.</p>
+          <div class="ai-modes-grid">
+            <button class="ai-mode-launch-btn" onclick="startConversationMode()">
+              <div class="ai-mode-launch-icon conv"><i data-lucide="message-circle" style="width:18px;height:18px"></i></div>
+              <div class="ai-mode-launch-body">
+                <strong>Conversation</strong>
+                <span>AI asks adaptive follow-up questions</span>
+              </div>
+            </button>
+            <button class="ai-mode-launch-btn" onclick="startDevilsAdvocateMode()">
+              <div class="ai-mode-launch-icon devil"><i data-lucide="flame" style="width:18px;height:18px"></i></div>
+              <div class="ai-mode-launch-body">
+                <strong>Devil's Advocate</strong>
+                <span>AI pushes back on your argument</span>
+              </div>
+            </button>
+            <button class="ai-mode-launch-btn" onclick="startAudienceSimulator()">
+              <div class="ai-mode-launch-icon aud"><i data-lucide="users" style="width:18px;height:18px"></i></div>
+              <div class="ai-mode-launch-body">
+                <strong>Audience Simulator</strong>
+                <span>Same prompt, 3 different audiences</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
 
@@ -11380,6 +11898,687 @@ document.addEventListener('DOMContentLoaded', () => {
   // Service worker registration happens after init so it doesn't block first paint
   registerServiceWorker();
 });
+
+// ========== AI INTERACTIVE MODES (Stage 3) ==========
+// Four modes powered by /.netlify/functions/ai-chat:
+//   - Model Answer Generator
+//   - Conversation Mode (adaptive follow-up Q&A)
+//   - Devil's Advocate Mode (counter-arguments with adjustable intensity)
+//   - Audience Simulator (3-round: same prompt, different audiences)
+
+const AI_CHAT_ENDPOINT = '/.netlify/functions/ai-chat';
+
+// Shared helper — POST to the Netlify function and return parsed JSON.
+async function callAIChat(payload) {
+  if (!location.protocol.startsWith('http')) {
+    throw new Error('AI features require the deployed app (not file://).');
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+  try {
+    const res = await fetch(AI_CHAT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) {
+      let errMsg = `Request failed (${res.status})`;
+      try { const body = await res.json(); if (body?.error) errMsg = body.error + (body.detail ? ' — ' + body.detail : ''); } catch (e) {}
+      throw new Error(errMsg);
+    }
+    return await res.json();
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('AI request timed out (45s).');
+    throw e;
+  }
+}
+
+// ---------- MODEL ANSWER GENERATOR ----------
+// Generates a fresh model answer for any prompt + framework, including user-created custom prompts.
+async function generateModelAnswerWithAI(btn) {
+  const lesson = state.currentLesson?.lesson;
+  const prompt = state.currentPrompt;
+  if (!lesson || !prompt) return;
+
+  const originalHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader-2" style="width:14px;height:14px"></i> Generating…';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  try {
+    const result = await callAIChat({
+      mode: 'generate-model-answer',
+      prompt: prompt.text,
+      lessonTitle: lesson.title,
+      framework: lesson.elements.map(e => e.name),
+      elementDescriptions: lesson.elements.map(e => ({ name: e.name, description: e.desc || '' })),
+      expertTip: lesson.expertTip || ''
+    });
+
+    // Attach generated response to the current prompt so showModelAnswer renders it
+    if (result.response && Array.isArray(result.response)) {
+      // Map colors back to the lesson's element colors for visual consistency
+      prompt.modelResponse = result.response.map((part, i) => ({
+        ...part,
+        color: lesson.elements[i]?.color || part.color || 'teal'
+      }));
+      prompt._aiGenerated = true;
+      prompt._aiExpertNote = result.expertNote || '';
+      showToast('Model answer generated');
+      // Close and re-open the model answer view to show the new content
+      const existing = document.querySelector('.model-overlay');
+      if (existing) existing.remove();
+      showModelAnswer();
+    } else {
+      showToast('AI returned unexpected format');
+    }
+  } catch (e) {
+    showToast(e.message || 'Model answer generation failed');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  }
+}
+
+// ---------- CONVERSATION MODE ----------
+let _conversationSession = null;
+
+function startConversationMode() {
+  const lesson = state.currentLesson?.lesson;
+  const prompt = state.currentPrompt;
+  const response = state.practiceText;
+  if (!lesson || !prompt || !response) {
+    showToast('Complete a practice attempt first to start a conversation.');
+    return;
+  }
+
+  _conversationSession = {
+    mode: 'conversation',
+    lesson,
+    originalPrompt: prompt.text,
+    turns: [{ speaker: 'user', text: response }],
+    turnCount: 1,
+    inFlight: false
+  };
+
+  openConversationOverlay();
+  // Automatically request the first AI follow-up
+  requestNextConversationTurn();
+}
+
+function openConversationOverlay() {
+  const existing = document.querySelector('.ai-mode-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay ai-mode-overlay';
+  overlay.innerHTML = `
+    <div class="modal-card ai-mode-card">
+      <button class="modal-close" onclick="endConversationMode()">
+        <i data-lucide="x" style="width:18px;height:18px"></i>
+      </button>
+      <div class="ai-mode-header">
+        <div class="ai-mode-icon conversation"><i data-lucide="message-circle" style="width:20px;height:20px"></i></div>
+        <div>
+          <h2>Conversation Mode</h2>
+          <p class="ai-mode-subtitle">The AI plays an adaptive role based on your lesson. Stay in the flow.</p>
+        </div>
+      </div>
+      <div class="ai-conversation-log" id="ai-conversation-log"></div>
+      <div class="ai-mode-input-row">
+        <textarea id="ai-mode-input" class="ai-mode-textarea" placeholder="Your response…" rows="3"></textarea>
+        <button class="btn btn-primary" id="ai-mode-submit" onclick="submitConversationTurn()">
+          <i data-lucide="send" style="width:14px;height:14px"></i> Send
+        </button>
+      </div>
+      <div class="ai-mode-footer">
+        <button class="btn btn-ghost" onclick="endConversationMode()">End Conversation</button>
+        <span class="ai-mode-turn-count" id="ai-mode-turn-count">Turn 1</span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  renderConversationLog();
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) endConversationMode();
+  });
+}
+
+function renderConversationLog() {
+  const log = document.getElementById('ai-conversation-log');
+  if (!log || !_conversationSession) return;
+  const turns = _conversationSession.turns;
+  log.innerHTML = `
+    <div class="ai-turn ai-turn-prompt">
+      <div class="ai-turn-label">Original Prompt</div>
+      <div class="ai-turn-body">"${escapeHtmlSafe(_conversationSession.originalPrompt)}"</div>
+    </div>
+  ` + turns.map(t => `
+    <div class="ai-turn ai-turn-${t.speaker}">
+      <div class="ai-turn-label">${t.speaker === 'user' ? 'You' : 'AI Coach'}</div>
+      <div class="ai-turn-body">${t.ack ? `<em class="ai-turn-ack">${escapeHtmlSafe(t.ack)}</em><br><br>` : ''}${escapeHtmlSafe(t.text)}</div>
+    </div>
+  `).join('');
+
+  // Scroll the latest turn into view
+  log.scrollTop = log.scrollHeight;
+
+  document.getElementById('ai-mode-turn-count').textContent = `Turn ${_conversationSession.turnCount}`;
+}
+
+async function requestNextConversationTurn() {
+  const sess = _conversationSession;
+  if (!sess || sess.inFlight) return;
+  sess.inFlight = true;
+
+  // Show thinking indicator
+  const log = document.getElementById('ai-conversation-log');
+  if (log) {
+    const typing = document.createElement('div');
+    typing.className = 'ai-turn ai-turn-ai ai-typing';
+    typing.id = 'ai-typing-indicator';
+    typing.innerHTML = '<div class="ai-turn-label">AI Coach</div><div class="ai-turn-body"><span class="ai-dots"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  try {
+    const lastUser = [...sess.turns].reverse().find(t => t.speaker === 'user');
+    const result = await callAIChat({
+      mode: 'conversation-turn',
+      prompt: sess.originalPrompt,
+      response: lastUser ? lastUser.text : '',
+      lessonTitle: sess.lesson.title,
+      framework: sess.lesson.elements.map(e => e.name),
+      conversationHistory: sess.turns.map(t => ({ speaker: t.speaker === 'user' ? 'User' : 'AI', text: t.text }))
+    });
+
+    // Remove typing indicator
+    const indicator = document.getElementById('ai-typing-indicator');
+    if (indicator) indicator.remove();
+
+    sess.turns.push({ speaker: 'ai', text: result.question || '(no question returned)', ack: result.acknowledgment || '' });
+    sess.turnCount++;
+    renderConversationLog();
+    // Focus the input for the user's next reply
+    const input = document.getElementById('ai-mode-input');
+    if (input) input.focus();
+  } catch (e) {
+    const indicator = document.getElementById('ai-typing-indicator');
+    if (indicator) indicator.remove();
+    showToast(e.message);
+  } finally {
+    sess.inFlight = false;
+  }
+}
+
+async function submitConversationTurn() {
+  const sess = _conversationSession;
+  if (!sess || sess.inFlight) return;
+  const input = document.getElementById('ai-mode-input');
+  const text = input ? input.value.trim() : '';
+  if (!text || text.length < 5) {
+    showToast('Type a response first');
+    return;
+  }
+  sess.turns.push({ speaker: 'user', text });
+  input.value = '';
+  renderConversationLog();
+  await requestNextConversationTurn();
+}
+
+function endConversationMode() {
+  _conversationSession = null;
+  const overlay = document.querySelector('.ai-mode-overlay');
+  if (overlay) overlay.remove();
+}
+
+// ---------- DEVIL'S ADVOCATE MODE ----------
+let _devilsAdvocateSession = null;
+
+function startDevilsAdvocateMode() {
+  const lesson = state.currentLesson?.lesson;
+  const prompt = state.currentPrompt;
+  const response = state.practiceText;
+  if (!lesson || !prompt || !response) {
+    showToast('Complete a practice attempt first.');
+    return;
+  }
+  _devilsAdvocateSession = {
+    lesson,
+    originalPrompt: prompt.text,
+    turns: [{ speaker: 'user', text: response }],
+    turnCount: 1,
+    intensity: 3, // Default: Tough Critic
+    inFlight: false
+  };
+  openDevilsAdvocateOverlay();
+}
+
+function openDevilsAdvocateOverlay() {
+  const existing = document.querySelector('.ai-mode-overlay');
+  if (existing) existing.remove();
+
+  const sess = _devilsAdvocateSession;
+  const intensityLabels = ['Gentle Skeptic', 'Thoughtful Challenger', 'Tough Critic', 'Hostile Opponent', 'Ruthless Interrogator'];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay ai-mode-overlay';
+  overlay.innerHTML = `
+    <div class="modal-card ai-mode-card">
+      <button class="modal-close" onclick="endDevilsAdvocateMode()">
+        <i data-lucide="x" style="width:18px;height:18px"></i>
+      </button>
+      <div class="ai-mode-header">
+        <div class="ai-mode-icon devils"><i data-lucide="flame" style="width:20px;height:20px"></i></div>
+        <div>
+          <h2>Devil's Advocate</h2>
+          <p class="ai-mode-subtitle">The AI argues against your position. Defend, adapt, prevail.</p>
+        </div>
+      </div>
+
+      <div class="intensity-slider-row">
+        <label class="intensity-label">Intensity: <strong id="intensity-label-text">${intensityLabels[sess.intensity - 1]}</strong></label>
+        <input type="range" id="intensity-slider" min="1" max="5" value="${sess.intensity}"
+          oninput="setDevilsAdvocateIntensity(this.value)" class="intensity-slider">
+        <div class="intensity-ticks"><span>Gentle</span><span>Brutal</span></div>
+      </div>
+
+      <div class="ai-conversation-log" id="ai-conversation-log"></div>
+
+      <div class="ai-mode-input-row">
+        <textarea id="ai-mode-input" class="ai-mode-textarea" placeholder="Defend your position…" rows="3"></textarea>
+        <button class="btn btn-primary" id="ai-mode-submit" onclick="submitDevilsAdvocateTurn()">
+          <i data-lucide="shield" style="width:14px;height:14px"></i> Defend
+        </button>
+      </div>
+      <div class="ai-mode-footer">
+        <button class="btn btn-primary" onclick="requestDevilsAdvocateAttack()" id="attack-first-btn">
+          <i data-lucide="swords" style="width:14px;height:14px"></i> Get First Attack
+        </button>
+        <button class="btn btn-ghost" onclick="endDevilsAdvocateMode()">End Debate</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  renderDevilsAdvocateLog();
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) endDevilsAdvocateMode();
+  });
+}
+
+function setDevilsAdvocateIntensity(val) {
+  if (!_devilsAdvocateSession) return;
+  _devilsAdvocateSession.intensity = parseInt(val);
+  const labels = ['Gentle Skeptic', 'Thoughtful Challenger', 'Tough Critic', 'Hostile Opponent', 'Ruthless Interrogator'];
+  document.getElementById('intensity-label-text').textContent = labels[parseInt(val) - 1];
+}
+
+function renderDevilsAdvocateLog() {
+  const log = document.getElementById('ai-conversation-log');
+  if (!log || !_devilsAdvocateSession) return;
+  const sess = _devilsAdvocateSession;
+  log.innerHTML = `
+    <div class="ai-turn ai-turn-prompt">
+      <div class="ai-turn-label">Position You're Defending</div>
+      <div class="ai-turn-body">"${escapeHtmlSafe(sess.originalPrompt)}"</div>
+    </div>
+  ` + sess.turns.map(t => `
+    <div class="ai-turn ai-turn-${t.speaker === 'user' ? 'user' : 'devils'}">
+      <div class="ai-turn-label">${t.speaker === 'user' ? 'You' : '⚔️ Devil\'s Advocate'}${t.weakPoint ? ` · targeting "${escapeHtmlSafe(t.weakPoint)}"` : ''}</div>
+      <div class="ai-turn-body">${escapeHtmlSafe(t.text)}</div>
+    </div>
+  `).join('');
+  log.scrollTop = log.scrollHeight;
+}
+
+async function requestDevilsAdvocateAttack() {
+  const sess = _devilsAdvocateSession;
+  if (!sess || sess.inFlight) return;
+  sess.inFlight = true;
+
+  const btn = document.getElementById('attack-first-btn');
+  if (btn) btn.style.display = 'none';
+
+  const log = document.getElementById('ai-conversation-log');
+  if (log) {
+    const typing = document.createElement('div');
+    typing.className = 'ai-turn ai-turn-devils ai-typing';
+    typing.id = 'ai-typing-indicator';
+    typing.innerHTML = '<div class="ai-turn-label">⚔️ Devil\'s Advocate</div><div class="ai-turn-body"><span class="ai-dots"><span></span><span></span><span></span></span></div>';
+    log.appendChild(typing);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  try {
+    const lastUser = [...sess.turns].reverse().find(t => t.speaker === 'user');
+    const result = await callAIChat({
+      mode: 'devils-advocate-turn',
+      prompt: sess.originalPrompt,
+      response: lastUser ? lastUser.text : '',
+      lessonTitle: sess.lesson.title,
+      intensity: sess.intensity,
+      conversationHistory: sess.turns.map(t => ({ speaker: t.speaker === 'user' ? 'User' : 'Opponent', text: t.text }))
+    });
+
+    const indicator = document.getElementById('ai-typing-indicator');
+    if (indicator) indicator.remove();
+
+    sess.turns.push({ speaker: 'devils', text: result.counterArgument || '(no counter-argument)', weakPoint: result.weakPointAttacked || '' });
+    sess.turnCount++;
+    renderDevilsAdvocateLog();
+    const input = document.getElementById('ai-mode-input');
+    if (input) input.focus();
+  } catch (e) {
+    const indicator = document.getElementById('ai-typing-indicator');
+    if (indicator) indicator.remove();
+    showToast(e.message);
+  } finally {
+    sess.inFlight = false;
+  }
+}
+
+async function submitDevilsAdvocateTurn() {
+  const sess = _devilsAdvocateSession;
+  if (!sess || sess.inFlight) return;
+  const input = document.getElementById('ai-mode-input');
+  const text = input ? input.value.trim() : '';
+  if (!text || text.length < 5) {
+    showToast('Type a defense first');
+    return;
+  }
+  sess.turns.push({ speaker: 'user', text });
+  input.value = '';
+  renderDevilsAdvocateLog();
+  await requestDevilsAdvocateAttack();
+}
+
+function endDevilsAdvocateMode() {
+  _devilsAdvocateSession = null;
+  const overlay = document.querySelector('.ai-mode-overlay');
+  if (overlay) overlay.remove();
+}
+
+// ---------- AUDIENCE SIMULATOR ----------
+const AUDIENCE_PERSONAS = [
+  {
+    label: 'The Board of Directors',
+    role: 'corporate board members',
+    description: 'Senior executives focused on strategic impact and ROI',
+    priorities: 'business outcomes, risk, financial impact, strategic alignment',
+    vocabulary: 'executive, concise, high-level, data-driven',
+    redFlags: 'jargon, emotion-driven arguments, lack of numbers, rambling'
+  },
+  {
+    label: 'A Junior Team Member',
+    role: 'new hire or junior colleague',
+    description: 'Smart but new to the context, eager to learn',
+    priorities: 'understanding, clear explanations, inclusion, growth',
+    vocabulary: 'accessible, warm, explanatory, encouraging',
+    redFlags: 'insider jargon, condescension, assumed knowledge, cold tone'
+  },
+  {
+    label: 'A Skeptical Customer',
+    role: 'frustrated or skeptical customer',
+    description: 'Has been burned before, needs evidence to trust',
+    priorities: 'proof, specifics, reassurance, honesty about trade-offs',
+    vocabulary: 'concrete, honest, direct, empathetic',
+    redFlags: 'vague promises, corporate-speak, defensiveness, over-selling'
+  },
+  {
+    label: 'A Technical Peer',
+    role: 'experienced engineer/specialist',
+    description: 'Expert in your field who respects depth and rigor',
+    priorities: 'technical accuracy, trade-offs, nuance, implementation details',
+    vocabulary: 'precise, technical, detailed, honest about limitations',
+    redFlags: 'hand-waving, oversimplification, avoidance of hard problems'
+  },
+  {
+    label: 'A Journalist',
+    role: 'investigative journalist interviewing you',
+    description: 'Looking for the story beneath the surface',
+    priorities: 'newsworthy angles, specifics, contradictions, human interest',
+    vocabulary: 'narrative, specific, human, sharp',
+    redFlags: 'PR speak, canned answers, deflection, lack of color'
+  },
+  {
+    label: 'A Venture Capitalist',
+    role: 'VC partner evaluating an opportunity',
+    description: 'Sees hundreds of pitches, pattern-matches fast',
+    priorities: 'TAM, team, traction, moat, return profile',
+    vocabulary: 'sharp, quantitative, confident, direct',
+    redFlags: 'lack of metrics, unclear differentiation, vague vision'
+  }
+];
+
+let _audienceSession = null;
+
+function startAudienceSimulator() {
+  const lesson = state.currentLesson?.lesson;
+  const prompt = state.currentPrompt;
+  const response = state.practiceText;
+  if (!lesson || !prompt || !response) {
+    showToast('Complete a practice attempt first.');
+    return;
+  }
+  // Pick 3 random distinct audiences
+  const shuffled = [...AUDIENCE_PERSONAS].sort(() => Math.random() - 0.5);
+  _audienceSession = {
+    lesson,
+    prompt: prompt.text,
+    originalResponse: response,
+    audiences: shuffled.slice(0, 3),
+    round: 0,
+    results: [],
+    responses: [response, '', ''], // first audience uses the existing response
+    inFlight: false
+  };
+  openAudienceOverlay();
+}
+
+function openAudienceOverlay() {
+  const existing = document.querySelector('.ai-mode-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay ai-mode-overlay';
+  overlay.innerHTML = `
+    <div class="modal-card ai-mode-card audience-card">
+      <button class="modal-close" onclick="endAudienceSimulator()">
+        <i data-lucide="x" style="width:18px;height:18px"></i>
+      </button>
+      <div class="ai-mode-header">
+        <div class="ai-mode-icon audience"><i data-lucide="users" style="width:20px;height:20px"></i></div>
+        <div>
+          <h2>Audience Simulator</h2>
+          <p class="ai-mode-subtitle">Same prompt, three different audiences. Adapt each response.</p>
+        </div>
+      </div>
+      <div id="audience-content"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  renderAudienceRound();
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) endAudienceSimulator();
+  });
+}
+
+function renderAudienceRound() {
+  const sess = _audienceSession;
+  if (!sess) return;
+  const container = document.getElementById('audience-content');
+  if (!container) return;
+
+  // If past the last round, show summary
+  if (sess.round >= 3) {
+    renderAudienceSummary();
+    return;
+  }
+
+  const audience = sess.audiences[sess.round];
+  const isFirstRound = sess.round === 0;
+
+  container.innerHTML = `
+    <div class="audience-progress">
+      ${[0,1,2].map(i => `<div class="audience-dot ${i < sess.round ? 'done' : i === sess.round ? 'active' : ''}">${i + 1}</div>`).join('')}
+    </div>
+
+    <div class="audience-persona-card">
+      <div class="audience-persona-label">Round ${sess.round + 1} audience</div>
+      <h3 class="audience-persona-title">${escapeHtmlSafe(audience.label)}</h3>
+      <p class="audience-persona-desc">${escapeHtmlSafe(audience.description)}</p>
+      <div class="audience-persona-details">
+        <div><strong>They value:</strong> ${escapeHtmlSafe(audience.priorities)}</div>
+        <div><strong>Watch out for:</strong> ${escapeHtmlSafe(audience.redFlags)}</div>
+      </div>
+    </div>
+
+    <div class="audience-prompt-box">
+      <div class="audience-prompt-label">The prompt (same every round)</div>
+      <div class="audience-prompt-text">"${escapeHtmlSafe(sess.prompt)}"</div>
+    </div>
+
+    <label class="audience-response-label">Your response for <strong>${escapeHtmlSafe(audience.label)}</strong>:</label>
+    <textarea id="audience-response-input" class="ai-mode-textarea" rows="6" placeholder="How would you say it to this audience?">${escapeHtmlSafe(sess.responses[sess.round] || '')}</textarea>
+
+    <div class="ai-mode-footer">
+      ${isFirstRound ? `
+        <button class="btn btn-ghost" onclick="useOriginalResponseForAudience()" title="Use the response you already submitted">
+          <i data-lucide="copy" style="width:14px;height:14px"></i> Reuse my practice response
+        </button>
+      ` : '<span></span>'}
+      <button class="btn btn-primary" onclick="submitAudienceRound()" id="audience-submit-btn">
+        <i data-lucide="send" style="width:14px;height:14px"></i> Evaluate
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function useOriginalResponseForAudience() {
+  const input = document.getElementById('audience-response-input');
+  if (input && _audienceSession) input.value = _audienceSession.originalResponse;
+}
+
+async function submitAudienceRound() {
+  const sess = _audienceSession;
+  if (!sess || sess.inFlight) return;
+  const input = document.getElementById('audience-response-input');
+  const text = input ? input.value.trim() : '';
+  if (!text || text.length < 10) {
+    showToast('Write a response for this audience first');
+    return;
+  }
+  sess.responses[sess.round] = text;
+  sess.inFlight = true;
+
+  const submitBtn = document.getElementById('audience-submit-btn');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i data-lucide="loader-2" style="width:14px;height:14px"></i> Evaluating…';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  try {
+    const audience = sess.audiences[sess.round];
+    const result = await callAIChat({
+      mode: 'audience-round',
+      prompt: sess.prompt,
+      response: text,
+      audience,
+      lessonTitle: sess.lesson.title,
+      framework: sess.lesson.elements.map(e => e.name)
+    });
+
+    sess.results.push({ audience, result, response: text });
+    sess.round++;
+    sess.inFlight = false;
+    renderAudienceRound();
+  } catch (e) {
+    sess.inFlight = false;
+    showToast(e.message);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i data-lucide="send" style="width:14px;height:14px"></i> Evaluate';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  }
+}
+
+function renderAudienceSummary() {
+  const sess = _audienceSession;
+  if (!sess) return;
+  const container = document.getElementById('audience-content');
+  if (!container) return;
+
+  const avgFit = sess.results.length
+    ? Math.round(sess.results.reduce((sum, r) => sum + (r.result.audienceFit || 0), 0) / sess.results.length)
+    : 0;
+
+  container.innerHTML = `
+    <div class="audience-summary-header">
+      <div class="audience-summary-score">${avgFit}<span>/100</span></div>
+      <div class="audience-summary-label">Average Audience-Fit Across 3 Rounds</div>
+    </div>
+
+    ${sess.results.map((r, i) => `
+      <div class="audience-result-card">
+        <div class="audience-result-header">
+          <strong>Round ${i + 1}: ${escapeHtmlSafe(r.audience.label)}</strong>
+          <span class="audience-fit-score">${r.result.audienceFit || 0}/100</span>
+        </div>
+        <div class="audience-result-verdict">${escapeHtmlSafe(r.result.verdict || '')}</div>
+        ${r.result.worked?.quote ? `
+          <div class="audience-result-item worked">
+            <strong>✓ What worked</strong>
+            <div class="audience-quote">"${escapeHtmlSafe(r.result.worked.quote)}"</div>
+            <div class="audience-reason">${escapeHtmlSafe(r.result.worked.why || '')}</div>
+          </div>
+        ` : ''}
+        ${r.result.missed?.quote ? `
+          <div class="audience-result-item missed">
+            <strong>✗ What missed</strong>
+            <div class="audience-quote">"${escapeHtmlSafe(r.result.missed.quote)}"</div>
+            <div class="audience-reason">${escapeHtmlSafe(r.result.missed.why || '')}</div>
+          </div>
+        ` : ''}
+        ${r.result.tweak ? `
+          <div class="audience-result-item tweak">
+            <strong>💡 Try for this audience</strong>
+            <div>${escapeHtmlSafe(r.result.tweak)}</div>
+          </div>
+        ` : ''}
+      </div>
+    `).join('')}
+
+    <div class="ai-mode-footer">
+      <button class="btn btn-ghost" onclick="endAudienceSimulator()">Close</button>
+      <button class="btn btn-primary" onclick="startAudienceSimulator()">
+        <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> New Audiences
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function endAudienceSimulator() {
+  _audienceSession = null;
+  const overlay = document.querySelector('.ai-mode-overlay');
+  if (overlay) overlay.remove();
+}
 
 // ========== AI DEEP REVIEW (OpenRouter via Netlify Function) ==========
 // Calls a server-side function that proxies OpenRouter so the API key stays
