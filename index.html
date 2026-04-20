@@ -3710,6 +3710,175 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .gap-1 { gap: 0.5rem; }
 .hidden { display: none !important; }
+
+/* ========== STAGE 4A: FOCUS CHALLENGE + SPEED TIER ========== */
+.mode-header {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.mode-header h2 { margin: 0; font-size: 1.35rem; line-height: 1.2; }
+.mode-header .ai-mode-subtitle {
+  margin: 0.15rem 0 0; font-size: 0.85rem; color: var(--text-secondary);
+}
+
+/* Dashboard practice-modes section */
+.practice-modes-section {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+@media (max-width: 520px) {
+  .practice-modes-section { grid-template-columns: 1fr; }
+}
+.practice-mode-card {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.9rem; background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; cursor: pointer; text-align: left;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+.practice-mode-card:hover { transform: translateY(-1px); border-color: var(--teal); }
+.practice-mode-card:active { transform: translateY(0); }
+.practice-mode-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.practice-mode-title { font-weight: 600; font-size: 0.95rem; }
+.practice-mode-sub { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.1rem; }
+
+/* Focus skill picker */
+.focus-skill-grid {
+  display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.5rem;
+}
+@media (min-width: 600px) {
+  .focus-skill-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+.focus-skill-card {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 0.5rem; padding: 1.1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 14px;
+  cursor: pointer; text-align: left;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+.focus-skill-card:hover { transform: translateY(-2px); border-color: var(--teal); }
+.focus-skill-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.focus-skill-label { font-weight: 700; font-size: 1rem; }
+.focus-skill-blurb { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.35; }
+
+.focus-tip-card {
+  padding: 0.75rem 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  margin: 0.75rem 0 1rem; font-size: 0.9rem; line-height: 1.4;
+}
+
+.focus-score-hero {
+  text-align: center; padding: 1.5rem 1rem;
+  background: var(--card-bg); border: 2px solid var(--teal);
+  border-radius: 16px; margin-bottom: 1rem;
+}
+.focus-score-label {
+  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); font-weight: 600;
+}
+.focus-score-value { font-size: 3.5rem; font-weight: 800; line-height: 1; margin: 0.25rem 0; }
+.focus-score-pct { font-size: 1.1rem; color: var(--text-secondary); font-weight: 600; }
+.focus-score-tier {
+  display: inline-block; margin-top: 0.75rem;
+  padding: 0.35rem 0.9rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+}
+.focus-score-tier.pass { background: var(--green-light, #d1fae5); color: var(--green, #059669); }
+.focus-score-tier.fail { background: var(--orange-light); color: var(--orange); }
+
+.focus-secondary-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.focus-secondary-card {
+  padding: 0.65rem 0.85rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px; opacity: 0.75;
+}
+.focus-secondary-label { font-size: 0.75rem; color: var(--text-muted); }
+.focus-secondary-value { font-weight: 600; font-size: 0.95rem; margin-top: 0.15rem; }
+
+/* Speed tier */
+.tier-pill {
+  display: inline-block; padding: 0.15rem 0.55rem;
+  border-radius: 10px; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.tier-pill.tier-1 { background: var(--teal-light); color: var(--teal); }
+.tier-pill.tier-2 { background: var(--orange-light); color: var(--orange); }
+.tier-pill.tier-3 { background: var(--gold-light); color: var(--gold); }
+
+.speed-tier-preview {
+  padding: 0.75rem 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 12px;
+  display: flex; flex-direction: column; gap: 0.45rem;
+}
+.speed-tier-preview-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.85rem; color: var(--text-secondary);
+}
+
+.speed-tier-lesson-list {
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.speed-tier-lesson-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 12px;
+  cursor: pointer; text-align: left;
+  transition: border-color 0.1s ease;
+}
+.speed-tier-lesson-card:hover { border-color: var(--teal); }
+.speed-tier-lesson-title { font-weight: 600; font-size: 0.95rem; }
+.speed-tier-lesson-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+.speed-tier-progress {
+  display: flex; gap: 0.5rem; margin: 0.5rem 0 1rem;
+}
+.speed-tier-dot {
+  width: 28px; height: 6px; border-radius: 3px; background: var(--border);
+  transition: background 0.2s ease;
+}
+.speed-tier-dot.current { background: var(--teal); }
+.speed-tier-dot.passed { background: var(--green, #059669); }
+.speed-tier-dot.failed { background: var(--orange); }
+
+.speed-tier-result-hero {
+  text-align: center; padding: 1.25rem 1rem;
+  background: var(--card-bg); border-radius: 14px;
+  border: 2px solid var(--border); margin-bottom: 0.75rem;
+}
+.speed-tier-result-hero.pass { border-color: var(--green, #059669); }
+.speed-tier-result-hero.fail { border-color: var(--orange); }
+.speed-tier-result-hero .score-big {
+  font-size: 3rem; font-weight: 800; line-height: 1;
+}
+
+.speed-tier-master-badge {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--gold-light), var(--orange-light));
+  border: 2px solid var(--gold); border-radius: 14px; color: var(--text);
+}
+.speed-tier-master-badge i { color: var(--gold); flex-shrink: 0; }
+
+.speed-tier-summary-list {
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.speed-tier-summary-row {
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: center; gap: 0.75rem;
+  padding: 0.7rem 0.9rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: 0.9rem;
+}
+.speed-tier-summary-row.passed { border-left: 3px solid var(--green, #059669); }
+.speed-tier-summary-row.failed { border-left: 3px solid var(--orange); }
+.speed-tier-summary-row.not-attempted { opacity: 0.5; }
+.speed-tier-summary-row .tier-status { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -3810,6 +3979,8 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 
       <div id="continue-section"></div>
 
+      <div id="practice-modes-section"></div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value" id="stat-lessons">0</div>
@@ -3862,6 +4033,16 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <!-- PROGRESS VIEW -->
     <div id="view-progress" class="view">
       <div id="progress-content"></div>
+    </div>
+
+    <!-- FOCUS CHALLENGE VIEW -->
+    <div id="view-focus" class="view">
+      <div id="focus-content"></div>
+    </div>
+
+    <!-- SPEED TIER VIEW -->
+    <div id="view-speed-tier" class="view">
+      <div id="speed-tier-content"></div>
     </div>
 
     <!-- SETTINGS VIEW -->
@@ -7716,6 +7897,8 @@ function handleRoute() {
       if (viewName === 'tracks') renderTracks();
       if (viewName === 'progress') renderProgress();
       if (viewName === 'settings') renderSettings();
+      if (viewName === 'focus') renderFocusEntry();
+      if (viewName === 'speed-tier') renderSpeedTierEntry();
     } else {
       document.getElementById('view-dashboard').classList.add('active');
       state.currentView = 'dashboard';
@@ -8066,6 +8249,9 @@ function renderDashboard() {
   }
 
   // (Recommended Next box was removed — the Smart Continue card above now handles recommendations)
+
+  // Stage 4A: Focus Challenge + Speed Tier entry cards
+  if (typeof renderPracticeModesSection === 'function') renderPracticeModesSection();
 }
 
 // ========== DASHBOARD SUB-RENDERERS ==========
@@ -12854,6 +13040,745 @@ document.addEventListener('DOMContentLoaded', () => {
   // Touch gestures for swipe-to-dismiss and pull-to-refresh
   initTouchGestures();
 });
+
+// ========== STAGE 4A: FOCUS CHALLENGE MODE ==========
+// Single-skill drill. User picks one dimension (Structure, Clarity, or Depth).
+// Scoring prioritizes that dimension; others shown as context only.
+
+let _focusSession = null;
+
+const FOCUS_SKILLS = {
+  structure: {
+    label: 'Structure',
+    icon: 'layout-grid',
+    color: 'teal',
+    blurb: 'Hit every element of the framework in order.',
+    tip: 'Before you start, silently name the framework elements. Speak them in order — do not skip.',
+    maxCat: 40
+  },
+  clarity: {
+    label: 'Clarity',
+    icon: 'zap',
+    color: 'orange',
+    blurb: 'Crisp pace, minimal filler, land on time.',
+    tip: 'Cut filler words. Aim ~150 WPM. Pauses beat "um" — use them deliberately.',
+    maxCat: 30
+  },
+  depth: {
+    label: 'Depth',
+    icon: 'search',
+    color: 'gold',
+    blurb: 'Specifics, numbers, reasoning — no vague phrases.',
+    tip: 'Every claim needs a number, a name, or a concrete example. Replace "improved things" with measurable detail.',
+    maxCat: 20
+  }
+};
+
+function renderFocusEntry() {
+  const container = document.getElementById('focus-content');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Focus Challenge</h2>
+        <p class="ai-mode-subtitle">Isolate one dimension. Go deep on just that skill.</p>
+      </div>
+    </div>
+    <div class="focus-skill-grid">
+      ${Object.entries(FOCUS_SKILLS).map(([key, s]) => `
+        <button class="focus-skill-card" onclick="pickFocusSkill('${key}')">
+          <div class="focus-skill-icon" style="background:var(--${s.color}-light);color:var(--${s.color})">
+            <i data-lucide="${s.icon}" style="width:22px;height:22px"></i>
+          </div>
+          <div class="focus-skill-label">${s.label}</div>
+          <div class="focus-skill-blurb">${s.blurb}</div>
+        </button>
+      `).join('')}
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function pickFocusSkill(skillKey) {
+  playClick();
+  // Pick a random unlocked lesson
+  const allLessons = [];
+  for (const track of TRACKS) {
+    if (!isTrackUnlocked(track.id)) continue;
+    for (let i = 0; i < track.lessons.length; i++) {
+      const l = track.lessons[i];
+      if (isLessonUnlocked(l.id)) allLessons.push({ track, lesson: l, index: i });
+    }
+  }
+  if (allLessons.length === 0) {
+    showToast('No lessons available — start the curriculum first.');
+    return;
+  }
+  const pick = allLessons[Math.floor(Math.random() * allLessons.length)];
+  const prompt = pickRandomPrompt(pick.lesson);
+
+  _focusSession = {
+    skill: skillKey,
+    lesson: pick.lesson,
+    trackId: pick.track.id,
+    lessonIndex: pick.index,
+    prompt,
+    startTime: Date.now()
+  };
+  state.currentPrompt = prompt;
+  renderFocusPractice();
+}
+
+function renderFocusPractice() {
+  const container = document.getElementById('focus-content');
+  const sess = _focusSession;
+  if (!container || !sess) return;
+  const skill = FOCUS_SKILLS[sess.skill];
+  const lesson = sess.lesson;
+  const effectiveLimit = getEffectiveTimeLimit(lesson);
+
+  state.timerSeconds = 0;
+  state.practiceStartTime = Date.now();
+  state.usedSpeech = false;
+  state.inputMode = (state.settings && state.settings.defaultInputMode) || 'typing';
+  clearAudioRecording();
+  state.practiceText = '';
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endFocusChallenge()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Focus: ${skill.label}</h2>
+        <p class="ai-mode-subtitle">${lesson.title}${lesson.subtitle ? ' · ' + lesson.subtitle : ''}</p>
+      </div>
+    </div>
+    <div class="focus-tip-card" style="border-left:3px solid var(--${skill.color})">
+      <strong>Your single focus:</strong> ${skill.tip}
+    </div>
+    <div class="practice-area">
+      <div class="practice-area-header">
+        <h3>Your Turn</h3>
+      </div>
+      <div class="practice-prompt">"${sess.prompt.text}"</div>
+      <div class="practice-meta">
+        <div class="timer" id="practice-timer">
+          <i data-lucide="clock" style="width:18px;height:18px"></i>
+          <span id="timer-display">0:00</span>
+          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
+        </div>
+        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+      </div>
+      <div class="practice-input-area">
+        <textarea class="practice-textarea" id="practice-input" oninput="updateWordCount()" autofocus></textarea>
+        <button class="record-btn" id="record-btn" onclick="toggleAudioRecording()" title="Record audio">
+          <i data-lucide="circle" style="width:20px;height:20px;fill:currentColor"></i>
+        </button>
+        <button class="mic-btn" id="mic-btn" onclick="toggleSpeechRecognition()" title="Transcribe speech">
+          <i data-lucide="mic" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+      <div class="mic-status" id="mic-status"></div>
+      <div class="practice-footer">
+        <div class="speaking-time">Target: ${effectiveLimit}s</div>
+        <button class="btn btn-primary" onclick="submitFocusPractice()">
+          Submit <i data-lucide="send" style="width:14px;height:14px"></i>
+        </button>
+      </div>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timerSeconds++;
+    const display = document.getElementById('timer-display');
+    const timerEl = document.getElementById('practice-timer');
+    if (display) {
+      display.textContent = formatTime(state.timerSeconds);
+      const ratio = state.timerSeconds / effectiveLimit;
+      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+    }
+  }, 1000);
+}
+
+function submitFocusPractice() {
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  state.totalPracticeSeconds += state.timerSeconds;
+
+  const input = document.getElementById('practice-input');
+  state.practiceText = input ? input.value : '';
+
+  const sess = _focusSession;
+  if (!sess) return;
+  const score = autoScoreResponse(state.practiceText, sess.lesson, state.timerSeconds, state.inputMode);
+  sess.score = score;
+  state.lastScore = score;
+
+  // Log to practice history
+  state.practiceLog.push({
+    lessonId: sess.lesson.id,
+    lessonTitle: sess.lesson.title,
+    lessonSubtitle: sess.lesson.subtitle || '',
+    trackId: sess.trackId,
+    lessonIndex: sess.lessonIndex,
+    prompt: sess.prompt.text,
+    response: state.practiceText || '',
+    score: score.total,
+    structure: score.structure,
+    clarity: score.clarity,
+    depth: score.depth,
+    completion: score.completion,
+    signals: (score.signals || []).slice(0, 8),
+    wpm: score.wpm || 0,
+    inputMode: score.inputMode || state.inputMode || 'typing',
+    timeSpent: state.timerSeconds || 0,
+    mode: 'focus',
+    focusSkill: sess.skill,
+    date: new Date().toISOString()
+  });
+  if (state.practiceLog.length > 200) state.practiceLog.shift();
+  saveState();
+
+  renderFocusScore();
+}
+
+function renderFocusScore() {
+  const container = document.getElementById('focus-content');
+  const sess = _focusSession;
+  if (!container || !sess || !sess.score) return;
+  const skill = FOCUS_SKILLS[sess.skill];
+  const s = sess.score;
+  const focusScore = s[sess.skill]; // structure | clarity | depth
+  const focusPct = Math.round((focusScore / skill.maxCat) * 100);
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const passed = focusPct >= passMark;
+
+  // Sound + haptic
+  if (passed) {
+    if (state.settings && state.settings.soundEffects) playPass();
+    haptic('pass');
+    if (state.settings && state.settings.confettiEnabled && typeof confetti === 'function') {
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+    }
+  } else {
+    if (state.settings && state.settings.soundEffects) playFail();
+    haptic('fail');
+  }
+
+  // Signals scoped to the focused skill only
+  const skillSignals = (s.signals || []).filter(sig => sig.category === sess.skill);
+
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function renderSignal(sig) {
+    const icon = sig.type === 'hit' ? 'check' : sig.type === 'partial' ? 'minus' : 'x';
+    return `
+      <div class="signal ${sig.type}">
+        <div class="signal-icon"><i data-lucide="${icon}" style="width:10px;height:10px"></i></div>
+        <div class="signal-body">
+          <div class="signal-text">${escapeHtml(sig.msg)}</div>
+          ${sig.quote ? `<div class="signal-quote">"${escapeHtml(sig.quote)}"</div>` : ''}
+          ${sig.suggestion ? `<div class="signal-suggestion"><strong>Try:</strong> ${escapeHtml(sig.suggestion)}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endFocusChallenge()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Focus Result</h2>
+        <p class="ai-mode-subtitle">${skill.label} · ${sess.lesson.title}</p>
+      </div>
+    </div>
+
+    <div class="focus-score-hero" style="border-color:var(--${skill.color})">
+      <div class="focus-score-label">${skill.label} score</div>
+      <div class="focus-score-value" style="color:var(--${skill.color})">
+        ${focusScore}<span style="font-size:0.4em;color:var(--text-muted)">/${skill.maxCat}</span>
+      </div>
+      <div class="focus-score-pct">${focusPct}%</div>
+      <div class="focus-score-tier ${passed ? 'pass' : 'fail'}">
+        ${passed ? '✓ Strong ' + skill.label : 'Keep working on ' + skill.label}
+      </div>
+    </div>
+
+    <div class="focus-secondary-grid">
+      ${Object.entries(FOCUS_SKILLS).filter(([k]) => k !== sess.skill).map(([k, sk]) => {
+        const val = s[k];
+        const pct = Math.round((val / sk.maxCat) * 100);
+        return `
+          <div class="focus-secondary-card">
+            <div class="focus-secondary-label">${sk.label} (context)</div>
+            <div class="focus-secondary-value">${val}/${sk.maxCat} · ${pct}%</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    ${skillSignals.length > 0 ? `
+      <div class="score-signals">
+        <div class="score-signals-title">${skill.label} feedback</div>
+        <div class="signal-category">
+          <div class="signal-list">
+            ${skillSignals.map(renderSignal).join('')}
+          </div>
+        </div>
+      </div>
+    ` : '<p style="color:var(--text-muted);text-align:center;margin:1rem 0;font-size:0.9rem">No specific ' + skill.label.toLowerCase() + ' signals on this attempt.</p>'}
+
+    <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="endFocusChallenge()">
+        <i data-lucide="home" style="width:14px;height:14px"></i> Home
+      </button>
+      <button class="btn btn-secondary" onclick="pickFocusSkill('${sess.skill}')">
+        <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Another ${skill.label}
+      </button>
+      <button class="btn btn-primary" onclick="renderFocusEntry()">
+        Switch skill <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function endFocusChallenge() {
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  _focusSession = null;
+  navigate('dashboard');
+}
+
+// ========== STAGE 4A: SPEED TIER MODE ==========
+// Same prompt, shrinking timer across 3 tiers (100% / 75% / 50% of base).
+// User must meet passMark at each tier to advance. All 3 passed = Speed Master.
+
+let _speedTierSession = null;
+const SPEED_TIER_MULTIPLIERS = [1.0, 0.75, 0.5];
+
+function renderSpeedTierEntry() {
+  const container = document.getElementById('speed-tier-content');
+  if (!container) return;
+
+  const lessons = [];
+  for (const track of TRACKS) {
+    if (!isTrackUnlocked(track.id)) continue;
+    for (let i = 0; i < track.lessons.length; i++) {
+      const l = track.lessons[i];
+      if (isLessonUnlocked(l.id)) lessons.push({ track, lesson: l, index: i });
+    }
+  }
+
+  if (lessons.length === 0) {
+    container.innerHTML = `
+      <div class="mode-header">
+        <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+          <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+        </button>
+        <div>
+          <h2>Speed Tier</h2>
+          <p class="ai-mode-subtitle">No lessons available — start the curriculum first.</p>
+        </div>
+      </div>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Speed Tier</h2>
+        <p class="ai-mode-subtitle">Same prompt, shrinking timer. 3 tiers. Can you hold quality as the clock tightens?</p>
+      </div>
+    </div>
+    <div class="speed-tier-preview">
+      <div class="speed-tier-preview-row"><span class="tier-pill tier-1">Tier 1</span> Normal time</div>
+      <div class="speed-tier-preview-row"><span class="tier-pill tier-2">Tier 2</span> 75% time</div>
+      <div class="speed-tier-preview-row"><span class="tier-pill tier-3">Tier 3</span> 50% time · Speed Master on pass</div>
+    </div>
+    <h3 style="margin-top:1.5rem;margin-bottom:0.75rem;font-size:1rem">Pick a lesson to drill:</h3>
+    <div class="speed-tier-lesson-list">
+      ${lessons.map(l => `
+        <button class="speed-tier-lesson-card" onclick="beginSpeedTier(${l.track.id}, ${l.index})">
+          <div>
+            <div class="speed-tier-lesson-title">${l.lesson.title}</div>
+            <div class="speed-tier-lesson-sub">${l.track.name} · ${l.lesson.subtitle || ''} · ${l.lesson.timeLimit}s base</div>
+          </div>
+          <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--text-muted)"></i>
+        </button>
+      `).join('')}
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function beginSpeedTier(trackId, lessonIndex) {
+  playClick();
+  const lesson = getLessonData(trackId, lessonIndex);
+  if (!lesson) return;
+  const prompt = pickRandomPrompt(lesson);
+  _speedTierSession = {
+    trackId,
+    lessonIndex,
+    lesson,
+    prompt,
+    currentTier: 1,
+    results: [],
+    startTime: Date.now()
+  };
+  state.currentPrompt = prompt;
+  renderSpeedTierRound();
+}
+
+function renderSpeedTierRound() {
+  const container = document.getElementById('speed-tier-content');
+  const sess = _speedTierSession;
+  if (!container || !sess) return;
+
+  const lesson = sess.lesson;
+  const tierIdx = sess.currentTier - 1;
+  const multiplier = SPEED_TIER_MULTIPLIERS[tierIdx];
+  const baseLimit = getEffectiveTimeLimit(lesson);
+  const tierLimit = Math.max(10, Math.round(baseLimit * multiplier));
+  sess.currentTierLimit = tierLimit;
+
+  state.timerSeconds = 0;
+  state.practiceStartTime = Date.now();
+  state.usedSpeech = false;
+  state.inputMode = (state.settings && state.settings.defaultInputMode) || 'typing';
+  clearAudioRecording();
+  state.practiceText = '';
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endSpeedTier()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2 style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+          Tier ${sess.currentTier} of 3
+          <span class="tier-pill tier-${sess.currentTier}">${Math.round(multiplier * 100)}% time</span>
+        </h2>
+        <p class="ai-mode-subtitle">${lesson.title} · ${formatTime(tierLimit)} target</p>
+      </div>
+    </div>
+    <div class="speed-tier-progress">
+      ${[1, 2, 3].map(t => {
+        const latest = sess.results.filter(r => r.tier === t).slice(-1)[0];
+        let cls = '';
+        if (t === sess.currentTier) cls = 'current';
+        else if (latest && latest.passed) cls = 'passed';
+        else if (latest && !latest.passed) cls = 'failed';
+        return `<div class="speed-tier-dot ${cls}"></div>`;
+      }).join('')}
+    </div>
+    <div class="practice-area">
+      <div class="practice-area-header"><h3>Your Turn</h3></div>
+      <div class="practice-prompt">"${sess.prompt.text}"</div>
+      <div class="practice-meta">
+        <div class="timer" id="practice-timer">
+          <i data-lucide="clock" style="width:18px;height:18px"></i>
+          <span id="timer-display">0:00</span>
+          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(tierLimit)}</span>
+        </div>
+        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+      </div>
+      <div class="practice-input-area">
+        <textarea class="practice-textarea" id="practice-input" oninput="updateWordCount()" autofocus></textarea>
+        <button class="record-btn" id="record-btn" onclick="toggleAudioRecording()" title="Record audio">
+          <i data-lucide="circle" style="width:20px;height:20px;fill:currentColor"></i>
+        </button>
+        <button class="mic-btn" id="mic-btn" onclick="toggleSpeechRecognition()" title="Transcribe speech">
+          <i data-lucide="mic" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+      <div class="mic-status" id="mic-status"></div>
+      <div class="practice-footer">
+        <div class="speaking-time">Target: ${tierLimit}s</div>
+        <button class="btn btn-primary" onclick="submitSpeedTierRound()">
+          Submit <i data-lucide="send" style="width:14px;height:14px"></i>
+        </button>
+      </div>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timerSeconds++;
+    const display = document.getElementById('timer-display');
+    const timerEl = document.getElementById('practice-timer');
+    if (display) {
+      display.textContent = formatTime(state.timerSeconds);
+      const ratio = state.timerSeconds / tierLimit;
+      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+    }
+  }, 1000);
+}
+
+function submitSpeedTierRound() {
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  state.totalPracticeSeconds += state.timerSeconds;
+
+  const input = document.getElementById('practice-input');
+  state.practiceText = input ? input.value : '';
+
+  const sess = _speedTierSession;
+  if (!sess) return;
+  const score = autoScoreResponse(state.practiceText, sess.lesson, state.timerSeconds, state.inputMode);
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const passed = score.total >= passMark;
+
+  sess.results.push({
+    tier: sess.currentTier,
+    score,
+    passed,
+    timeSpent: state.timerSeconds,
+    timeLimit: sess.currentTierLimit
+  });
+
+  state.practiceLog.push({
+    lessonId: sess.lesson.id,
+    lessonTitle: sess.lesson.title,
+    lessonSubtitle: sess.lesson.subtitle || '',
+    trackId: sess.trackId,
+    lessonIndex: sess.lessonIndex,
+    prompt: sess.prompt.text,
+    response: state.practiceText || '',
+    score: score.total,
+    structure: score.structure,
+    clarity: score.clarity,
+    depth: score.depth,
+    completion: score.completion,
+    signals: (score.signals || []).slice(0, 8),
+    wpm: score.wpm || 0,
+    inputMode: score.inputMode || state.inputMode || 'typing',
+    timeSpent: state.timerSeconds || 0,
+    mode: 'speed-tier',
+    tier: sess.currentTier,
+    date: new Date().toISOString()
+  });
+  if (state.practiceLog.length > 200) state.practiceLog.shift();
+  saveState();
+
+  renderSpeedTierRoundResult();
+}
+
+function renderSpeedTierRoundResult() {
+  const container = document.getElementById('speed-tier-content');
+  const sess = _speedTierSession;
+  if (!container || !sess || sess.results.length === 0) return;
+  const latest = sess.results[sess.results.length - 1];
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const isFinalTier = sess.currentTier === 3;
+
+  if (latest.passed) {
+    if (state.settings && state.settings.soundEffects) playPass();
+    haptic('pass');
+  } else {
+    if (state.settings && state.settings.soundEffects) playFail();
+    haptic('fail');
+  }
+
+  const nextActionHTML = latest.passed
+    ? (isFinalTier
+        ? `<button class="btn btn-primary btn-lg" onclick="renderSpeedTierSummary()">
+             See Summary <i data-lucide="award" style="width:16px;height:16px"></i>
+           </button>`
+        : `<button class="btn btn-primary btn-lg" onclick="advanceSpeedTier()">
+             Advance to Tier ${sess.currentTier + 1} <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
+           </button>`)
+    : `
+      <button class="btn btn-secondary" onclick="renderSpeedTierSummary()">
+        End & see summary
+      </button>
+      <button class="btn btn-primary btn-lg" onclick="retrySpeedTier()">
+        <i data-lucide="refresh-cw" style="width:16px;height:16px"></i> Retry Tier ${sess.currentTier}
+      </button>
+    `;
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endSpeedTier()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Tier ${sess.currentTier} ${latest.passed ? '✓ Pass' : '✗ Below pass'}</h2>
+        <p class="ai-mode-subtitle">${sess.lesson.title}</p>
+      </div>
+    </div>
+    <div class="speed-tier-result-hero ${latest.passed ? 'pass' : 'fail'}">
+      <div class="score-big">${latest.score.total}<span style="font-size:0.4em;color:var(--text-muted)">/100</span></div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);margin-top:0.35rem">
+        Pass mark: ${passMark} · Time: ${formatTime(latest.timeSpent)} / ${formatTime(latest.timeLimit)}
+      </div>
+    </div>
+    <div class="focus-secondary-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="focus-secondary-card" style="opacity:1">
+        <div class="focus-secondary-label">Structure</div>
+        <div class="focus-secondary-value">${latest.score.structure}/40</div>
+      </div>
+      <div class="focus-secondary-card" style="opacity:1">
+        <div class="focus-secondary-label">Clarity</div>
+        <div class="focus-secondary-value">${latest.score.clarity}/30</div>
+      </div>
+      <div class="focus-secondary-card" style="opacity:1">
+        <div class="focus-secondary-label">Depth</div>
+        <div class="focus-secondary-value">${latest.score.depth}/20</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;justify-content:flex-end">
+      ${nextActionHTML}
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function advanceSpeedTier() {
+  playClick();
+  _speedTierSession.currentTier++;
+  renderSpeedTierRound();
+}
+
+function retrySpeedTier() {
+  playClick();
+  // Remove the failed latest attempt so progress dots reset; retry same tier
+  const sess = _speedTierSession;
+  if (sess && sess.results.length > 0) {
+    sess.results.pop();
+  }
+  renderSpeedTierRound();
+}
+
+function renderSpeedTierSummary() {
+  const container = document.getElementById('speed-tier-content');
+  const sess = _speedTierSession;
+  if (!container || !sess) return;
+
+  const tiersPassed = [1, 2, 3].filter(t =>
+    sess.results.some(r => r.tier === t && r.passed)
+  );
+  const allThreeMastered = tiersPassed.length === 3;
+
+  if (allThreeMastered) {
+    if (state.settings && state.settings.soundEffects) playMastery();
+    haptic('mastery');
+    if (state.settings && state.settings.confettiEnabled && typeof confetti === 'function') {
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+    }
+  }
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="endSpeedTier()" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Speed Tier Complete</h2>
+        <p class="ai-mode-subtitle">${sess.lesson.title}</p>
+      </div>
+    </div>
+    ${allThreeMastered ? `
+      <div class="speed-tier-master-badge">
+        <i data-lucide="award" style="width:28px;height:28px"></i>
+        <div>
+          <div style="font-weight:700;font-size:1.1rem">Speed Master</div>
+          <div style="font-size:0.85rem;color:var(--text-secondary)">All 3 tiers passed in one session.</div>
+        </div>
+      </div>
+    ` : ''}
+    <div class="speed-tier-summary-list">
+      ${[1, 2, 3].map(t => {
+        const rounds = sess.results.filter(r => r.tier === t);
+        const latest = rounds[rounds.length - 1];
+        const mult = SPEED_TIER_MULTIPLIERS[t - 1];
+        if (!latest) {
+          return `
+            <div class="speed-tier-summary-row not-attempted">
+              <span class="tier-pill tier-${t}">Tier ${t}</span>
+              <span>${Math.round(mult * 100)}% time</span>
+              <span class="tier-status">Not attempted</span>
+            </div>
+          `;
+        }
+        return `
+          <div class="speed-tier-summary-row ${latest.passed ? 'passed' : 'failed'}">
+            <span class="tier-pill tier-${t}">Tier ${t}</span>
+            <span>${Math.round(mult * 100)}% time</span>
+            <span class="tier-status">${latest.passed ? '✓' : '✗'} ${latest.score.total}/100</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="endSpeedTier()">
+        <i data-lucide="home" style="width:14px;height:14px"></i> Home
+      </button>
+      <button class="btn btn-primary" onclick="renderSpeedTierEntry()">
+        Another lesson <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function endSpeedTier() {
+  clearInterval(state.timerInterval);
+  stopSpeechRecognition();
+  stopAudioRecording();
+  _speedTierSession = null;
+  navigate('dashboard');
+}
+
+// ========== STAGE 4A: DASHBOARD ENTRY CARDS ==========
+function renderPracticeModesSection() {
+  const container = document.getElementById('practice-modes-section');
+  if (!container) return;
+  container.innerHTML = `
+    <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:1rem 0 0.5rem;font-weight:600">Practice Modes</h3>
+    <div class="practice-modes-section">
+      <button class="practice-mode-card" onclick="navigate('focus')">
+        <div class="practice-mode-icon" style="background:var(--teal-light);color:var(--teal)">
+          <i data-lucide="target" style="width:20px;height:20px"></i>
+        </div>
+        <div>
+          <div class="practice-mode-title">Focus Challenge</div>
+          <div class="practice-mode-sub">Drill one skill · 3 options</div>
+        </div>
+      </button>
+      <button class="practice-mode-card" onclick="navigate('speed-tier')">
+        <div class="practice-mode-icon" style="background:var(--orange-light);color:var(--orange)">
+          <i data-lucide="timer" style="width:20px;height:20px"></i>
+        </div>
+        <div>
+          <div class="practice-mode-title">Speed Tier</div>
+          <div class="practice-mode-sub">Escalating pressure · 3 tiers</div>
+        </div>
+      </button>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
 
 // ========== AI INTERACTIVE MODES (Stage 3) ==========
 // Four modes powered by /.netlify/functions/ai-chat:
