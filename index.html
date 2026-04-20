@@ -2945,9 +2945,17 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   display: flex; gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
+/* Wraps the textarea + mic button so the mic overlays the bottom-right corner */
+.ai-mode-input-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+.ai-mode-input-wrap .ai-mode-textarea { width: 100%; }
 .ai-mode-textarea {
   flex: 1;
-  padding: 0.65rem 0.75rem;
+  padding: 0.65rem 2.6rem 0.65rem 0.75rem;  /* right padding for mic button */
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-primary);
@@ -2958,6 +2966,38 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   resize: vertical;
   min-height: 70px;
   transition: border-color 0.15s;
+}
+
+/* Inline mic button inside AI mode textareas */
+.ai-mic-btn {
+  position: absolute;
+  right: 6px;
+  bottom: 8px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  z-index: 2;
+  padding: 0;
+}
+.ai-mic-btn:hover {
+  background: var(--teal-light);
+  color: var(--teal);
+  border-color: var(--teal);
+}
+.ai-mic-btn.recording {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+  animation: aiMicPulse 1.5s ease-in-out infinite;
+}
+@keyframes aiMicPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 48, 48, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(197, 48, 48, 0); }
 }
 .ai-mode-textarea:focus {
   outline: none;
@@ -2975,6 +3015,32 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* Persistent inline error banner inside AI mode overlays */
+.ai-mode-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--red-light);
+  color: var(--red);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--red);
+  margin: 0.5rem 0;
+  align-self: stretch;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.ai-mode-error i { flex-shrink: 0; margin-top: 0.15rem; }
+.ai-mode-error strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+.ai-mode-error-msg {
+  color: var(--text-primary);
+  word-break: break-word;
 }
 
 /* Intensity slider (Devil's Advocate) */
@@ -11970,7 +12036,16 @@ async function callAIChat(payload) {
     clearTimeout(timeoutId);
     if (!res.ok) {
       let errMsg = `Request failed (${res.status})`;
-      try { const body = await res.json(); if (body?.error) errMsg = body.error + (body.detail ? ' — ' + body.detail : ''); } catch (e) {}
+      try {
+        const body = await res.json();
+        if (body?.error) errMsg = body.error + (body.detail ? ' — ' + body.detail : '');
+      } catch (e) {}
+      // Specific, actionable message for the most common deploy issue
+      if (res.status === 404) {
+        errMsg = 'The AI endpoint was not found (404). Make sure netlify/functions/ai-chat.js is deployed to your Netlify site, then try again.';
+      } else if (res.status === 500 && errMsg.toLowerCase().includes('openrouter')) {
+        errMsg = 'Server is missing OPENROUTER_API_KEY. Add it to your Netlify environment variables and redeploy.';
+      }
       throw new Error(errMsg);
     }
     return await res.json();
@@ -11978,6 +12053,148 @@ async function callAIChat(payload) {
     if (e.name === 'AbortError') throw new Error('AI request timed out (45s).');
     throw e;
   }
+}
+
+// ---------- SHARED SPEECH-TO-TEXT FOR AI MODE INPUTS ----------
+// A reusable helper that lets ANY textarea inside an AI mode overlay accept
+// spoken input via the mic button next to it. Each active session gets its own
+// SpeechRecognition instance so it doesn't interfere with the main practice
+// session's recognition.
+const _aiSpeechSessions = new Map(); // textareaId -> { recognition, baseText, isRecording }
+
+function toggleAISpeech(textareaId, btnEl) {
+  const session = _aiSpeechSessions.get(textareaId);
+  if (session && session.isRecording) {
+    stopAISpeech(textareaId);
+  } else {
+    startAISpeech(textareaId, btnEl);
+  }
+}
+
+function startAISpeech(textareaId, btnEl) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    showToast('Speech recognition not supported on this browser.');
+    return;
+  }
+  const textarea = document.getElementById(textareaId);
+  if (!textarea) return;
+
+  // Fail fast on insecure contexts — getUserMedia (which speech uses under the hood)
+  // requires HTTPS on mobile browsers.
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    showToast('Microphone requires HTTPS. Open the deployed site, not file://.');
+    return;
+  }
+
+  const recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  // Capture whatever the user has already typed so the transcript appends rather than replaces.
+  const baseText = textarea.value ? textarea.value.trim() + ' ' : '';
+
+  const session = { recognition, baseText, isRecording: true, finalTranscript: '' };
+  _aiSpeechSessions.set(textareaId, session);
+
+  // Visual feedback
+  if (btnEl) {
+    btnEl.classList.add('recording');
+    btnEl.setAttribute('aria-label', 'Stop recording');
+  }
+
+  recognition.onresult = (event) => {
+    let interim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        session.finalTranscript += (session.finalTranscript.length > 0 ? ' ' : '') + transcript.trim();
+      } else {
+        interim = transcript;
+      }
+    }
+    textarea.value = (baseText + session.finalTranscript + (interim ? ' ' + interim : '')).trim();
+  };
+
+  recognition.onerror = (event) => {
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      showToast('Microphone access denied. Enable it in your browser settings.');
+    } else if (event.error !== 'aborted' && event.error !== 'no-speech') {
+      showToast('Speech error: ' + event.error);
+    }
+    stopAISpeech(textareaId);
+  };
+
+  recognition.onend = () => {
+    // Auto-restart while still recording (browsers stop recognition after silences)
+    const cur = _aiSpeechSessions.get(textareaId);
+    if (cur && cur.isRecording) {
+      try { recognition.start(); } catch (e) { stopAISpeech(textareaId); }
+    }
+  };
+
+  try {
+    recognition.start();
+  } catch (e) {
+    showToast('Could not start microphone: ' + e.message);
+    stopAISpeech(textareaId);
+  }
+}
+
+function stopAISpeech(textareaId) {
+  const session = _aiSpeechSessions.get(textareaId);
+  if (!session) return;
+  session.isRecording = false;
+  try { session.recognition.stop(); } catch (e) {}
+  _aiSpeechSessions.delete(textareaId);
+
+  // Reset button visual state — find by data-target attribute
+  const btnEl = document.querySelector(`.ai-mic-btn[data-target="${textareaId}"]`);
+  if (btnEl) {
+    btnEl.classList.remove('recording');
+    btnEl.setAttribute('aria-label', 'Speak your response');
+  }
+}
+
+// Utility to stop ALL active AI speech sessions — used when closing overlays
+function stopAllAISpeech() {
+  Array.from(_aiSpeechSessions.keys()).forEach(stopAISpeech);
+}
+
+// Returns the HTML snippet for a mic button next to an AI textarea.
+// Data-target is used by stopAISpeech to find and reset the button after recognition ends.
+function renderAIMicButton(textareaId) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return ''; // No mic button if the browser doesn't support it
+  return `
+    <button type="button" class="ai-mic-btn" data-target="${textareaId}"
+      onclick="toggleAISpeech('${textareaId}', this)" aria-label="Speak your response" title="Tap to speak — tap again to stop">
+      <i data-lucide="mic" style="width:16px;height:16px"></i>
+    </button>
+  `;
+}
+
+// Shared helper — render a persistent error banner inside an AI mode overlay.
+// Unlike showToast, this sticks around so the user can read and act on it.
+function renderAIModeError(logElementId, message) {
+  const log = document.getElementById(logElementId);
+  if (!log) return;
+  // Remove any previous error
+  const existing = log.querySelector('.ai-mode-error');
+  if (existing) existing.remove();
+  const errDiv = document.createElement('div');
+  errDiv.className = 'ai-mode-error';
+  errDiv.innerHTML = `
+    <i data-lucide="alert-triangle" style="width:14px;height:14px"></i>
+    <div>
+      <strong>AI call failed</strong>
+      <div class="ai-mode-error-msg">${escapeHtmlSafe(message)}</div>
+    </div>
+  `;
+  log.appendChild(errDiv);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  log.scrollTop = log.scrollHeight;
 }
 
 // ---------- MODEL ANSWER GENERATOR ----------
@@ -12078,7 +12295,10 @@ function openConversationOverlay() {
       </div>
       <div class="ai-conversation-log" id="ai-conversation-log"></div>
       <div class="ai-mode-input-row">
-        <textarea id="ai-mode-input" class="ai-mode-textarea" placeholder="Your response…" rows="3"></textarea>
+        <div class="ai-mode-input-wrap">
+          <textarea id="ai-mode-input" class="ai-mode-textarea" placeholder="Your response… (or tap the mic to speak)" rows="3"></textarea>
+          ${renderAIMicButton('ai-mode-input')}
+        </div>
         <button class="btn btn-primary" id="ai-mode-submit" onclick="submitConversationTurn()">
           <i data-lucide="send" style="width:14px;height:14px"></i> Send
         </button>
@@ -12160,7 +12380,14 @@ async function requestNextConversationTurn() {
   } catch (e) {
     const indicator = document.getElementById('ai-typing-indicator');
     if (indicator) indicator.remove();
-    showToast(e.message);
+    renderAIModeError('ai-conversation-log', e.message);
+    showToast('AI call failed — see details in the conversation');
+    // If this was the first attempt and the user has no AI turn yet,
+    // pop the user's last message back into the input box so they don't lose it
+    if (sess.turns.length === 1 && sess.turns[0].speaker === 'user') {
+      const input = document.getElementById('ai-mode-input');
+      if (input && !input.value) input.value = sess.turns[0].text;
+    }
   } finally {
     sess.inFlight = false;
   }
@@ -12182,6 +12409,7 @@ async function submitConversationTurn() {
 }
 
 function endConversationMode() {
+  stopAllAISpeech();
   _conversationSession = null;
   const overlay = document.querySelector('.ai-mode-overlay');
   if (overlay) overlay.remove();
@@ -12241,7 +12469,10 @@ function openDevilsAdvocateOverlay() {
       <div class="ai-conversation-log" id="ai-conversation-log"></div>
 
       <div class="ai-mode-input-row">
-        <textarea id="ai-mode-input" class="ai-mode-textarea" placeholder="Defend your position…" rows="3"></textarea>
+        <div class="ai-mode-input-wrap">
+          <textarea id="ai-mode-input" class="ai-mode-textarea" placeholder="Defend your position… (or tap the mic to speak)" rows="3"></textarea>
+          ${renderAIMicButton('ai-mode-input')}
+        </div>
         <button class="btn btn-primary" id="ai-mode-submit" onclick="submitDevilsAdvocateTurn()">
           <i data-lucide="shield" style="width:14px;height:14px"></i> Defend
         </button>
@@ -12293,11 +12524,17 @@ async function requestDevilsAdvocateAttack() {
   if (!sess || sess.inFlight) return;
   sess.inFlight = true;
 
+  // Track whether this is the first attack (only the first-attack button is hidden).
   const btn = document.getElementById('attack-first-btn');
+  const hadFirstBtn = !!btn;
   if (btn) btn.style.display = 'none';
 
   const log = document.getElementById('ai-conversation-log');
   if (log) {
+    // Clear any previous inline error before a retry
+    const oldErr = log.querySelector('.ai-mode-error');
+    if (oldErr) oldErr.remove();
+
     const typing = document.createElement('div');
     typing.className = 'ai-turn ai-turn-devils ai-typing';
     typing.id = 'ai-typing-indicator';
@@ -12328,7 +12565,15 @@ async function requestDevilsAdvocateAttack() {
   } catch (e) {
     const indicator = document.getElementById('ai-typing-indicator');
     if (indicator) indicator.remove();
-    showToast(e.message);
+    renderAIModeError('ai-conversation-log', e.message);
+    showToast('AI call failed — see details in the debate log');
+    // Restore the first-attack button so the user can retry after fixing the deploy.
+    // If the user has already had one successful AI turn, hadFirstBtn will be false
+    // and the user can just click "Defend" again to retry.
+    if (hadFirstBtn) {
+      const btn2 = document.getElementById('attack-first-btn');
+      if (btn2) btn2.style.display = '';
+    }
   } finally {
     sess.inFlight = false;
   }
@@ -12350,6 +12595,7 @@ async function submitDevilsAdvocateTurn() {
 }
 
 function endDevilsAdvocateMode() {
+  stopAllAISpeech();
   _devilsAdvocateSession = null;
   const overlay = document.querySelector('.ai-mode-overlay');
   if (overlay) overlay.remove();
@@ -12497,7 +12743,10 @@ function renderAudienceRound() {
     </div>
 
     <label class="audience-response-label">Your response for <strong>${escapeHtmlSafe(audience.label)}</strong>:</label>
-    <textarea id="audience-response-input" class="ai-mode-textarea" rows="6" placeholder="How would you say it to this audience?">${escapeHtmlSafe(sess.responses[sess.round] || '')}</textarea>
+    <div class="ai-mode-input-wrap ai-mode-input-wrap-tall">
+      <textarea id="audience-response-input" class="ai-mode-textarea" rows="6" placeholder="How would you say it to this audience? (or tap the mic to speak)">${escapeHtmlSafe(sess.responses[sess.round] || '')}</textarea>
+      ${renderAIMicButton('audience-response-input')}
+    </div>
 
     <div class="ai-mode-footer">
       ${isFirstRound ? `
@@ -12554,7 +12803,25 @@ async function submitAudienceRound() {
     renderAudienceRound();
   } catch (e) {
     sess.inFlight = false;
-    showToast(e.message);
+    // Show a persistent inline error banner the user can actually read
+    const container = document.getElementById('audience-content');
+    if (container) {
+      // Remove any previous error first
+      const oldErr = container.querySelector('.ai-mode-error');
+      if (oldErr) oldErr.remove();
+      const errDiv = document.createElement('div');
+      errDiv.className = 'ai-mode-error';
+      errDiv.innerHTML = `
+        <i data-lucide="alert-triangle" style="width:14px;height:14px"></i>
+        <div>
+          <strong>AI call failed</strong>
+          <div class="ai-mode-error-msg">${escapeHtmlSafe(e.message)}</div>
+        </div>
+      `;
+      container.insertBefore(errDiv, container.firstChild);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+    showToast('AI call failed — see details above');
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i data-lucide="send" style="width:14px;height:14px"></i> Evaluate';
@@ -12620,6 +12887,7 @@ function renderAudienceSummary() {
 }
 
 function endAudienceSimulator() {
+  stopAllAISpeech();
   _audienceSession = null;
   const overlay = document.querySelector('.ai-mode-overlay');
   if (overlay) overlay.remove();
