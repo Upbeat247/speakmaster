@@ -4312,6 +4312,62 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   position: absolute; inset: 0; display: flex; align-items: center;
   justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--teal);
 }
+
+/* ========== STAGE 5B: AUDIO STORAGE ========== */
+.timeline-audio-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--teal-light); color: var(--teal);
+  border: 1px solid var(--teal); cursor: pointer; flex-shrink: 0;
+  margin: 0 0.5rem 0 0; padding: 0;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+.timeline-audio-btn:hover { transform: scale(1.08); background: var(--teal); color: white; }
+.timeline-audio-btn:active { transform: scale(0.95); }
+
+.audio-playback-card {
+  max-width: 500px; width: 100%;
+}
+.audio-playback-header {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.audio-playback-header h2 { margin: 0; font-size: 1.1rem; line-height: 1.25; }
+.audio-playback-icon {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--teal-light); color: var(--teal);
+}
+.audio-playback-prompt {
+  padding: 0.65rem 0.85rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: 0.85rem; line-height: 1.4;
+}
+
+/* Settings: audio storage block */
+.audio-storage-block {
+  padding: 0.85rem 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+.audio-storage-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 0.75rem; margin-bottom: 0.4rem;
+}
+.audio-storage-row-label { font-size: 0.85rem; font-weight: 600; }
+.audio-storage-usage-bar {
+  height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+  margin: 0.35rem 0 0.3rem;
+}
+.audio-storage-usage-fill {
+  height: 100%; background: var(--teal); transition: width 0.3s ease;
+}
+.audio-storage-usage-fill.high { background: var(--orange); }
+.audio-storage-usage-fill.critical { background: var(--red, #dc2626); }
+.audio-storage-usage-text {
+  font-size: 0.75rem; color: var(--text-muted);
+  display: flex; justify-content: space-between;
+}
 </style>
 </head>
 <body>
@@ -4562,7 +4618,9 @@ const state = {
     reminderTime: '08:30',     // HH:MM format, 24-hour, local time
     theme: 'auto',             // 'light', 'dark', 'auto'
     aiReviewEnabled: true,     // show the "Deep AI Review" button on the score screen
-    aiReviewEndpoint: '/.netlify/functions/score-response' // where to call for AI scoring
+    aiReviewEndpoint: '/.netlify/functions/score-response', // where to call for AI scoring
+    saveAudio: true,           // Stage 5B: auto-save recorded audio to IndexedDB for later playback
+    audioStorageCapMB: 500     // Stage 5B: soft cap before oldest recordings are auto-evicted
   }
 };
 
@@ -9249,6 +9307,29 @@ function renderSettings() {
       </div>
     </div>
 
+    <!-- AUDIO STORAGE (Stage 5B) -->
+    <div class="settings-group">
+      <div class="settings-group-title">
+        <i data-lucide="audio-lines" style="width:16px;height:16px"></i>
+        Audio Storage
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label-line">
+          <div>
+            <div class="setting-label">Auto-save recordings</div>
+            <div class="setting-desc">Save audio recordings to your device so you can replay them from History. Stored locally in IndexedDB — never uploaded. Turning this off stops new saves but keeps existing recordings.</div>
+          </div>
+          <div class="setting-toggle ${s.saveAudio ? 'on' : ''}"
+            onclick="toggleSetting('saveAudio')"></div>
+        </div>
+      </div>
+
+      <div id="audio-storage-indicator">
+        <!-- Populated by refreshAudioStorageIndicator() -->
+      </div>
+    </div>
+
     <!-- CLOUD SYNC -->
     <div class="settings-group">
       <div class="settings-group-title">
@@ -9427,6 +9508,94 @@ function renderSettings() {
   `;
 
   lucide.createIcons();
+
+  // Stage 5B: populate the audio storage indicator asynchronously
+  refreshAudioStorageIndicator();
+}
+
+async function refreshAudioStorageIndicator() {
+  const container = document.getElementById('audio-storage-indicator');
+  if (!container) return;
+  let usage = { count: 0, totalBytes: 0 };
+  try { usage = await getAudioStorageUsage(); } catch (e) {}
+  const capMB = Math.max(50, (state.settings && state.settings.audioStorageCapMB) || 500);
+  const capBytes = capMB * 1024 * 1024;
+  const usedMB = usage.totalBytes / (1024 * 1024);
+  const pct = Math.min(100, Math.round((usage.totalBytes / capBytes) * 100));
+  const pctCls = pct >= 90 ? 'critical' : pct >= 70 ? 'high' : '';
+
+  container.innerHTML = `
+    <div class="audio-storage-block">
+      <div class="audio-storage-row">
+        <span class="audio-storage-row-label">Storage usage</span>
+        <span style="font-size:0.85rem;font-weight:600;color:var(--teal)">${usage.count} recording${usage.count === 1 ? '' : 's'}</span>
+      </div>
+      <div class="audio-storage-usage-bar">
+        <div class="audio-storage-usage-fill ${pctCls}" style="width:${pct}%"></div>
+      </div>
+      <div class="audio-storage-usage-text">
+        <span>${usedMB.toFixed(1)} MB used</span>
+        <span>${capMB} MB cap</span>
+      </div>
+
+      <div style="margin-top:0.85rem">
+        <label style="font-size:0.8rem;color:var(--text-secondary);display:block;margin-bottom:0.3rem">Cap (MB) — oldest recordings are auto-evicted when full</label>
+        <input type="range" min="50" max="2000" step="50"
+               value="${capMB}"
+               oninput="updateAudioCap(this.value)"
+               style="width:100%">
+      </div>
+
+      ${usage.count > 0 ? `
+        <div style="margin-top:0.85rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="confirmDeleteAllAudio()" style="color:var(--red, #dc2626)">
+            <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+            Delete all recordings
+          </button>
+        </div>
+      ` : `
+        <p style="font-size:0.78rem;color:var(--text-muted);margin:0.75rem 0 0">
+          No recordings saved yet. Tap the red record button during practice to start recording.
+        </p>
+      `}
+
+      <p style="font-size:0.72rem;color:var(--text-muted);margin:0.85rem 0 0;line-height:1.4">
+        Recordings live in this device's IndexedDB (never uploaded). iOS may evict them under storage pressure — export important ones.
+      </p>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function updateAudioCap(value) {
+  const n = parseInt(value, 10);
+  if (isNaN(n)) return;
+  state.settings.audioStorageCapMB = n;
+  saveState();
+  // Update the "cap MB" label without a full re-render
+  const container = document.getElementById('audio-storage-indicator');
+  if (container) {
+    const labels = container.querySelectorAll('.audio-storage-usage-text span');
+    if (labels[1]) labels[1].textContent = n + ' MB cap';
+    const bar = container.querySelector('.audio-storage-usage-fill');
+    if (bar) {
+      const capBytes = n * 1024 * 1024;
+      // We don't have totalBytes here cheaply; refresh the whole indicator for accurate bar
+      refreshAudioStorageIndicator();
+    }
+  }
+}
+
+async function confirmDeleteAllAudio() {
+  if (!confirm('Delete ALL saved recordings? Your practice history stays, but every audio blob is permanently removed.')) return;
+  const ok = await deleteAllAudioRecordings();
+  if (ok) {
+    invalidateAudioIdCache();
+    showToast('All recordings deleted');
+    refreshAudioStorageIndicator();
+  } else {
+    showToast('Failed to delete recordings');
+  }
 }
 
 // Update a numeric / string setting with validation and re-render.
@@ -9787,6 +9956,20 @@ function renderTimeline() {
   const container = document.getElementById('timeline-container');
   if (!container) return;
 
+  // Stage 5B: preload the audio-id cache so play buttons render on first paint.
+  // This call is async; we run it fire-and-forget so the first render may miss
+  // some icons, but the subsequent ensureAudioIdCache-triggered re-render shows them.
+  ensureAudioIdCache().then(() => {
+    // If cache was cold, re-render once so play icons appear
+    if (document.getElementById('timeline-container') === container) {
+      _renderTimelineSync(container);
+    }
+  }).catch(() => {});
+
+  _renderTimelineSync(container);
+}
+
+function _renderTimelineSync(container) {
   const allEntries = state.practiceLog.length;
   if (allEntries === 0) {
     container.innerHTML = `
@@ -9854,6 +10037,7 @@ function renderTimeline() {
           const truncatedPrompt = (entry.prompt || '').length > 70
             ? entry.prompt.substring(0, 70) + '…'
             : (entry.prompt || '');
+          const hasAudio = _audioIdCache && _audioIdCache.has && _audioIdCache.has(entry.date);
           return `
             <div class="timeline-entry tier-${scoreTier}" onclick="toggleTimelineEntry(${idx})">
               <div class="timeline-entry-date-col">
@@ -9870,6 +10054,11 @@ function renderTimeline() {
                   </div>
                 ` : ''}
               </div>
+              ${hasAudio ? `
+                <button class="timeline-audio-btn" onclick="event.stopPropagation(); playRecordingById('${entry.date}')" aria-label="Play recording" title="Play recording">
+                  <i data-lucide="play" style="width:14px;height:14px"></i>
+                </button>
+              ` : ''}
               <div class="timeline-entry-score-col">
                 <div class="timeline-entry-score">${entry.score}</div>
                 <div class="timeline-entry-score-max">/100</div>
@@ -10781,6 +10970,336 @@ function stopSpeechRecognition() {
   if (micStatus) { micStatus.textContent = ''; micStatus.classList.remove('active'); }
 }
 
+// ========== STAGE 5B: INDEXEDDB AUDIO STORE ==========
+// Persist audio recordings across page loads so users can replay past practice
+// sessions from the History feed. Key = practiceLog entry's ISO date string.
+//
+// DB shape:
+//   DB: 'speakmaster-audio', version: 1
+//   Store: 'recordings' — keyPath 'id' (the ISO date).
+//     Value: { id, blob, mimeType, durationSec, savedAt, sizeBytes }
+
+const AUDIO_DB_NAME = 'speakmaster-audio';
+const AUDIO_DB_VERSION = 1;
+const AUDIO_STORE = 'recordings';
+let _audioDBPromise = null;
+
+function openAudioDB() {
+  if (_audioDBPromise) return _audioDBPromise;
+  _audioDBPromise = new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) {
+      reject(new Error('IndexedDB not supported'));
+      return;
+    }
+    const req = indexedDB.open(AUDIO_DB_NAME, AUDIO_DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(AUDIO_STORE)) {
+        const store = db.createObjectStore(AUDIO_STORE, { keyPath: 'id' });
+        // index by savedAt so we can evict oldest efficiently
+        store.createIndex('savedAt', 'savedAt', { unique: false });
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => {
+      _audioDBPromise = null;
+      reject(e.target.error || new Error('IndexedDB open failed'));
+    };
+    req.onblocked = () => {
+      _audioDBPromise = null;
+      reject(new Error('IndexedDB open blocked'));
+    };
+  });
+  return _audioDBPromise;
+}
+
+// Best-effort request for persistent storage so iOS Safari is less likely
+// to evict our data under memory pressure.
+async function requestPersistentStorage() {
+  if (navigator.storage && navigator.storage.persist) {
+    try { await navigator.storage.persist(); } catch (e) {}
+  }
+}
+
+async function saveAudioRecording(id, blob, durationSec) {
+  if (!id || !blob) return { saved: false, reason: 'missing-args' };
+  if (!(state.settings && state.settings.saveAudio)) return { saved: false, reason: 'disabled' };
+  try {
+    requestPersistentStorage(); // fire & forget
+    const db = await openAudioDB();
+
+    // Evict if over cap BEFORE writing
+    const capBytes = Math.max(50, (state.settings.audioStorageCapMB || 500)) * 1024 * 1024;
+    await evictOldestAudioIfNeeded(db, capBytes - blob.size);
+
+    return await new Promise((resolve) => {
+      const tx = db.transaction(AUDIO_STORE, 'readwrite');
+      const store = tx.objectStore(AUDIO_STORE);
+      const record = {
+        id,
+        blob,
+        mimeType: blob.type || 'audio/webm',
+        durationSec: durationSec || 0,
+        savedAt: Date.now(),
+        sizeBytes: blob.size || 0
+      };
+      const req = store.put(record);
+      req.onsuccess = () => resolve({ saved: true, sizeBytes: blob.size });
+      req.onerror = (e) => resolve({ saved: false, reason: 'put-failed', error: String(e.target.error) });
+      tx.onerror = () => {};
+    });
+  } catch (e) {
+    return { saved: false, reason: 'exception', error: String(e.message || e) };
+  }
+}
+
+async function loadAudioRecording(id) {
+  if (!id) return null;
+  try {
+    const db = await openAudioDB();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(AUDIO_STORE, 'readonly');
+      const req = tx.objectStore(AUDIO_STORE).get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+async function deleteAudioRecording(id) {
+  if (!id) return false;
+  try {
+    const db = await openAudioDB();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(AUDIO_STORE, 'readwrite');
+      const req = tx.objectStore(AUDIO_STORE).delete(id);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => resolve(false);
+    });
+  } catch (e) {
+    return false;
+  }
+}
+
+async function listAudioRecordings() {
+  try {
+    const db = await openAudioDB();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(AUDIO_STORE, 'readonly');
+      const req = tx.objectStore(AUDIO_STORE).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch (e) {
+    return [];
+  }
+}
+
+// Returns map of id -> true for fast lookup when rendering History feed.
+async function getAudioIdSet() {
+  try {
+    const db = await openAudioDB();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(AUDIO_STORE, 'readonly');
+      const req = tx.objectStore(AUDIO_STORE).getAllKeys();
+      req.onsuccess = () => {
+        const set = new Set(req.result || []);
+        resolve(set);
+      };
+      req.onerror = () => resolve(new Set());
+    });
+  } catch (e) {
+    return new Set();
+  }
+}
+
+async function getAudioStorageUsage() {
+  const recs = await listAudioRecordings();
+  const totalBytes = recs.reduce((s, r) => s + (r.sizeBytes || 0), 0);
+  return { count: recs.length, totalBytes };
+}
+
+async function evictOldestAudioIfNeeded(db, targetMaxBytes) {
+  // Walk recordings sorted by savedAt ascending; delete until total <= target
+  return new Promise((resolve) => {
+    const tx = db.transaction(AUDIO_STORE, 'readwrite');
+    const store = tx.objectStore(AUDIO_STORE);
+    const idx = store.index('savedAt');
+    const all = [];
+    idx.openCursor().onsuccess = (e) => {
+      const cursor = e.target.result;
+      if (cursor) {
+        all.push({ id: cursor.value.id, sizeBytes: cursor.value.sizeBytes || 0, savedAt: cursor.value.savedAt || 0 });
+        cursor.continue();
+      } else {
+        let total = all.reduce((s, r) => s + r.sizeBytes, 0);
+        if (total <= targetMaxBytes) { resolve({ evicted: 0 }); return; }
+        let evicted = 0;
+        // evict oldest first
+        for (const r of all) {
+          if (total <= targetMaxBytes) break;
+          store.delete(r.id);
+          total -= r.sizeBytes;
+          evicted++;
+        }
+        tx.oncomplete = () => resolve({ evicted });
+      }
+    };
+    tx.onerror = () => resolve({ evicted: 0, error: true });
+  });
+}
+
+async function deleteAllAudioRecordings() {
+  try {
+    const db = await openAudioDB();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(AUDIO_STORE, 'readwrite');
+      const req = tx.objectStore(AUDIO_STORE).clear();
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => resolve(false);
+    });
+  } catch (e) {
+    return false;
+  }
+}
+
+// Cache the set of recording IDs for fast History-feed rendering.
+// Invalidated whenever we save or delete.
+let _audioIdCache = null;
+async function ensureAudioIdCache() {
+  if (_audioIdCache === null) {
+    _audioIdCache = await getAudioIdSet();
+  }
+  return _audioIdCache;
+}
+function invalidateAudioIdCache() { _audioIdCache = null; }
+
+// ---------- Playback modal ----------
+
+let _audioPlaybackURL = null;
+
+async function playRecordingById(id) {
+  const rec = await loadAudioRecording(id);
+  if (!rec || !rec.blob) {
+    showToast('Recording not found or has been evicted.');
+    return;
+  }
+  // Revoke any prior URL
+  if (_audioPlaybackURL) {
+    try { URL.revokeObjectURL(_audioPlaybackURL); } catch (e) {}
+    _audioPlaybackURL = null;
+  }
+  _audioPlaybackURL = URL.createObjectURL(rec.blob);
+  openAudioPlaybackOverlay(rec, _audioPlaybackURL);
+}
+
+function openAudioPlaybackOverlay(rec, url) {
+  const existing = document.querySelector('.audio-playback-overlay');
+  if (existing) existing.remove();
+
+  // Lookup the originating practiceLog entry for context labels
+  const entry = (state.practiceLog || []).find(e => e.date === rec.id);
+  const title = entry ? `${entry.lessonTitle || 'Practice'}` : 'Recording';
+  const sub = entry ? [
+    entry.mode ? entry.mode.charAt(0).toUpperCase() + entry.mode.slice(1) : '',
+    entry.score != null ? `Score ${entry.score}` : '',
+    new Date(rec.id).toLocaleString()
+  ].filter(Boolean).join(' · ') : new Date(rec.id).toLocaleString();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay audio-playback-overlay';
+  overlay.innerHTML = `
+    <div class="modal-card audio-playback-card">
+      <button class="modal-close" onclick="closeAudioPlayback()">
+        <i data-lucide="x" style="width:18px;height:18px"></i>
+      </button>
+      <div class="audio-playback-header">
+        <div class="audio-playback-icon"><i data-lucide="audio-lines" style="width:22px;height:22px"></i></div>
+        <div>
+          <h2>${escapeHtmlSafe(title)}</h2>
+          <p class="ai-mode-subtitle">${escapeHtmlSafe(sub)}</p>
+        </div>
+      </div>
+      <audio controls autoplay preload="auto" src="${url}" style="width:100%;margin:1rem 0"></audio>
+      ${entry && entry.prompt ? `
+        <div class="audio-playback-prompt">
+          <strong>Prompt:</strong> "${escapeHtmlSafe(entry.prompt)}"
+        </div>
+      ` : ''}
+      ${entry && entry.response ? `
+        <details style="margin-top:0.75rem">
+          <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-secondary);padding:0.3rem 0">Show transcript</summary>
+          <div style="padding:0.65rem 0.85rem;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;font-size:0.85rem;line-height:1.5;margin-top:0.3rem;white-space:pre-wrap">${escapeHtmlSafe(entry.response)}</div>
+        </details>
+      ` : ''}
+      <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;justify-content:space-between;align-items:center">
+        <div style="font-size:0.75rem;color:var(--text-muted)">
+          ${rec.sizeBytes ? (Math.round(rec.sizeBytes / 1024) + ' KB') : ''}
+          ${rec.mimeType ? ' · ' + rec.mimeType : ''}
+        </div>
+        <div style="display:flex;gap:0.4rem">
+          <button class="btn btn-ghost" onclick="confirmDeleteRecording('${rec.id}')" style="color:var(--red, #dc2626)">
+            <i data-lucide="trash-2" style="width:14px;height:14px"></i> Delete
+          </button>
+          <button class="btn btn-primary" onclick="closeAudioPlayback()">Done</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAudioPlayback(); });
+}
+
+function closeAudioPlayback() {
+  const overlay = document.querySelector('.audio-playback-overlay');
+  if (overlay) {
+    const audio = overlay.querySelector('audio');
+    if (audio) { try { audio.pause(); } catch (e) {} }
+    overlay.remove();
+  }
+  if (_audioPlaybackURL) {
+    try { URL.revokeObjectURL(_audioPlaybackURL); } catch (e) {}
+    _audioPlaybackURL = null;
+  }
+}
+
+async function confirmDeleteRecording(id) {
+  if (!confirm('Delete this recording? The practice entry will stay in history but the audio is gone.')) return;
+  const ok = await deleteAudioRecording(id);
+  if (ok) {
+    invalidateAudioIdCache();
+    showToast('Recording deleted');
+    closeAudioPlayback();
+    // Re-render progress view if user is viewing history
+    if (state.currentView === 'progress' && typeof renderProgress === 'function') renderProgress();
+  } else {
+    showToast('Failed to delete recording');
+  }
+}
+
+// Called from submit paths — persists the current state.lastAudioBlob keyed
+// by the practiceLog entry's date (which is the ISO string we use as key).
+async function persistRecordingForLogEntry(entryDate, durationSec) {
+  if (!entryDate || !state.lastAudioBlob) return;
+  const res = await saveAudioRecording(entryDate, state.lastAudioBlob, durationSec || 0);
+  if (res.saved) {
+    invalidateAudioIdCache();
+  }
+}
+
+// Convenience: look up the most recently pushed practiceLog entry and persist
+// state.lastAudioBlob against it. Safe to call after every submit — it's a
+// no-op if there's no blob, no entry, or audio-save is disabled.
+function persistRecordingForLastLogEntry() {
+  if (!state.practiceLog || state.practiceLog.length === 0) return;
+  const entry = state.practiceLog[state.practiceLog.length - 1];
+  if (!entry || !entry.date) return;
+  persistRecordingForLogEntry(entry.date, entry.timeSpent || 0);
+}
+
 // ========== AUDIO RECORDING ==========
 let mediaRecorder = null;
 let audioChunks = [];
@@ -11606,6 +12125,9 @@ function renderScore(container, lesson) {
   // Stage 5A: if this attempt was launched from a fluency day, mark that day complete
   if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
 
+  // Stage 5B: persist audio recording keyed by this entry's date (no-op if none)
+  if (typeof persistRecordingForLastLogEntry === 'function') persistRecordingForLastLogEntry();
+
   // Multi-attempt progression: the lesson unlocks the NEXT one once the rolling
   // average of the last N attempts meets the pass mark (N = practiceAttempts setting).
   // This means a single high score doesn't unlock — you must practice consistently.
@@ -12316,6 +12838,9 @@ function scoreDrillRound() {
     date: new Date().toISOString()
   });
   if (state.practiceLog.length > 200) state.practiceLog.shift();
+
+  // Stage 5B: persist audio recording for this drill round
+  if (typeof persistRecordingForLastLogEntry === 'function') persistRecordingForLastLogEntry();
 
   state.xp += Math.round(total * 0.5);
   state.xpHistory.push({ date: new Date().toISOString().slice(0,10), xp: state.xp });
@@ -14912,6 +15437,9 @@ function submitFusionPractice() {
   // Stage 5A fluency hook
   if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
 
+  // Stage 5B: persist audio recording
+  if (typeof persistRecordingForLastLogEntry === 'function') persistRecordingForLastLogEntry();
+
   renderFusionScore();
 }
 
@@ -15416,6 +15944,10 @@ async function runDebateVerdict() {
   // Stage 5A fluency hook
   if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
 
+  // Stage 5B: persist the final round's audio if recorded. Only the closing
+  // round's blob is still in state.lastAudioBlob at verdict time.
+  if (typeof persistRecordingForLastLogEntry === 'function') persistRecordingForLastLogEntry();
+
   renderDebateVerdict();
 }
 
@@ -15719,6 +16251,9 @@ function submitFocusPractice() {
 
   // Stage 5A fluency hook
   if (typeof markFluencyDayIfActive === 'function') markFluencyDayIfActive();
+
+  // Stage 5B: persist audio recording
+  if (typeof persistRecordingForLastLogEntry === 'function') persistRecordingForLastLogEntry();
 
   renderFocusScore();
 }
@@ -16054,6 +16589,9 @@ function submitSpeedTierRound() {
   });
   if (state.practiceLog.length > 200) state.practiceLog.shift();
   saveState();
+
+  // Stage 5B: persist audio recording for this round
+  if (typeof persistRecordingForLastLogEntry === 'function') persistRecordingForLastLogEntry();
 
   renderSpeedTierRoundResult();
 }
