@@ -4057,6 +4057,99 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 .debate-verdict-detail.strongest { border-left: 3px solid var(--green, #059669); }
 .debate-verdict-detail.weakest { border-left: 3px solid var(--orange); }
 .debate-verdict-detail.insight { border-left: 3px solid var(--teal); }
+
+/* ========== STAGE 4B: INDUSTRY PACKS ========== */
+.packs-grid {
+  display: grid; grid-template-columns: 1fr; gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+@media (min-width: 600px) {
+  .packs-grid { grid-template-columns: 1fr 1fr; }
+}
+.pack-card {
+  display: flex; align-items: flex-start; gap: 0.85rem;
+  padding: 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 14px;
+  cursor: pointer; text-align: left;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.pack-card:hover { transform: translateY(-2px); border-color: var(--teal); }
+.pack-card.locked { opacity: 0.55; }
+.pack-card-icon {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.pack-card-body { flex: 1; min-width: 0; }
+.pack-card-title {
+  font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.4rem;
+}
+.pack-card-blurb {
+  font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;
+  margin-top: 0.25rem;
+}
+.pack-card-meta {
+  font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem;
+  text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;
+}
+
+.pack-tag-group { margin-bottom: 1rem; }
+.pack-tag-header {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.5rem; padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.pack-tag-label {
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+  font-weight: 700; color: var(--text-muted);
+}
+.pack-tag-count {
+  font-size: 0.7rem; color: var(--text-muted);
+  background: var(--border); padding: 0.1rem 0.45rem; border-radius: 10px;
+}
+
+.pack-prompt-card {
+  padding: 0.85rem 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  cursor: pointer; text-align: left; margin-bottom: 0.4rem;
+  transition: border-color 0.1s ease;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.pack-prompt-card:hover { border-color: var(--teal); }
+.pack-prompt-card.done { border-color: var(--green, #059669); }
+.pack-prompt-body { flex: 1; min-width: 0; }
+.pack-prompt-text {
+  font-size: 0.9rem; line-height: 1.4;
+}
+.pack-prompt-meta {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  margin-top: 0.4rem; font-size: 0.72rem; color: var(--text-muted);
+}
+.pack-prompt-framework {
+  background: var(--teal-light); color: var(--teal);
+  padding: 0.1rem 0.5rem; border-radius: 10px; font-weight: 600;
+}
+.pack-prompt-done-badge {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  background: var(--green-light, #d1fae5); color: var(--green, #059669);
+  padding: 0.1rem 0.5rem; border-radius: 10px; font-weight: 600;
+}
+
+.packs-entry-card {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 1rem; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 14px;
+  cursor: pointer; text-align: left; width: 100%;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+.packs-entry-card:hover { transform: translateY(-1px); border-color: var(--teal); }
+.packs-entry-icon {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--teal-light), var(--orange-light));
+  color: var(--teal);
+}
+.packs-entry-title { font-weight: 700; font-size: 0.98rem; }
+.packs-entry-sub { font-size: 0.77rem; color: var(--text-secondary); margin-top: 0.15rem; }
 </style>
 </head>
 <body>
@@ -4159,6 +4252,8 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
 
       <div id="practice-modes-section"></div>
 
+      <div id="content-packs-section"></div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value" id="stat-lessons">0</div>
@@ -4231,6 +4326,11 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <!-- DEBATE MODE VIEW -->
     <div id="view-debate" class="view">
       <div id="debate-content"></div>
+    </div>
+
+    <!-- INDUSTRY PACKS VIEW -->
+    <div id="view-packs" class="view">
+      <div id="packs-content"></div>
     </div>
 
     <!-- SETTINGS VIEW -->
@@ -8052,6 +8152,8 @@ function navigate(view, params) {
   exitFocusModeIfActive();
   if (view === 'lesson' && params) {
     window.location.hash = `lesson/${params.trackId}/${params.lessonIndex}`;
+  } else if (view === 'pack' && params && params.packId) {
+    window.location.hash = `pack/${params.packId}`;
   } else {
     window.location.hash = view;
   }
@@ -8076,6 +8178,11 @@ function handleRoute() {
     openLesson(trackId, lessonIndex);
     document.getElementById('view-lesson').classList.add('active');
     state.currentView = 'lesson';
+  } else if (viewName === 'pack' && parts.length === 2) {
+    const packId = parts[1];
+    document.getElementById('view-packs').classList.add('active');
+    state.currentView = 'packs';
+    renderPackDetail(packId);
   } else {
     const viewEl = document.getElementById(`view-${viewName}`);
     if (viewEl) {
@@ -8089,6 +8196,7 @@ function handleRoute() {
       if (viewName === 'speed-tier') renderSpeedTierEntry();
       if (viewName === 'fusion') renderFusionEntry();
       if (viewName === 'debate') renderDebateEntry();
+      if (viewName === 'packs') renderPacksList();
     } else {
       document.getElementById('view-dashboard').classList.add('active');
       state.currentView = 'dashboard';
@@ -8442,6 +8550,9 @@ function renderDashboard() {
 
   // Stage 4A: Focus Challenge + Speed Tier entry cards
   if (typeof renderPracticeModesSection === 'function') renderPracticeModesSection();
+
+  // Stage 4B: Industry Prompt Packs entry card
+  if (typeof renderContentPacksSection === 'function') renderContentPacksSection();
 }
 
 // ========== DASHBOARD SUB-RENDERERS ==========
@@ -10259,14 +10370,27 @@ function deleteCustomPrompt(lessonId, index) {
 
 function renderPractice(container, lesson) {
   let promptObj;
+  // Stage 4B: if a pack prompt override is set, use its text as a synthetic prompt
+  if (state.packPromptOverride && state.packPromptOverride.text) {
+    promptObj = { text: state.packPromptOverride.text };
+    // Record that we're consuming it so the score screen can tag the log entry
+    state.currentPackContext = {
+      packId: state.packPromptOverride.packId,
+      promptKey: state.packPromptOverride.promptKey
+    };
+    // Clear the override so subsequent practice attempts don't keep reusing it
+    state.packPromptOverride = null;
+  }
   // If we're in daily challenge mode and this is the challenge lesson, use the challenge prompt
-  if (state.dailyChallengeMode && state.dailyChallenge &&
+  else if (state.dailyChallengeMode && state.dailyChallenge &&
       !state.dailyChallenge.completed &&
       state.currentLesson &&
       state.currentLesson.trackId === state.dailyChallenge.trackId &&
       state.currentLesson.lessonIndex === state.dailyChallenge.lessonIndex) {
     promptObj = normalizePrompt(lesson.prompts[state.dailyChallenge.promptIndex]);
   } else {
+    // Clear any stale pack context when starting a fresh random practice
+    state.currentPackContext = null;
     promptObj = pickRandomPrompt(lesson);
   }
   state.currentPrompt = promptObj; // Store full object (text + modelResponse)
@@ -11273,6 +11397,7 @@ function renderScore(container, lesson) {
   };
 
   // Log practice session — full record so History Feed can re-render the score screen
+  const _packCtx = state.currentPackContext;
   state.practiceLog.push({
     lessonId,
     lessonTitle: lesson.title,
@@ -11290,9 +11415,13 @@ function renderScore(container, lesson) {
     wpm: s.wpm || 0,
     inputMode: s.inputMode || state.inputMode || 'typing',
     timeSpent: state.timerSeconds || 0,
-    mode: 'practice', // practice | drill
+    mode: _packCtx ? 'pack' : 'practice', // practice | drill | pack
+    packId: _packCtx ? _packCtx.packId : undefined,
+    packPromptKey: _packCtx ? _packCtx.promptKey : undefined,
     date: new Date().toISOString()
   });
+  // Pack context only applies to this single attempt — clear so next attempt logs as regular practice
+  state.currentPackContext = null;
   if (state.practiceLog.length > 200) state.practiceLog.shift(); // Larger cap now that we have history
 
   // Multi-attempt progression: the lesson unlocks the NEXT one once the rolling
@@ -13230,6 +13359,275 @@ document.addEventListener('DOMContentLoaded', () => {
   // Touch gestures for swipe-to-dismiss and pull-to-refresh
   initTouchGestures();
 });
+
+// ========== STAGE 4B: INDUSTRY PROMPT PACKS ==========
+// Curated packs of industry-specific prompts. Each prompt is hard-linked to
+// a lesson (its best-fit framework). Tapping a prompt opens the lesson's
+// practice flow with the prompt injected via state.packPromptOverride.
+
+const INDUSTRY_PACKS = [
+  {
+    id: 'tech',
+    name: 'Tech',
+    icon: 'code-2',
+    color: 'teal',
+    blurb: 'Engineering, product reviews, incident response, technical briefings',
+    groups: [
+      {
+        tag: 'Explaining technical concepts',
+        prompts: [
+          { text: 'Explain how Redis differs from a SQL database to a product manager who has never written code.', lessonId: '1-1' },
+          { text: 'Teach a junior engineer why we use event sourcing instead of CRUD for the orders service.', lessonId: '6-4' },
+          { text: 'A business stakeholder asks: "What is our tech debt, and why should we care?" Answer in 60 seconds.', lessonId: '1-2' }
+        ]
+      },
+      {
+        tag: 'Incident response',
+        prompts: [
+          { text: 'You\'re incident commander. Payment processing has been degraded for 20 minutes. Deliver a status update to the leadership Slack channel.', lessonId: '5-2' },
+          { text: 'Post-mortem readout: walk the room through what happened last Tuesday, why it happened, and what we changed.', lessonId: '2-2' }
+        ]
+      },
+      {
+        tag: 'Design & architecture',
+        prompts: [
+          { text: 'Your team wants to rewrite the billing service in Rust. The VP of Engineering asks "why now?" Make your case.', lessonId: '1-2' },
+          { text: '5-minute technical briefing: proposed database migration from Postgres 13 to Postgres 16.', lessonId: '3-4' },
+          { text: 'Walk leadership through the architecture tradeoffs of our new ML inference pipeline — context, problem, approach, status, ask.', lessonId: '3-4' }
+        ]
+      },
+      {
+        tag: 'Career & hiring',
+        prompts: [
+          { text: 'A hiring manager asks: "Tell me about a technically challenging project you led, from start to finish."', lessonId: '2-1' },
+          { text: 'You\'re the interviewer. A senior candidate asks: "What is your engineering culture actually like?" Answer honestly.', lessonId: '1-3' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'startup',
+    name: 'Startup',
+    icon: 'rocket',
+    color: 'orange',
+    blurb: 'Fundraising, founding-team moves, customer saves, crisis comms',
+    groups: [
+      {
+        tag: 'Fundraising',
+        prompts: [
+          { text: 'Pitch your seed-stage startup in 90 seconds — you\'re in an elevator with a tier-1 investor.', lessonId: '3-1' },
+          { text: 'The lead investor asks: "What is your biggest risk?" Answer honestly, without hedging.', lessonId: '5-1' },
+          { text: 'Walk a generalist GP through your go-to-market strategy — assume they know nothing about your space.', lessonId: '3-2' }
+        ]
+      },
+      {
+        tag: 'Team & leadership',
+        prompts: [
+          { text: 'Your founding engineer just resigned. Deliver the news to the rest of the team at the end-of-day standup.', lessonId: '5-2' },
+          { text: 'Your CTO and Head of Product disagree on the roadmap for next quarter. Mediate with both of them in the room.', lessonId: '5-3' },
+          { text: 'Open the Monday all-hands — three priorities for the week, why they matter, and what you need from the team.', lessonId: '2-3' }
+        ]
+      },
+      {
+        tag: 'Customer & sales',
+        prompts: [
+          { text: 'A key customer is three days from churning. You have 3 minutes on the phone to turn it around.', lessonId: '3-1' },
+          { text: 'A prospect asks: "Why should we pick you over [incumbent competitor]?" Answer without bashing them.', lessonId: '1-2' }
+        ]
+      },
+      {
+        tag: 'Crisis & pivots',
+        prompts: [
+          { text: 'You\'re pivoting the product. Tell the board why — problem, new direction, impact — in two minutes.', lessonId: '2-2' },
+          { text: 'Runway is six months. Be honest with the whole team without demoralizing them or losing their trust.', lessonId: '5-2' }
+        ]
+      }
+    ]
+  }
+];
+
+function flattenPackPrompts(pack) {
+  const out = [];
+  pack.groups.forEach(g => {
+    g.prompts.forEach(p => out.push({ ...p, tag: g.tag, packId: pack.id }));
+  });
+  return out;
+}
+
+function getPackPromptDoneKey(packId, promptText) {
+  // Stable-ish key: packId + first 40 chars of prompt text slugified
+  const slug = String(promptText || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
+  return `${packId}|${slug}`;
+}
+
+function isPackPromptDone(packId, promptText) {
+  const key = getPackPromptDoneKey(packId, promptText);
+  return (state.practiceLog || []).some(entry =>
+    entry.mode === 'pack' && entry.packPromptKey === key
+  );
+}
+
+function getPackCompletionCount(packId) {
+  const pack = INDUSTRY_PACKS.find(p => p.id === packId);
+  if (!pack) return { done: 0, total: 0 };
+  const all = flattenPackPrompts(pack);
+  const done = all.filter(p => isPackPromptDone(packId, p.text)).length;
+  return { done, total: all.length };
+}
+
+function renderPacksList() {
+  const container = document.getElementById('packs-content');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('dashboard')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2>Industry Packs</h2>
+        <p class="ai-mode-subtitle">Curated real-world prompts. Each links to the best-fit framework.</p>
+      </div>
+    </div>
+    <div class="packs-grid">
+      ${INDUSTRY_PACKS.map(p => {
+        const { done, total } = getPackCompletionCount(p.id);
+        return `
+          <button class="pack-card" onclick="navigate('pack', { packId: '${p.id}' })">
+            <div class="pack-card-icon" style="background:var(--${p.color}-light);color:var(--${p.color})">
+              <i data-lucide="${p.icon}" style="width:22px;height:22px"></i>
+            </div>
+            <div class="pack-card-body">
+              <div class="pack-card-title">${p.name}</div>
+              <div class="pack-card-blurb">${p.blurb}</div>
+              <div class="pack-card-meta">${done}/${total} prompts attempted</div>
+            </div>
+            <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--text-muted)"></i>
+          </button>
+        `;
+      }).join('')}
+    </div>
+    <div style="margin-top:1.5rem;padding:0.85rem 1rem;background:var(--card-bg);border:1px dashed var(--border);border-radius:10px;font-size:0.82rem;color:var(--text-secondary)">
+      More packs coming soon: Healthcare, Academic, Sales.
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderPackDetail(packId) {
+  const container = document.getElementById('packs-content');
+  if (!container) return;
+  const pack = INDUSTRY_PACKS.find(p => p.id === packId);
+  if (!pack) {
+    container.innerHTML = `
+      <div class="mode-header">
+        <button class="lesson-back" onclick="navigate('packs')" aria-label="Back">
+          <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+        </button>
+        <div>
+          <h2>Pack not found</h2>
+          <p class="ai-mode-subtitle">Head back to the packs list.</p>
+        </div>
+      </div>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
+  const { done, total } = getPackCompletionCount(pack.id);
+
+  container.innerHTML = `
+    <div class="mode-header">
+      <button class="lesson-back" onclick="navigate('packs')" aria-label="Back">
+        <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
+      </button>
+      <div>
+        <h2 style="display:flex;align-items:center;gap:0.5rem">
+          <span style="display:inline-flex;width:30px;height:30px;border-radius:8px;align-items:center;justify-content:center;background:var(--${pack.color}-light);color:var(--${pack.color})">
+            <i data-lucide="${pack.icon}" style="width:18px;height:18px"></i>
+          </span>
+          ${pack.name}
+        </h2>
+        <p class="ai-mode-subtitle">${pack.blurb} · ${done}/${total} attempted</p>
+      </div>
+    </div>
+    ${pack.groups.map(g => `
+      <div class="pack-tag-group">
+        <div class="pack-tag-header">
+          <span class="pack-tag-label">${g.tag}</span>
+          <span class="pack-tag-count">${g.prompts.length}</span>
+        </div>
+        ${g.prompts.map(pr => {
+          const lesson = findLessonById(pr.lessonId);
+          const isDone = isPackPromptDone(pack.id, pr.text);
+          return `
+            <button class="pack-prompt-card ${isDone ? 'done' : ''}" onclick="startPackPrompt('${pack.id}', '${getPackPromptDoneKey(pack.id, pr.text)}', '${pr.lessonId}', ${JSON.stringify(pr.text).replace(/"/g, '&quot;')})">
+              <div class="pack-prompt-body">
+                <div class="pack-prompt-text">"${escapeHtmlSafe(pr.text)}"</div>
+                <div class="pack-prompt-meta">
+                  <span class="pack-prompt-framework">${lesson ? lesson.lesson.title : pr.lessonId}</span>
+                  ${isDone ? `<span class="pack-prompt-done-badge"><i data-lucide="check" style="width:10px;height:10px"></i> Done</span>` : ''}
+                </div>
+              </div>
+              <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0"></i>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `).join('')}
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function findLessonById(lessonId) {
+  for (const track of TRACKS) {
+    for (let i = 0; i < track.lessons.length; i++) {
+      if (track.lessons[i].id === lessonId) {
+        return { track, lesson: track.lessons[i], index: i };
+      }
+    }
+  }
+  return null;
+}
+
+function startPackPrompt(packId, promptKey, lessonId, promptText) {
+  playClick();
+  const target = findLessonById(lessonId);
+  if (!target) {
+    showToast('Framework not found for this prompt');
+    return;
+  }
+  // Set override so renderPractice picks this exact prompt
+  state.packPromptOverride = {
+    packId,
+    promptKey,
+    text: promptText
+  };
+  // Navigate to the lesson; router calls openLesson, which starts at step 0 (Theory).
+  // Users can click Next to get to practice, where the override is consumed.
+  navigate('lesson', { trackId: target.track.id, lessonIndex: target.index });
+}
+
+// Dashboard entry: single "Industry Packs" card under the Practice Modes grid.
+function renderContentPacksSection() {
+  const container = document.getElementById('content-packs-section');
+  if (!container) return;
+  const totalDone = INDUSTRY_PACKS.reduce((s, p) => s + getPackCompletionCount(p.id).done, 0);
+  const totalAll = INDUSTRY_PACKS.reduce((s, p) => s + getPackCompletionCount(p.id).total, 0);
+  container.innerHTML = `
+    <h3 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:1rem 0 0.5rem;font-weight:600">Content Packs</h3>
+    <button class="packs-entry-card" onclick="navigate('packs')">
+      <div class="packs-entry-icon">
+        <i data-lucide="briefcase" style="width:20px;height:20px"></i>
+      </div>
+      <div style="flex:1">
+        <div class="packs-entry-title">Industry Prompt Packs</div>
+        <div class="packs-entry-sub">${INDUSTRY_PACKS.length} packs · ${totalDone}/${totalAll} prompts done</div>
+      </div>
+      <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--text-muted)"></i>
+    </button>
+  `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
 
 // ========== STAGE 4A: FRAMEWORK FUSION MODE ==========
 // User picks 2 unlocked frameworks, then writes a response that hits elements
