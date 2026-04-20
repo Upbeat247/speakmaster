@@ -1,0 +1,41 @@
+# Netlify deploy config for SpeakMaster.
+# The site is a single HTML file plus a service worker — no build step needed.
+
+[build]
+  # Publish the current directory as-is.
+  publish = "."
+  # No build command — everything is static.
+  command = ""
+
+# Cache headers.
+# The index.html and service worker must NEVER be cached by the browser.
+# Users must always get the latest version (which then triggers the SW update flow).
+# All other resources can be cached aggressively because we use hash-busting
+# or they're cached by the service worker itself.
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    # Service workers are only allowed to control scope up to their path.
+    # Leaving at root so the SW controls the whole app.
+    Service-Worker-Allowed = "/"
+
+# Security headers for all responses
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "microphone=(self), camera=()"
