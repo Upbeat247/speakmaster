@@ -3825,8 +3825,6 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
         </div>
       </div>
 
-      <h3 class="mb-1">Recommended Next</h3>
-      <div id="recommended-lesson" class="card card-hover" style="cursor:pointer"></div>
     </div>
 
     <!-- TRACKS VIEW -->
@@ -8067,27 +8065,7 @@ function renderDashboard() {
     `;
   }
 
-  // Recommended
-  const recEl = document.getElementById('recommended-lesson');
-  if (next) {
-    recEl.innerHTML = `
-      <div style="display:flex;align-items:center;gap:0.75rem">
-        <div style="width:40px;height:40px;border-radius:10px;background:${next.track.color};display:flex;align-items:center;justify-content:center">
-          <i data-lucide="play" style="width:18px;height:18px;color:#fff"></i>
-        </div>
-        <div style="flex:1">
-          <div style="font-weight:600">${next.lesson.title}</div>
-          <div style="font-size:0.8rem;color:var(--text-secondary)">${next.track.name} · ${getEffectiveTimeLimit(next.lesson)}s target</div>
-        </div>
-        <span class="badge badge-teal">Up Next</span>
-      </div>
-    `;
-    recEl.onclick = () => navigate('lesson', { trackId: next.track.id, lessonIndex: next.index });
-  } else {
-    recEl.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:1rem">Complete lessons to get recommendations</p>`;
-    recEl.onclick = null;
-    recEl.style.cursor = 'default';
-  }
+  // (Recommended Next box was removed — the Smart Continue card above now handles recommendations)
 }
 
 // ========== DASHBOARD SUB-RENDERERS ==========
