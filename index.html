@@ -2508,6 +2508,51 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   to { opacity: 1; transform: translateY(0); }
 }
 .ai-review-loading, .ai-review-error { border-color: var(--border); }
+.ai-agreement-badge {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+.ai-agreement-badge strong {
+  font-weight: 700;
+  margin-right: 0.15rem;
+}
+.ai-review-score-comparison {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  padding: 0.35rem 0.55rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+.ai-score-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+.ai-score-heuristic {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.ai-score-ai {
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.ai-score-delta {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 10px;
+  background: var(--bg-card);
+}
 .ai-review-header {
   display: flex; align-items: center; gap: 0.5rem;
   margin-bottom: 0.5rem;
@@ -12633,7 +12678,22 @@ async function requestDeepAIReview(btn) {
     timeSpent: state.timerSeconds || 0,
     inputMode: state.inputMode || 'typing',
     wordCount: (state.practiceText || '').trim().split(/\s+/).filter(Boolean).length,
-    wpm: score.wpm || 0
+    wpm: score.wpm || 0,
+    // Feed the heuristic score to the AI so it acts as a complementary reviewer
+    // instead of contradicting what the app already confirmed was done well.
+    heuristicScore: {
+      structure: score.structure,
+      clarity: score.clarity,
+      depth: score.depth,
+      completion: score.completion,
+      total: score.total,
+      signals: (score.signals || []).map(s => ({
+        category: s.category || 'general',
+        type: s.type || 'partial',
+        msg: s.msg || '',
+        quote: s.quote || ''
+      }))
+    }
   };
 
   try {
@@ -12752,13 +12812,46 @@ function renderAIReviewPanel(options) {
     </div>
   `).join('');
 
+  // Agreement relationship: the AI now sees the heuristic's scores and frames its review
+  // as either confirming, enriching, or adjusting — not contradicting.
+  const heuristicTotal = (typeof r.heuristicTotal === 'number') ? r.heuristicTotal : null;
+  const scoreDelta = (heuristicTotal !== null) ? (r.total - heuristicTotal) : null;
+
+  let agreementBadge = '';
+  if (r.agreement) {
+    const agreementConfig = {
+      confirm: { icon: 'check-circle', label: 'Confirms app review', color: 'var(--green)', bg: 'var(--green-light)' },
+      enrich:  { icon: 'plus-circle',  label: 'Adds depth to app review', color: 'var(--teal)', bg: 'var(--teal-light)' },
+      adjust:  { icon: 'edit',          label: 'Adjusts app review', color: 'var(--gold)', bg: 'var(--gold-light)' }
+    };
+    const cfg = agreementConfig[r.agreement] || agreementConfig.enrich;
+    agreementBadge = `
+      <div class="ai-agreement-badge" style="background:${cfg.bg};color:${cfg.color}">
+        <i data-lucide="${cfg.icon}" style="width:12px;height:12px"></i>
+        <span><strong>${escapeHtmlSafe(cfg.label)}</strong>${r.agreementNote ? ` — ${escapeHtmlSafe(r.agreementNote)}` : ''}</span>
+      </div>
+    `;
+  }
+
+  // If we have a heuristic baseline, show the comparison alongside the AI score
+  const scoreComparison = (heuristicTotal !== null) ? `
+    <div class="ai-review-score-comparison">
+      <span class="ai-score-label">App:</span> <span class="ai-score-heuristic">${heuristicTotal}</span>
+      <i data-lucide="arrow-right" style="width:12px;height:12px;opacity:0.5"></i>
+      <span class="ai-score-label">AI:</span> <span class="ai-score-ai" style="color:${tierColor}">${r.total}</span>
+      ${scoreDelta !== 0 ? `<span class="ai-score-delta" style="color:${scoreDelta > 0 ? 'var(--green)' : 'var(--orange)'}">${scoreDelta > 0 ? '+' : ''}${scoreDelta}</span>` : `<span class="ai-score-delta" style="color:var(--text-muted)">aligned</span>`}
+    </div>
+  ` : '';
+
   container.innerHTML = `
     <div class="ai-review">
       <div class="ai-review-header">
         <i data-lucide="sparkles" style="width:16px;height:16px;color:${tierColor}"></i>
-        <span class="ai-review-title">AI Coach Review</span>
+        <span class="ai-review-title">AI Coach — Second Opinion</span>
         <span class="ai-review-score" style="color:${tierColor}">${r.total}/100</span>
       </div>
+      ${scoreComparison}
+      ${agreementBadge}
       ${r.verdict ? `<div class="ai-review-verdict">${escapeHtmlSafe(r.verdict)}</div>` : ''}
 
       <div class="ai-review-breakdown">
