@@ -13443,6 +13443,123 @@ const INDUSTRY_PACKS = [
         ]
       }
     ]
+  },
+  {
+    id: 'sales',
+    name: 'Sales',
+    icon: 'trending-up',
+    color: 'green',
+    blurb: 'Discovery, objection handling, closing, and renewals without slimy vibes',
+    groups: [
+      {
+        tag: 'Discovery & prospecting',
+        prompts: [
+          { text: 'You\'re on a cold call with a VP of Engineering. You have 20 seconds to earn another 2 minutes of their time. Go.', lessonId: '3-1' },
+          { text: 'Open a first discovery call with a skeptical prospect who only took the meeting because their EA double-booked them.', lessonId: '2-3' },
+          { text: 'The prospect asks: "So what exactly does your product do?" Answer in under 45 seconds, without jargon.', lessonId: '1-1' }
+        ]
+      },
+      {
+        tag: 'Objection handling',
+        prompts: [
+          { text: 'Your buyer says: "Honestly, you\'re twice the price of [competitor]." Respond without discounting.', lessonId: '4-2' },
+          { text: 'A prospect says: "We\'re happy with what we have and not looking to switch this year." Keep the door open.', lessonId: '4-2' },
+          { text: '"Your product looks great, but we just don\'t have budget right now." Your turn.', lessonId: '1-2' }
+        ]
+      },
+      {
+        tag: 'Closing',
+        prompts: [
+          { text: 'End a successful demo. Ask for next steps confidently — no hedging, no "let me know if you\'re interested".', lessonId: '3-1' },
+          { text: 'Present to a procurement committee. Make the business case in 90 seconds — cost, benefit, risk of not acting.', lessonId: '3-2' }
+        ]
+      },
+      {
+        tag: 'Post-sale & renewal',
+        prompts: [
+          { text: 'A long-time customer is on the fence about renewing. Open the renewal conversation.', lessonId: '5-3' },
+          { text: 'Deliver a 12% price increase to a champion customer who will push back.', lessonId: '5-2' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'asset-integrity',
+    name: 'Asset Integrity',
+    icon: 'shield-check',
+    color: 'blue',
+    blurb: 'Oil & gas integrity: inspections, RBI, regulators, turnarounds, HSE',
+    groups: [
+      {
+        tag: 'Inspection findings & risk',
+        prompts: [
+          { text: 'Brief the plant manager on a wall-thickness finding below minimum on the main crude line — in under 2 minutes.', lessonId: '3-4' },
+          { text: 'Explain Risk-Based Inspection to a new asset owner who just moved over from finance.', lessonId: '6-4' },
+          { text: 'Three integrity concerns hit your desk this week. Rank them for the ops manager and defend the order.', lessonId: '3-2' }
+        ]
+      },
+      {
+        tag: 'Regulator & audit',
+        prompts: [
+          { text: 'Open a walkthrough with the HSE regulator. Set the tone, agenda, and expectations for the day.', lessonId: '2-3' },
+          { text: 'The regulator asks: "Why wasn\'t this vessel re-inspected on the previous cycle?" Answer without getting defensive.', lessonId: '5-4' }
+        ]
+      },
+      {
+        tag: 'Contractor & turnaround',
+        prompts: [
+          { text: 'Kick off a 3-week turnaround with 200 contractors in the room. Open strong.', lessonId: '2-3' },
+          { text: 'A contractor crew is taking a clear safety shortcut on a lift plan. Stop the job and make the stop stick.', lessonId: '5-3' },
+          { text: 'Deliver the end-of-day turnaround update to site leadership — wins, blockers, plan for tomorrow.', lessonId: '2-2' }
+        ]
+      },
+      {
+        tag: 'Crisis & HSE',
+        prompts: [
+          { text: 'A loss-of-containment just happened on Unit 3. Nobody is hurt. Address the plant over the PA in 60 seconds.', lessonId: '5-2' },
+          { text: 'Brief the corporate VP on a near-miss incident — what happened, what the crew did, what changes next.', lessonId: '2-1' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'leadership',
+    name: 'Leadership',
+    icon: 'compass',
+    color: 'gold',
+    blurb: 'People leadership and executive comms: feedback, hard calls, town halls',
+    groups: [
+      {
+        tag: '1:1s & feedback',
+        prompts: [
+          { text: 'Give a high performer tough feedback in your next 1:1 — they\'re abrasive with peers and it\'s becoming a problem.', lessonId: '5-2' },
+          { text: 'Deliver specific, memorable praise to a team member who just shipped a critical project.', lessonId: '1-2' },
+          { text: 'Address an underperforming team member in their 1:1. Be clear, not cruel.', lessonId: '5-2' }
+        ]
+      },
+      {
+        tag: 'Difficult conversations',
+        prompts: [
+          { text: 'Tell a strong contributor they aren\'t getting promoted this cycle — and why. Don\'t soften the substance.', lessonId: '5-2' },
+          { text: 'Two senior engineers on your team aren\'t speaking. Facilitate the conversation in the room with both of them.', lessonId: '5-3' }
+        ]
+      },
+      {
+        tag: 'Executive communications',
+        prompts: [
+          { text: 'Open an all-hands town hall for 500+ people. First 60 seconds — set the tone for the entire meeting.', lessonId: '2-3' },
+          { text: 'Announce a leadership transition — your CPO is leaving. Deliver it with executive presence, not damage control.', lessonId: '5-1' },
+          { text: 'A board member asks a sharp, loaded question in front of the whole board. Answer it without flinching.', lessonId: '5-4' }
+        ]
+      },
+      {
+        tag: 'Change & influence',
+        prompts: [
+          { text: 'Announce a reorg that merges two teams. Lead the all-hands where half the room is skeptical.', lessonId: '5-2' },
+          { text: 'Convince a peer director to deprioritize their initiative in favor of yours — you have no authority over them.', lessonId: '5-3' }
+        ]
+      }
+    ]
   }
 ];
 
@@ -13505,9 +13622,6 @@ function renderPacksList() {
           </button>
         `;
       }).join('')}
-    </div>
-    <div style="margin-top:1.5rem;padding:0.85rem 1rem;background:var(--card-bg);border:1px dashed var(--border);border-radius:10px;font-size:0.82rem;color:var(--text-secondary)">
-      More packs coming soon: Healthcare, Academic, Sales.
     </div>
   `;
   if (typeof lucide !== 'undefined') lucide.createIcons();
