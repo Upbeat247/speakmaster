@@ -4368,6 +4368,13 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   font-size: 0.75rem; color: var(--text-muted);
   display: flex; justify-content: space-between;
 }
+
+/* Untimed session indicator (replaces timer block when timedSessionsEnabled=false) */
+.timer.untimed {
+  background: var(--card-bg); border: 1px dashed var(--border);
+  color: var(--text-secondary); font-weight: 600;
+}
+.timer.untimed i { color: var(--teal); }
 </style>
 </head>
 <body>
@@ -4620,7 +4627,8 @@ const state = {
     aiReviewEnabled: true,     // show the "Deep AI Review" button on the score screen
     aiReviewEndpoint: '/.netlify/functions/score-response', // where to call for AI scoring
     saveAudio: true,           // Stage 5B: auto-save recorded audio to IndexedDB for later playback
-    audioStorageCapMB: 500     // Stage 5B: soft cap before oldest recordings are auto-evicted
+    audioStorageCapMB: 500,    // Stage 5B: soft cap before oldest recordings are auto-evicted
+    timedSessionsEnabled: true // when false, hide timers and skip WPM/time-adherence scoring (still applies to lesson/drill/focus/fusion/debate; Speed Tier remains timed)
   }
 };
 
@@ -9157,6 +9165,17 @@ function renderSettings() {
       <div class="setting-row">
         <div class="setting-label-line">
           <div>
+            <div class="setting-label">Timed Sessions</div>
+            <div class="setting-desc">When on, every practice screen runs a timer and your score includes pace and time-adherence (WPM). Turn off to type at your own pace in meetings or quiet places — pace and time-adherence are awarded the full points automatically. Speed Tier always stays timed regardless.</div>
+          </div>
+          <div class="setting-toggle ${s.timedSessionsEnabled !== false ? 'on' : ''}"
+            onclick="toggleSetting('timedSessionsEnabled')"></div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label-line">
+          <div>
             <div class="setting-label">Difficulty</div>
             <div class="setting-desc">Adjusts scoring generosity. Easy gives a 10% boost to Structure, Clarity, and Depth. Hard deducts 10%.</div>
           </div>
@@ -10770,6 +10789,7 @@ function renderPractice(container, lesson) {
 
   const effectiveLimit = getEffectiveTimeLimit(lesson);
   const showGhost = state.settings && state.settings.showFrameworkGhost;
+  const timed = isTimedSession();
 
   container.innerHTML = `
     <div class="practice-area">
@@ -10782,12 +10802,19 @@ function renderPractice(container, lesson) {
       </div>
       <div class="practice-prompt">"${promptObj.text}"</div>
       <div class="practice-meta">
-        <div class="timer" id="practice-timer">
-          <i data-lucide="clock" style="width:18px;height:18px"></i>
-          <span id="timer-display">0:00</span>
-          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
-        </div>
-        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+        ${timed ? `
+          <div class="timer" id="practice-timer">
+            <i data-lucide="clock" style="width:18px;height:18px"></i>
+            <span id="timer-display">0:00</span>
+            <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
+          </div>
+        ` : `
+          <div class="timer untimed">
+            <i data-lucide="infinity" style="width:18px;height:18px"></i>
+            <span>Untimed</span>
+          </div>
+        `}
+        <div class="word-count" id="word-count">0 words${timed ? ' · ~0s speaking' : ''}</div>
       </div>
       <div class="practice-input-area">
         <textarea class="practice-textarea" id="practice-input"
@@ -10807,7 +10834,7 @@ function renderPractice(container, lesson) {
       </div>
       <div class="mic-status" id="mic-status"></div>
       <div class="practice-footer">
-        <div class="speaking-time" id="speaking-estimate">Target: ${effectiveLimit}s</div>
+        <div class="speaking-time" id="speaking-estimate">${timed ? `Target: ${effectiveLimit}s` : 'No time pressure — write at your pace'}</div>
         <button class="btn btn-primary" onclick="submitPractice()" id="submit-btn">
           Submit Response <i data-lucide="send" style="width:14px;height:14px"></i>
         </button>
@@ -10815,19 +10842,21 @@ function renderPractice(container, lesson) {
     </div>
   `;
 
-  // Start timer
+  // Start timer (only if timed sessions are enabled)
   clearInterval(state.timerInterval);
-  state.timerInterval = setInterval(() => {
-    state.timerSeconds++;
-    const display = document.getElementById('timer-display');
-    const timerEl = document.getElementById('practice-timer');
-    if (display) {
-      display.textContent = formatTime(state.timerSeconds);
-      // Color coding based on effective time
-      const ratio = state.timerSeconds / effectiveLimit;
-      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
-    }
-  }, 1000);
+  if (timed) {
+    state.timerInterval = setInterval(() => {
+      state.timerSeconds++;
+      const display = document.getElementById('timer-display');
+      const timerEl = document.getElementById('practice-timer');
+      if (display) {
+        display.textContent = formatTime(state.timerSeconds);
+        // Color coding based on effective time
+        const ratio = state.timerSeconds / effectiveLimit;
+        timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+      }
+    }, 1000);
+  }
 }
 
 // ========== FOCUS MODE ==========
@@ -10866,8 +10895,14 @@ function updateWordCount() {
   const text = document.getElementById('practice-input').value;
   state.practiceText = text;
   const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
-  const speakingSeconds = Math.round(words / 2.5); // ~150 words per minute = 2.5 per second
-  document.getElementById('word-count').textContent = `${words} word${words !== 1 ? 's' : ''} · ~${speakingSeconds}s speaking`;
+  const wordEl = document.getElementById('word-count');
+  if (!wordEl) return;
+  if (isTimedSession()) {
+    const speakingSeconds = Math.round(words / 2.5); // ~150 words per minute = 2.5 per second
+    wordEl.textContent = `${words} word${words !== 1 ? 's' : ''} · ~${speakingSeconds}s speaking`;
+  } else {
+    wordEl.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+  }
 }
 
 function submitPractice() {
@@ -10968,6 +11003,16 @@ function stopSpeechRecognition() {
   const micStatus = document.getElementById('mic-status');
   if (micBtn) micBtn.classList.remove('recording');
   if (micStatus) { micStatus.textContent = ''; micStatus.classList.remove('active'); }
+}
+
+// ========== TIMED SESSIONS HELPER ==========
+// Returns true if the current session should use a timer + score pace/time-adherence.
+// The setting defaults to true; turning it off is for typing in meetings / quiet
+// environments where you don't want a visible countdown or pace penalty.
+function isTimedSession() {
+  // Default true if setting object missing (back-compat with older state)
+  if (!state.settings) return true;
+  return state.settings.timedSessionsEnabled !== false;
 }
 
 // ========== STAGE 5B: INDEXEDDB AUDIO STORE ==========
@@ -11722,11 +11767,21 @@ function autoScoreResponse(text, lesson, timeSpent, inputMode) {
 
   // ===== CLARITY SCORE (0-30) — evidence-based, more generous =====
 
-  // 1. Time adherence to target (up to 10 pts) — respects timer multiplier setting
+  // 1. Time adherence to target (up to 10 pts) — respects timer multiplier setting.
+  // When timed sessions are disabled, award the full 10 pts with a neutral signal
+  // so the user isn't penalized for typing at their own pace.
+  const sessionIsTimed = isTimedSession();
   const effectiveLimit = getEffectiveTimeLimit(lesson);
   const timeRatio = timeSpent > 0 ? timeSpent / effectiveLimit : 0;
   const timeFormatted = `${timeSpent}s of ${effectiveLimit}s target`;
-  if (timeSpent === 0) {
+  if (!sessionIsTimed) {
+    result.clarity += 10;
+    result.signals.push({
+      type: 'hit',
+      category: 'clarity',
+      msg: 'Untimed session — time-adherence not measured.'
+    });
+  } else if (timeSpent === 0) {
     // No timing — skip
   } else if (timeRatio >= 0.80 && timeRatio <= 1.20) {
     result.clarity += 10;
@@ -11761,8 +11816,9 @@ function autoScoreResponse(text, lesson, timeSpent, inputMode) {
     });
   }
 
-  // 2. Pace — words per minute (up to 7 pts), mode-aware
-  const wpm = timeSpent > 0 ? Math.round((wordCount / timeSpent) * 60) : 0;
+  // 2. Pace — words per minute (up to 7 pts), mode-aware.
+  // Untimed: award full 7 pts and skip pace signal/WPM display.
+  const wpm = (sessionIsTimed && timeSpent > 0) ? Math.round((wordCount / timeSpent) * 60) : 0;
   result.wpm = wpm;
   result.inputMode = inputMode;
 
@@ -11771,7 +11827,10 @@ function autoScoreResponse(text, lesson, timeSpent, inputMode) {
     : { idealLow: 25,  idealHigh: 50,  okLow: 15,  okHigh: 70,  rangeLow: 5,  rangeHigh: 90,  label: '25-50 wpm',  noun: 'typing pace'   };
   result.paceTargets = paceTargets;
 
-  if (wpm === 0) {
+  if (!sessionIsTimed) {
+    result.clarity += 7;
+    // Single neutral signal explaining the untimed posture; skip WPM messaging.
+  } else if (wpm === 0) {
     // No time spent — can't score pace
   } else if (wpm >= paceTargets.idealLow && wpm <= paceTargets.idealHigh) {
     result.clarity += 7;
@@ -12720,12 +12779,13 @@ function renderDrillRound() {
 
   const drillEffectiveLimit = getEffectiveTimeLimit(lesson);
   const drillShowGhost = state.settings && state.settings.showFrameworkGhost;
+  const drillTimed = isTimedSession();
 
   content.innerHTML = `
     <div class="drill-banner">
       <div>
-        <h3><i data-lucide="zap" style="width:16px;height:16px;display:inline;vertical-align:middle"></i> Speed Drill — Round ${drill.round + 1}/${drill.totalRounds}</h3>
-        <p>Respond quickly using the ${lesson.title} framework</p>
+        <h3><i data-lucide="zap" style="width:16px;height:16px;display:inline;vertical-align:middle"></i> ${drillTimed ? 'Speed Drill' : 'Drill'} — Round ${drill.round + 1}/${drill.totalRounds}</h3>
+        <p>Respond ${drillTimed ? 'quickly' : 'thoughtfully'} using the ${lesson.title} framework</p>
       </div>
       <div class="drill-progress-dots">
         ${Array.from({length: drill.totalRounds}, (_, i) => `
@@ -12736,16 +12796,23 @@ function renderDrillRound() {
     <div class="practice-area">
       <div class="practice-prompt">"${prompt.text}"</div>
       <div class="practice-meta">
-        <div class="timer" id="practice-timer">
-          <i data-lucide="clock" style="width:18px;height:18px"></i>
-          <span id="timer-display">0:00</span>
-          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(drillEffectiveLimit)}</span>
-        </div>
-        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+        ${drillTimed ? `
+          <div class="timer" id="practice-timer">
+            <i data-lucide="clock" style="width:18px;height:18px"></i>
+            <span id="timer-display">0:00</span>
+            <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(drillEffectiveLimit)}</span>
+          </div>
+        ` : `
+          <div class="timer untimed">
+            <i data-lucide="infinity" style="width:18px;height:18px"></i>
+            <span>Untimed</span>
+          </div>
+        `}
+        <div class="word-count" id="word-count">0 words${drillTimed ? ' · ~0s speaking' : ''}</div>
       </div>
       <div class="practice-input-area">
         <textarea class="practice-textarea" id="practice-input"
-          placeholder="Quick — use ${lesson.elements.map(e => e.name).join(' → ')}..."
+          placeholder="${drillTimed ? 'Quick — use' : 'Use'} ${lesson.elements.map(e => e.name).join(' → ')}..."
           oninput="updateWordCount(); updateGhostVisibility()" autofocus></textarea>
         <button class="record-btn" id="record-btn" onclick="toggleAudioRecording()" title="Record audio">
           <i data-lucide="circle" style="width:20px;height:20px;fill:currentColor"></i>
@@ -12761,7 +12828,7 @@ function renderDrillRound() {
       </div>
       <div class="mic-status" id="mic-status"></div>
       <div class="practice-footer">
-        <div class="speaking-time">Target: ${drillEffectiveLimit}s</div>
+        <div class="speaking-time">${drillTimed ? `Target: ${drillEffectiveLimit}s` : 'No time pressure — write at your pace'}</div>
         <button class="btn btn-primary" onclick="submitDrillRound()">
           Submit <i data-lucide="send" style="width:14px;height:14px"></i>
         </button>
@@ -12770,16 +12837,18 @@ function renderDrillRound() {
   `;
 
   clearInterval(state.timerInterval);
-  state.timerInterval = setInterval(() => {
-    state.timerSeconds++;
-    const display = document.getElementById('timer-display');
-    const timerEl = document.getElementById('practice-timer');
-    if (display) {
-      display.textContent = formatTime(state.timerSeconds);
-      const ratio = state.timerSeconds / drillEffectiveLimit;
-      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
-    }
-  }, 1000);
+  if (drillTimed) {
+    state.timerInterval = setInterval(() => {
+      state.timerSeconds++;
+      const display = document.getElementById('timer-display');
+      const timerEl = document.getElementById('practice-timer');
+      if (display) {
+        display.textContent = formatTime(state.timerSeconds);
+        const ratio = state.timerSeconds / drillEffectiveLimit;
+        timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+      }
+    }, 1000);
+  }
 
   lucide.createIcons();
 }
@@ -15271,6 +15340,7 @@ function renderFusionPractice() {
   if (!container || !sess || sess.picking) return;
 
   const effectiveLimit = getEffectiveTimeLimit(sess.fused);
+  const timed = isTimedSession();
   state.timerSeconds = 0;
   state.practiceStartTime = Date.now();
   state.usedSpeech = false;
@@ -15302,12 +15372,19 @@ function renderFusionPractice() {
       <div class="practice-area-header"><h3>Your Turn</h3></div>
       <div class="practice-prompt">"${sess.prompt.text}"</div>
       <div class="practice-meta">
-        <div class="timer" id="practice-timer">
-          <i data-lucide="clock" style="width:18px;height:18px"></i>
-          <span id="timer-display">0:00</span>
-          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
-        </div>
-        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+        ${timed ? `
+          <div class="timer" id="practice-timer">
+            <i data-lucide="clock" style="width:18px;height:18px"></i>
+            <span id="timer-display">0:00</span>
+            <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
+          </div>
+        ` : `
+          <div class="timer untimed">
+            <i data-lucide="infinity" style="width:18px;height:18px"></i>
+            <span>Untimed</span>
+          </div>
+        `}
+        <div class="word-count" id="word-count">0 words${timed ? ' · ~0s speaking' : ''}</div>
       </div>
       <div class="practice-input-area">
         <textarea class="practice-textarea" id="practice-input" oninput="updateWordCount()" autofocus></textarea>
@@ -15320,7 +15397,7 @@ function renderFusionPractice() {
       </div>
       <div class="mic-status" id="mic-status"></div>
       <div class="practice-footer">
-        <div class="speaking-time">Target: ${effectiveLimit}s</div>
+        <div class="speaking-time">${timed ? `Target: ${effectiveLimit}s` : 'No time pressure — write at your pace'}</div>
         <button class="btn btn-primary" onclick="submitFusionPractice()">
           Submit <i data-lucide="send" style="width:14px;height:14px"></i>
         </button>
@@ -15330,16 +15407,18 @@ function renderFusionPractice() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
   clearInterval(state.timerInterval);
-  state.timerInterval = setInterval(() => {
-    state.timerSeconds++;
-    const display = document.getElementById('timer-display');
-    const timerEl = document.getElementById('practice-timer');
-    if (display) {
-      display.textContent = formatTime(state.timerSeconds);
-      const ratio = state.timerSeconds / effectiveLimit;
-      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
-    }
-  }, 1000);
+  if (timed) {
+    state.timerInterval = setInterval(() => {
+      state.timerSeconds++;
+      const display = document.getElementById('timer-display');
+      const timerEl = document.getElementById('practice-timer');
+      if (display) {
+        display.textContent = formatTime(state.timerSeconds);
+        const ratio = state.timerSeconds / effectiveLimit;
+        timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+      }
+    }, 1000);
+  }
 }
 
 // Returns coverage for a framework: { hit: [names], miss: [names], count, total }
@@ -15693,6 +15772,7 @@ function renderDebateRoundInput() {
   // Base time limit; scale by timerMultiplier. Each round gets ~60s * multiplier.
   const mult = (state.settings && state.settings.timerMultiplier) || 1;
   const tierLimit = Math.max(30, Math.round(60 * mult));
+  const timed = isTimedSession();
 
   state.timerSeconds = 0;
   state.practiceStartTime = Date.now();
@@ -15734,12 +15814,19 @@ function renderDebateRoundInput() {
       <div class="practice-area-header"><h3>Your ${roundLabel}</h3></div>
       <div class="practice-prompt">Argue the <strong>${sess.userSide.toUpperCase()}</strong> side: "${sess.topic}"</div>
       <div class="practice-meta">
-        <div class="timer" id="practice-timer">
-          <i data-lucide="clock" style="width:18px;height:18px"></i>
-          <span id="timer-display">0:00</span>
-          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(tierLimit)}</span>
-        </div>
-        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+        ${timed ? `
+          <div class="timer" id="practice-timer">
+            <i data-lucide="clock" style="width:18px;height:18px"></i>
+            <span id="timer-display">0:00</span>
+            <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(tierLimit)}</span>
+          </div>
+        ` : `
+          <div class="timer untimed">
+            <i data-lucide="infinity" style="width:18px;height:18px"></i>
+            <span>Untimed</span>
+          </div>
+        `}
+        <div class="word-count" id="word-count">0 words${timed ? ' · ~0s speaking' : ''}</div>
       </div>
       <div class="practice-input-area">
         <textarea class="practice-textarea" id="practice-input" oninput="updateWordCount()" autofocus></textarea>
@@ -15752,7 +15839,7 @@ function renderDebateRoundInput() {
       </div>
       <div class="mic-status" id="mic-status"></div>
       <div class="practice-footer">
-        <div class="speaking-time">Target: ${tierLimit}s</div>
+        <div class="speaking-time">${timed ? `Target: ${tierLimit}s` : 'No time pressure — write at your pace'}</div>
         <button class="btn btn-primary" onclick="submitDebateRound()">
           Submit <i data-lucide="send" style="width:14px;height:14px"></i>
         </button>
@@ -15762,16 +15849,18 @@ function renderDebateRoundInput() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
   clearInterval(state.timerInterval);
-  state.timerInterval = setInterval(() => {
-    state.timerSeconds++;
-    const display = document.getElementById('timer-display');
-    const timerEl = document.getElementById('practice-timer');
-    if (display) {
-      display.textContent = formatTime(state.timerSeconds);
-      const ratio = state.timerSeconds / tierLimit;
-      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
-    }
-  }, 1000);
+  if (timed) {
+    state.timerInterval = setInterval(() => {
+      state.timerSeconds++;
+      const display = document.getElementById('timer-display');
+      const timerEl = document.getElementById('practice-timer');
+      if (display) {
+        display.textContent = formatTime(state.timerSeconds);
+        const ratio = state.timerSeconds / tierLimit;
+        timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+      }
+    }, 1000);
+  }
 }
 
 async function submitDebateRound() {
@@ -16142,6 +16231,7 @@ function renderFocusPractice() {
   const skill = FOCUS_SKILLS[sess.skill];
   const lesson = sess.lesson;
   const effectiveLimit = getEffectiveTimeLimit(lesson);
+  const timed = isTimedSession();
 
   state.timerSeconds = 0;
   state.practiceStartTime = Date.now();
@@ -16169,12 +16259,19 @@ function renderFocusPractice() {
       </div>
       <div class="practice-prompt">"${sess.prompt.text}"</div>
       <div class="practice-meta">
-        <div class="timer" id="practice-timer">
-          <i data-lucide="clock" style="width:18px;height:18px"></i>
-          <span id="timer-display">0:00</span>
-          <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
-        </div>
-        <div class="word-count" id="word-count">0 words · ~0s speaking</div>
+        ${timed ? `
+          <div class="timer" id="practice-timer">
+            <i data-lucide="clock" style="width:18px;height:18px"></i>
+            <span id="timer-display">0:00</span>
+            <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted)">/ ${formatTime(effectiveLimit)}</span>
+          </div>
+        ` : `
+          <div class="timer untimed">
+            <i data-lucide="infinity" style="width:18px;height:18px"></i>
+            <span>Untimed</span>
+          </div>
+        `}
+        <div class="word-count" id="word-count">0 words${timed ? ' · ~0s speaking' : ''}</div>
       </div>
       <div class="practice-input-area">
         <textarea class="practice-textarea" id="practice-input" oninput="updateWordCount()" autofocus></textarea>
@@ -16187,7 +16284,7 @@ function renderFocusPractice() {
       </div>
       <div class="mic-status" id="mic-status"></div>
       <div class="practice-footer">
-        <div class="speaking-time">Target: ${effectiveLimit}s</div>
+        <div class="speaking-time">${timed ? `Target: ${effectiveLimit}s` : 'No time pressure — write at your pace'}</div>
         <button class="btn btn-primary" onclick="submitFocusPractice()">
           Submit <i data-lucide="send" style="width:14px;height:14px"></i>
         </button>
@@ -16197,16 +16294,18 @@ function renderFocusPractice() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 
   clearInterval(state.timerInterval);
-  state.timerInterval = setInterval(() => {
-    state.timerSeconds++;
-    const display = document.getElementById('timer-display');
-    const timerEl = document.getElementById('practice-timer');
-    if (display) {
-      display.textContent = formatTime(state.timerSeconds);
-      const ratio = state.timerSeconds / effectiveLimit;
-      timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
-    }
-  }, 1000);
+  if (timed) {
+    state.timerInterval = setInterval(() => {
+      state.timerSeconds++;
+      const display = document.getElementById('timer-display');
+      const timerEl = document.getElementById('practice-timer');
+      if (display) {
+        display.textContent = formatTime(state.timerSeconds);
+        const ratio = state.timerSeconds / effectiveLimit;
+        timerEl.className = 'timer' + (ratio > 1.3 ? ' danger' : ratio > 1 ? ' warning' : '');
+      }
+    }, 1000);
+  }
 }
 
 function submitFocusPractice() {
