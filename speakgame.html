@@ -1425,6 +1425,241 @@ main { flex: 1; }
 }
 .combo.penalty .combo-bonus { color: var(--red); }
 
+/* ================================================================
+   SESSION 5 — Argument Tower (turn-based tactical TD)
+   ================================================================ */
+.tower-screen { max-width: 1100px; margin: 0 auto; }
+
+.tower-banner {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--purple); border-radius: var(--radius-lg);
+  position: relative; overflow: hidden;
+}
+.tower-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at top right, rgba(167,139,250,0.15), transparent 60%);
+  pointer-events: none;
+}
+.tower-banner h2 {
+  font-family: var(--font-display); font-size: 1.3rem; font-weight: 800;
+  position: relative;
+}
+.tower-banner .sub {
+  font-size: 0.85rem; color: var(--text-dim); margin-top: 0.2rem; position: relative;
+}
+
+.tower-strip {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.tower-strip-item {
+  padding: 0.6rem 0.8rem; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  text-align: center;
+}
+.tower-strip-label {
+  font-size: 0.65rem; color: var(--text-mute); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.tower-strip-value {
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 800;
+  margin-top: 0.15rem;
+}
+.tower-strip-value.composure { color: var(--green); }
+.tower-strip-value.composure.low { color: var(--orange); }
+.tower-strip-value.composure.critical { color: var(--red); }
+.tower-strip-value.mana { color: var(--accent); }
+.tower-strip-value.wave { color: var(--purple); }
+
+/* Board */
+.tower-board {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.lane {
+  display: grid; gap: 0.35rem;
+  grid-template-columns: repeat(5, 1fr);
+  margin-bottom: 0.35rem;
+}
+.lane:last-child { margin-bottom: 0; }
+.cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 1.4rem; line-height: 1;
+  cursor: default;
+  transition: border-color 0.12s ease, transform 0.1s ease, background 0.12s ease;
+  overflow: hidden;
+}
+@media (max-width: 520px) { .cell { font-size: 1.1rem; } }
+.cell.danger { background: linear-gradient(135deg, var(--bg-card), rgba(239,83,80,0.15)); border-color: rgba(239,83,80,0.4); }
+.cell.placeable {
+  border-color: var(--accent); border-style: dashed; cursor: pointer;
+  background: var(--accent-soft);
+}
+.cell.placeable:hover { transform: scale(1.05); }
+.cell.targetable {
+  border-color: var(--purple); cursor: pointer;
+  background: rgba(167,139,250,0.12);
+}
+.cell.targetable:hover { transform: scale(1.05); }
+.cell-empty-coord {
+  position: absolute; bottom: 1px; right: 3px;
+  font-size: 0.55rem; color: var(--text-mute); font-weight: 700;
+  opacity: 0.45;
+}
+
+/* Tower in cell */
+.cell .tower {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
+  background: var(--bg-elev-2); border-radius: var(--radius-sm);
+}
+.cell .tower .ico { font-size: 1.4rem; line-height: 1; }
+.cell .tower .lbl {
+  font-family: var(--font-display); font-size: 0.62rem; font-weight: 800;
+  margin-top: 0.15rem; letter-spacing: 0.03em;
+  color: var(--text-dim); text-transform: uppercase;
+}
+@media (max-width: 520px) { .cell .tower .lbl { display: none; } }
+
+/* Objection in cell */
+.cell .objection {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
+  position: relative;
+}
+.cell .objection .ico { font-size: 1.5rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
+.cell .objection.slowed::after {
+  content: '⏸'; position: absolute; top: 2px; right: 3px;
+  font-size: 0.65rem; color: var(--purple);
+}
+.cell .objection.boss .ico { font-size: 1.8rem; }
+.cell .objection .hp-bar-wrap {
+  width: 80%; height: 4px; border-radius: 999px;
+  background: rgba(0,0,0,0.3); margin-top: 0.2rem; overflow: hidden;
+}
+.cell .objection .hp-bar {
+  height: 100%; background: linear-gradient(90deg, var(--red), var(--orange));
+  transition: width 0.3s ease;
+}
+.cell.objection-fire { animation: tdpulse 0.35s ease; }
+@keyframes tdpulse {
+  0%, 100% { background-color: var(--bg-card); }
+  50%      { background-color: rgba(239,83,80,0.3); }
+}
+
+/* Tower flash on attack */
+.cell .tower.firing { animation: tower-flash 0.4s ease; }
+@keyframes tower-flash {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.18); filter: brightness(1.5); }
+}
+
+/* Hand */
+.tower-hand {
+  margin-bottom: 1rem;
+}
+.tower-hand-label {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tower-cards {
+  display: grid; gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.tower-card {
+  position: relative;
+  padding: 0.65rem 0.8rem; min-height: 110px;
+  background: var(--bg-card); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  font-size: 0.78rem; line-height: 1.35; user-select: none;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.tower-card:hover:not(.unaffordable) { transform: translateY(-3px); border-color: var(--accent); }
+.tower-card.unaffordable { opacity: 0.45; cursor: not-allowed; }
+.tower-card.selected {
+  border-color: var(--accent); box-shadow: var(--shadow-glow);
+  transform: translateY(-3px);
+}
+.tower-card[data-kind="evidence"]  { border-color: rgba(255,209,102,0.5); }
+.tower-card[data-kind="authority"] { border-color: rgba(239,83,80,0.5); }
+.tower-card[data-kind="vision"]    { border-color: rgba(45,212,191,0.5); }
+.tower-card[data-kind="aoe"]       { border-color: rgba(167,139,250,0.5); }
+.tower-card[data-kind="control"]   { border-color: rgba(255,138,76,0.5); }
+.tower-card-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.4rem;
+}
+.tower-card-name {
+  font-family: var(--font-display); font-weight: 800; font-size: 0.92rem; line-height: 1.1;
+}
+.tower-card-cost {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: #0a1726;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.82rem; flex-shrink: 0;
+}
+.tower-card-icon { font-size: 1.6rem; line-height: 1; }
+.tower-card-text { color: var(--text-dim); font-size: 0.75rem; }
+.tower-card-pill {
+  display: inline-block; padding: 0.05rem 0.4rem; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-mute); align-self: flex-start;
+}
+
+/* Tower actions row */
+.tower-actions {
+  display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.tower-actions .spacer { flex: 1; }
+
+/* Queue preview */
+.tower-queue {
+  display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;
+  padding: 0.55rem 0.85rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+.tower-queue .lbl {
+  font-weight: 700; color: var(--text-mute);
+  text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.7rem;
+}
+.queue-chip {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.15rem 0.5rem; border-radius: 999px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+.queue-chip .turn { color: var(--text-mute); font-weight: 700; font-size: 0.7rem; }
+
+/* End-of-wave / end-of-run screens */
+.tower-result {
+  max-width: 700px; margin: 0 auto; padding: 1.5rem 1.4rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 2px solid var(--accent); border-radius: var(--radius-lg);
+  text-align: center;
+  animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.tower-result.lost { border-color: var(--orange); }
+.tower-result.boss { border-color: var(--gold); }
+.tower-result .icon { font-size: 3rem; line-height: 1; margin-bottom: 0.4rem; }
+.tower-result h2 {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 900;
+  margin-bottom: 0.4rem;
+}
+.tower-result p { color: var(--text-dim); margin-bottom: 0.85rem; }
+
 /* Composition transcript on score screen */
 .composer-transcript {
   padding: 1rem 1.2rem; margin-bottom: 1rem;
@@ -1525,6 +1760,11 @@ main { flex: 1; }
     <!-- COMPOSER -->
     <section id="view-composer" class="view">
       <div id="composer-content"></div>
+    </section>
+
+    <!-- TOWER DEFENSE -->
+    <section id="view-tower" class="view">
+      <div id="tower-content"></div>
     </section>
 
     <!-- SETTINGS -->
@@ -1856,6 +2096,580 @@ function buildTilePool(puzzle, dayKey) {
   const shuffledOthers = shuffleWithRng(allOthers, rng);
   const decoys = shuffledOthers.slice(0, WORDLE_TILE_POOL_SIZE - correctIds.length);
   return shuffleWithRng([...correctIds, ...decoys], rng);
+}
+
+// ================================================================
+// SESSION 5 — ARGUMENT TOWER (turn-based tactical TD)
+// 3 lanes × 5 columns. Objections spawn on the left and march right.
+// 3 reach the right edge = you lose your composure. Win = clear 4 waves.
+// Towers fire at the leftmost objection in their lane each turn.
+// Spells are one-shots cast on a lane.
+// ================================================================
+
+const TD_LANES = 3;
+const TD_COLS = 5;
+
+const TOWER_LIBRARY = [
+  // Placed towers
+  { id: 'tw01', name: 'Evidence',     icon: '📊', mana: 1, dmg: 2, kind: 'evidence',
+    isTower: true,
+    text: 'Deals 2 dmg / turn. 2× vs Cost concern.', bonusVs: 'cost' },
+  { id: 'tw02', name: 'Track Record', icon: '🏆', mana: 1, dmg: 2, kind: 'authority',
+    isTower: true,
+    text: 'Deals 2 dmg / turn. 2× vs Authority.', bonusVs: 'authority' },
+  { id: 'tw03', name: 'Vision',       icon: '🔭', mana: 2, dmg: 3, kind: 'vision',
+    isTower: true,
+    text: 'Deals 3 dmg / turn. 2× vs Status Quo.', bonusVs: 'status' },
+  // Spells (one-shot, choose a lane)
+  { id: 'tw04', name: 'Reframe',      icon: '🔄', mana: 3, dmg: 3, kind: 'aoe',
+    isSpell: true,
+    text: 'Deals 3 dmg to ALL objections in a lane.' },
+  { id: 'tw05', name: 'Stall',        icon: '⏸️', mana: 1, dmg: 0, kind: 'control',
+    isSpell: true,
+    text: 'All objections in a lane skip their next move.' }
+];
+function towerById(id) { return TOWER_LIBRARY.find(t => t.id === id); }
+
+const OBJECTION_LIBRARY = [
+  { id: 'cost',      name: 'Cost concern',        icon: '💰', hp: 2, color: 'orange' },
+  { id: 'authority', name: 'Authority challenge', icon: '⚖️', hp: 3, color: 'red' },
+  { id: 'status',    name: 'Status quo bias',     icon: '🛡️', hp: 4, color: 'blue' },
+  { id: 'boss',      name: 'The Doubt',           icon: '👁️', hp: 12, color: 'purple', isBoss: true }
+];
+function objectionById(id) { return OBJECTION_LIBRARY.find(o => o.id === id); }
+
+// Waves: each entry's queue is sorted by turn. Each {turn, lane, kind}.
+const TD_WAVES = [
+  { name: 'Polite skeptics', startMana: 3, manaPerTurn: 3,
+    queue: [
+      { turn: 0, lane: 1, kind: 'cost' },
+      { turn: 1, lane: 0, kind: 'cost' },
+      { turn: 2, lane: 2, kind: 'authority' }
+    ] },
+  { name: 'Sharper questions', startMana: 4, manaPerTurn: 3,
+    queue: [
+      { turn: 0, lane: 0, kind: 'cost' },
+      { turn: 0, lane: 2, kind: 'cost' },
+      { turn: 1, lane: 1, kind: 'authority' },
+      { turn: 2, lane: 0, kind: 'authority' },
+      { turn: 3, lane: 2, kind: 'status' }
+    ] },
+  { name: 'Heated exchange', startMana: 4, manaPerTurn: 4,
+    queue: [
+      { turn: 0, lane: 0, kind: 'cost' },
+      { turn: 0, lane: 1, kind: 'authority' },
+      { turn: 1, lane: 2, kind: 'status' },
+      { turn: 2, lane: 1, kind: 'cost' },
+      { turn: 3, lane: 0, kind: 'status' },
+      { turn: 4, lane: 2, kind: 'authority' },
+      { turn: 5, lane: 1, kind: 'status' }
+    ] },
+  { name: 'The Doubt arrives', startMana: 5, manaPerTurn: 5, isBossWave: true,
+    queue: [
+      { turn: 0, lane: 0, kind: 'authority' },
+      { turn: 0, lane: 2, kind: 'cost' },
+      { turn: 1, lane: 1, kind: 'boss' },
+      { turn: 2, lane: 0, kind: 'status' },
+      { turn: 3, lane: 2, kind: 'status' },
+      { turn: 4, lane: 1, kind: 'authority' }
+    ] }
+];
+
+// ----- TD State -----
+if (!state.td) {
+  state.td = {
+    runsCompleted: 0,
+    runsLost: 0,
+    bestWaveReached: 0
+  };
+}
+let _td = null; // transient session
+
+function startTD() {
+  SFX.click();
+  _td = newTDState(0);
+  renderTower();
+}
+
+function newTDState(waveIdx) {
+  const wave = TD_WAVES[waveIdx];
+  return {
+    waveIdx,
+    turn: 0,
+    composure: waveIdx === 0 ? 3 : (_td ? _td.composure : 3), // 3 composure points (lives)
+    composureMax: 3,
+    mana: wave.startMana,
+    // Board: grid[lane][col] = { kind:'tower'|'objection', ...data } or null
+    grid: Array.from({ length: TD_LANES }, () => Array(TD_COLS).fill(null)),
+    // Objection list with derived lane/col for easy iteration
+    queueRemaining: wave.queue.slice().sort((a,b) => a.turn - b.turn),
+    selectedCardId: null,
+    over: false,
+    won: false,
+    bossDefeated: false,
+    waveResult: null  // 'won' | 'lost' | null
+  };
+}
+
+function tdAt(lane, col) {
+  return _td.grid[lane] && _td.grid[lane][col];
+}
+
+// ----- Card selection -----
+function selectTowerCard(cardId) {
+  if (!_td || _td.over) return;
+  const card = towerById(cardId);
+  if (!card) return;
+  if (_td.mana < card.mana) { showToast('Not enough mana.', 'error'); return; }
+  _td.selectedCardId = _td.selectedCardId === cardId ? null : cardId;
+  SFX.click();
+  renderTower();
+}
+
+// ----- Placement / spell casting -----
+function onCellClick(lane, col) {
+  if (!_td || _td.over) return;
+  if (!_td.selectedCardId) return;
+  const card = towerById(_td.selectedCardId);
+  if (!card) return;
+  if (_td.mana < card.mana) return;
+
+  if (card.isTower) {
+    // Must be an empty cell
+    if (tdAt(lane, col)) { showToast('Cell occupied.', 'error'); return; }
+    _td.grid[lane][col] = {
+      kind: 'tower',
+      towerId: card.id,
+      icon: card.icon,
+      name: card.name,
+      dmg: card.dmg,
+      bonusVs: card.bonusVs || null
+    };
+    _td.mana -= card.mana;
+    _td.selectedCardId = null;
+    SFX.place();
+    renderTower();
+    return;
+  }
+  if (card.isSpell) {
+    // Cast on the lane this cell is in. Any cell click counts as the lane.
+    if (card.kind === 'aoe') {
+      // Damage every objection in the lane
+      for (let c = 0; c < TD_COLS; c++) {
+        const cell = tdAt(lane, c);
+        if (cell && cell.kind === 'objection') {
+          applyDamageToObjection(lane, c, card.dmg);
+        }
+      }
+    } else if (card.kind === 'control') {
+      for (let c = 0; c < TD_COLS; c++) {
+        const cell = tdAt(lane, c);
+        if (cell && cell.kind === 'objection') cell.slowed = true;
+      }
+    }
+    _td.mana -= card.mana;
+    _td.selectedCardId = null;
+    SFX.submit();
+    renderTower();
+    return;
+  }
+}
+
+function applyDamageToObjection(lane, col, raw) {
+  const cell = tdAt(lane, col);
+  if (!cell || cell.kind !== 'objection') return;
+  cell.hp -= raw;
+  if (cell.hp <= 0) {
+    _td.grid[lane][col] = null;
+    if (cell.isBoss) _td.bossDefeated = true;
+  }
+}
+
+// ----- Towers fire -----
+function towersFire() {
+  for (let lane = 0; lane < TD_LANES; lane++) {
+    // Collect all towers in this lane (in column order, left to right)
+    for (let col = 0; col < TD_COLS; col++) {
+      const cell = tdAt(lane, col);
+      if (!cell || cell.kind !== 'tower') continue;
+      // Find leftmost objection in this lane
+      let targetCol = -1;
+      for (let c = 0; c < TD_COLS; c++) {
+        const t = tdAt(lane, c);
+        if (t && t.kind === 'objection') { targetCol = c; break; }
+      }
+      if (targetCol < 0) continue; // no target
+      const tcell = tdAt(lane, targetCol);
+      const tower = towerById(cell.towerId);
+      const bonus = tower && tower.bonusVs && tcell.kindId === tower.bonusVs;
+      const dmg = bonus ? cell.dmg * 2 : cell.dmg;
+      applyDamageToObjection(lane, targetCol, dmg);
+    }
+  }
+}
+
+// ----- Objections advance -----
+function objectionsAdvance() {
+  // Process from rightmost col to leftmost so we don't double-advance
+  // Walk each lane right-to-left, moving objections one col right.
+  // Slowed objections skip this turn and lose the slow flag.
+  for (let lane = 0; lane < TD_LANES; lane++) {
+    for (let col = TD_COLS - 1; col >= 0; col--) {
+      const cell = tdAt(lane, col);
+      if (!cell || cell.kind !== 'objection') continue;
+      if (cell.slowed) { cell.slowed = false; continue; }
+      const nextCol = col + 1;
+      if (nextCol >= TD_COLS) {
+        // Off the right edge — counts as a land
+        _td.grid[lane][col] = null;
+        _td.composure = Math.max(0, _td.composure - 1);
+        SFX.miss();
+        showToast(`Objection landed in lane ${lane + 1}!`, 'error');
+      } else {
+        // Move only if destination is empty (don't crash through towers)
+        if (!tdAt(lane, nextCol)) {
+          _td.grid[lane][nextCol] = cell;
+          _td.grid[lane][col] = null;
+        }
+        // If a tower blocks, objection stays put (and the tower will keep firing — softlock unlikely because the tower will eventually kill it)
+      }
+    }
+  }
+}
+
+// ----- Spawns -----
+function spawnObjectionsForTurn() {
+  const incoming = _td.queueRemaining.filter(e => e.turn === _td.turn);
+  _td.queueRemaining = _td.queueRemaining.filter(e => e.turn !== _td.turn);
+  for (const ent of incoming) {
+    const lane = ent.lane;
+    // If lane[0] is occupied, push back to next column we can find from left
+    let col = 0;
+    while (col < TD_COLS && tdAt(lane, col)) col++;
+    if (col >= TD_COLS) continue; // lane full — skip spawn (shouldn't happen in normal play)
+    const obj = objectionById(ent.kind);
+    _td.grid[lane][col] = {
+      kind: 'objection',
+      kindId: obj.id,
+      icon: obj.icon,
+      name: obj.name,
+      hp: obj.hp,
+      hpMax: obj.hp,
+      isBoss: !!obj.isBoss,
+      slowed: false
+    };
+  }
+}
+
+// ----- Next turn -----
+function nextTurn() {
+  if (!_td || _td.over) return;
+  SFX.submit();
+  // 1. Towers fire (using the state at the start of player's input)
+  towersFire();
+  // 2. Spawns (this turn's batch)
+  spawnObjectionsForTurn();
+  // 3. Advance objections
+  objectionsAdvance();
+  // 4. Mana refresh
+  _td.mana += TD_WAVES[_td.waveIdx].manaPerTurn;
+  _td.turn++;
+
+  // 5. Win / lose checks
+  if (_td.composure <= 0) {
+    _td.over = true;
+    _td.won = false;
+    _td.waveResult = 'lost';
+    SFX.lose();
+    finishTDRun(false);
+    renderTower();
+    return;
+  }
+  // Wave win = no remaining queue AND no objections on board
+  const boardHasObj = _td.grid.some(lane => lane.some(c => c && c.kind === 'objection'));
+  if (_td.queueRemaining.length === 0 && !boardHasObj) {
+    // Wave cleared
+    if (_td.waveIdx + 1 >= TD_WAVES.length) {
+      // Final wave — run won
+      _td.over = true;
+      _td.won = true;
+      _td.waveResult = 'won-run';
+      SFX.win();
+      finishTDRun(true);
+    } else {
+      // Advance to next wave (player will see victory then proceed)
+      _td.waveResult = 'won-wave';
+      SFX.win();
+    }
+    renderTower();
+    return;
+  }
+
+  renderTower();
+}
+
+function nextWave() {
+  if (!_td) return;
+  // Carry forward composure
+  const carryComp = _td.composure;
+  _td = newTDState(_td.waveIdx + 1);
+  _td.composure = carryComp;
+  SFX.click();
+  renderTower();
+}
+
+function finishTDRun(won) {
+  state.td.runsCompleted += won ? 1 : 0;
+  state.td.runsLost += won ? 0 : 1;
+  state.td.bestWaveReached = Math.max(state.td.bestWaveReached, _td.waveIdx + (won ? 1 : 0));
+  // Reward: per-wave XP + Coins; boss bonus on full clear
+  const baseXp = won ? 150 : 20 + _td.waveIdx * 25;
+  const baseCoins = won ? 80 : 5 + _td.waveIdx * 12;
+  state.xp += baseXp;
+  state.coins += baseCoins;
+  _td.xpEarned = baseXp;
+  _td.coinsEarned = baseCoins;
+  refreshHeaderStats();
+  saveState();
+}
+
+function exitTD() {
+  if (_td && !_td.over) {
+    if (!confirm('Leave this Tower run? Progress will be lost.')) return;
+  }
+  _td = null;
+  navigate('home');
+}
+
+// ----- Rendering -----
+function renderTower() {
+  const container = document.getElementById('tower-content');
+  if (!container) return;
+  if (!_td) {
+    container.innerHTML = renderTowerIntro();
+    return;
+  }
+  if (_td.over) {
+    container.innerHTML = renderTowerEndOfRun();
+    return;
+  }
+  if (_td.waveResult === 'won-wave') {
+    container.innerHTML = renderTowerWaveCleared();
+    return;
+  }
+  container.innerHTML = renderTowerBoard();
+}
+
+function renderTowerIntro() {
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+    <div class="tower-screen">
+      <div class="tower-banner">
+        <h2>🛡️ Argument Tower</h2>
+        <div class="sub">Turn-based defense. Objections approach from the left in 3 lanes. Place towers, cast spells, hold the line. 3 objections cross to your composure = run over.</div>
+      </div>
+      <div class="side-card" style="margin-bottom:1rem">
+        <h4>Your record</h4>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.95rem;margin-top:0.4rem">
+          <div><strong style="color:var(--accent);font-size:1.4rem">${state.td.runsCompleted}</strong> <span style="color:var(--text-dim)">runs won</span></div>
+          <div><strong style="color:var(--orange);font-size:1.4rem">${state.td.runsLost}</strong> <span style="color:var(--text-dim)">runs lost</span></div>
+          <div><strong style="color:var(--gold);font-size:1.4rem">${state.td.bestWaveReached}/${TD_WAVES.length}</strong> <span style="color:var(--text-dim)">furthest wave</span></div>
+        </div>
+      </div>
+      <div class="side-card" style="margin-bottom:1rem">
+        <h4>How it works</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);line-height:1.55">
+          Each turn you have <strong>mana</strong>. Tap a tower or spell card to arm it, then tap a cell on the board. <strong>Towers</strong> sit in place and fire at the leftmost objection in their lane each turn (matching towers deal 2×). <strong>Spells</strong> (Reframe, Stall) cast on a whole lane.
+          Press <strong>Next Turn</strong> to advance — towers fire, objections shuffle right, new ones spawn.
+          Each objection that reaches the right edge eats 1 <strong>composure</strong>.
+        </p>
+      </div>
+      <div style="text-align:center;margin-top:1.5rem">
+        <button class="btn btn-primary btn-lg" onclick="startTD()">
+          Begin Wave 1 →
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderTowerBoard() {
+  const wave = TD_WAVES[_td.waveIdx];
+  const compCls = _td.composure === 1 ? 'critical' : (_td.composure === 2 ? 'low' : '');
+
+  // Build the queue preview — next 4 spawns
+  const upcoming = _td.queueRemaining.slice(0, 4);
+
+  return `
+    <div class="wordle-back" onclick="exitTD()">← Back to modes</div>
+
+    <div class="tower-screen">
+
+      <div class="tower-banner">
+        <h2>Wave ${_td.waveIdx + 1} of ${TD_WAVES.length}: ${wave.name}${wave.isBossWave ? ' 👑' : ''}</h2>
+        <div class="sub">Turn ${_td.turn + 1} · ${_td.queueRemaining.length} objections still incoming · ${boardObjectionCount()} on board</div>
+      </div>
+
+      <div class="tower-strip">
+        <div class="tower-strip-item">
+          <div class="tower-strip-label">Composure</div>
+          <div class="tower-strip-value composure ${compCls}">${'❤️'.repeat(_td.composure)}${'🤍'.repeat(_td.composureMax - _td.composure)}</div>
+        </div>
+        <div class="tower-strip-item">
+          <div class="tower-strip-label">Mana</div>
+          <div class="tower-strip-value mana">⚡ ${_td.mana}</div>
+        </div>
+        <div class="tower-strip-item">
+          <div class="tower-strip-label">Wave</div>
+          <div class="tower-strip-value wave">${_td.waveIdx + 1}/${TD_WAVES.length}</div>
+        </div>
+      </div>
+
+      ${upcoming.length > 0 ? `
+        <div class="tower-queue">
+          <span class="lbl">Incoming next:</span>
+          ${upcoming.map(u => {
+            const obj = objectionById(u.kind);
+            const offset = u.turn - _td.turn;
+            return `<span class="queue-chip"><span class="turn">+${offset}</span> ${obj.icon} L${u.lane + 1}</span>`;
+          }).join('')}
+        </div>
+      ` : ''}
+
+      <div class="tower-board">
+        ${[0,1,2].map(lane => `
+          <div class="lane">
+            ${[0,1,2,3,4].map(col => renderCell(lane, col)).join('')}
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="tower-hand">
+        <div class="tower-hand-label">
+          Your hand
+          <span style="font-size:0.78rem;color:var(--text-mute);font-weight:600;text-transform:none;letter-spacing:0">
+            ${_td.selectedCardId ? 'Tap a cell to place / cast' : 'Tap a card to arm'}
+          </span>
+        </div>
+        <div class="tower-cards">
+          ${TOWER_LIBRARY.map(t => renderTowerCard(t)).join('')}
+        </div>
+      </div>
+
+      <div class="tower-actions">
+        <button class="btn btn-ghost" onclick="exitTD()">Abandon</button>
+        <div class="spacer"></div>
+        <button class="btn ${_td.selectedCardId ? '' : 'btn-primary btn-lg'}" onclick="nextTurn()">
+          Next Turn → ${nextTurnSummary()}
+        </button>
+      </div>
+
+    </div>
+  `;
+}
+
+function boardObjectionCount() {
+  let n = 0;
+  for (const lane of _td.grid) for (const c of lane) if (c && c.kind === 'objection') n++;
+  return n;
+}
+
+function nextTurnSummary() {
+  const mp = TD_WAVES[_td.waveIdx].manaPerTurn;
+  return `(+${mp} ⚡, advance)`;
+}
+
+function renderCell(lane, col) {
+  const cell = tdAt(lane, col);
+  const isPlaceable = _td.selectedCardId &&
+    towerById(_td.selectedCardId).isTower && !cell;
+  const isTargetable = _td.selectedCardId &&
+    towerById(_td.selectedCardId).isSpell;
+  const isDanger = col === TD_COLS - 1;
+  const classes = ['cell',
+    isDanger ? 'danger' : '',
+    isPlaceable ? 'placeable' : '',
+    isTargetable ? 'targetable' : ''
+  ].filter(Boolean).join(' ');
+  const click = (isPlaceable || isTargetable) ? `onclick="onCellClick(${lane}, ${col})"` : '';
+  let content = '';
+  if (cell) {
+    if (cell.kind === 'tower') {
+      content = `<div class="tower"><span class="ico">${cell.icon}</span><span class="lbl">${cell.name.split(' ')[0]}</span></div>`;
+    } else if (cell.kind === 'objection') {
+      const pct = Math.max(0, Math.round((cell.hp / cell.hpMax) * 100));
+      content = `
+        <div class="objection ${cell.slowed ? 'slowed' : ''} ${cell.isBoss ? 'boss' : ''}">
+          <span class="ico" title="${cell.name} · ${cell.hp}/${cell.hpMax} HP">${cell.icon}</span>
+          <div class="hp-bar-wrap"><div class="hp-bar" style="width:${pct}%"></div></div>
+        </div>
+      `;
+    }
+  } else {
+    content = `<span class="cell-empty-coord">L${lane+1}-${col+1}</span>`;
+  }
+  return `<div class="${classes}" ${click}>${content}</div>`;
+}
+
+function renderTowerCard(t) {
+  const unaff = _td.mana < t.mana;
+  const sel = _td.selectedCardId === t.id;
+  const cls = ['tower-card', sel ? 'selected' : '', unaff ? 'unaffordable' : ''].filter(Boolean).join(' ');
+  const click = unaff ? '' : `onclick="selectTowerCard('${t.id}')"`;
+  return `
+    <div class="${cls}" data-kind="${t.kind}" ${click}>
+      <div class="tower-card-head">
+        <span class="tower-card-icon">${t.icon}</span>
+        <span class="tower-card-cost">${t.mana}</span>
+      </div>
+      <div class="tower-card-name">${t.name}</div>
+      <span class="tower-card-pill">${t.isTower ? 'Tower' : 'Spell'}</span>
+      <div class="tower-card-text">${t.text}</div>
+    </div>
+  `;
+}
+
+function renderTowerWaveCleared() {
+  const justCleared = _td.waveIdx + 1;
+  const next = TD_WAVES[_td.waveIdx + 1];
+  return `
+    <div class="tower-screen">
+      <div class="tower-result">
+        <div class="icon">⚔️</div>
+        <h2>Wave ${justCleared} cleared.</h2>
+        <p>Composure remaining: ${_td.composure}/${_td.composureMax}. ${next ? `Next up: <strong>${next.name}</strong>${next.isBossWave ? ' 👑' : ''}.` : ''}</p>
+        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
+          <button class="btn btn-ghost" onclick="exitTD()">Stop here</button>
+          <button class="btn btn-primary btn-lg" onclick="nextWave()">Begin Wave ${justCleared + 1} →</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTowerEndOfRun() {
+  const won = _td.won;
+  const cls = won ? (_td.bossDefeated ? 'boss' : '') : 'lost';
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+    <div class="tower-screen">
+      <div class="tower-result ${cls}">
+        <div class="icon">${won ? '🏆' : '💔'}</div>
+        <h2>${won ? 'Run cleared.' : 'Composure broken.'}</h2>
+        <p>${won
+          ? `You held all ${TD_WAVES.length} waves. ${_td.bossDefeated ? 'The Doubt fell.' : ''}`
+          : `You reached wave ${_td.waveIdx + 1}, turn ${_td.turn}. The argument got away from you.`}</p>
+        <div style="display:flex;gap:0.4rem;justify-content:center;flex-wrap:wrap">
+          <span class="reward-pill xp">+${_td.xpEarned} XP</span>
+          <span class="reward-pill coins">+${_td.coinsEarned} 🪙</span>
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:1.2rem">
+          <button class="btn btn-ghost" onclick="_td=null;navigate('home')">Home</button>
+          <button class="btn btn-primary" onclick="startTD()">Play again</button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ================================================================
@@ -3943,6 +4757,7 @@ function navigate(view) {
   if (view === 'wordle') renderWordle();
   if (view === 'deck')  renderDeck();
   if (view === 'composer') renderComposer();
+  if (view === 'tower') renderTower();
   if (view === 'settings') renderSettings();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -3997,11 +4812,12 @@ function renderHome() {
       key: 'tower',
       icon: '🛡️',
       title: 'Argument Tower',
-      tag: 'Defense · 15 min',
+      tag: 'Tactical · 10–15 min',
       accent: 'purple',
-      desc: 'Waves of objections incoming. Deploy rebuttal towers in three lanes. Defend your position.',
-      status: 'Coming session 5',
-      locked: true
+      desc: 'Turn-based defense. Place rebuttal towers and cast spells across 3 lanes. Hold 4 waves of objections including a boss.',
+      status: null,
+      locked: false,
+      onclick: () => navigate('tower')
     }
   ];
 
@@ -4032,6 +4848,14 @@ function renderHome() {
     modes[2].status = `${cmp.totalCompositions} composition${cmp.totalCompositions === 1 ? '' : 's'} · best ${cmp.bestScore}/100`;
   } else {
     modes[2].status = `${COMPOSER_PROMPTS.length} prompts · 5 combos`;
+  }
+
+  // Tower status
+  const td = state.td;
+  if (td && (td.runsCompleted > 0 || td.runsLost > 0)) {
+    modes[3].status = `${td.runsCompleted} won · ${td.runsLost} lost · furthest wave ${td.bestWaveReached}/${TD_WAVES.length}`;
+  } else {
+    modes[3].status = `${TD_WAVES.length} waves · 3 towers · 2 spells`;
   }
 
   const grid = document.getElementById('mode-grid');
@@ -4552,6 +5376,13 @@ window.moveCanvasTile = moveCanvasTile;
 window.clearComposition = clearComposition;
 window.submitComposition = submitComposition;
 window.confirmLeaveComposer = confirmLeaveComposer;
+// Session 5: tower defense handlers
+window.startTD = startTD;
+window.selectTowerCard = selectTowerCard;
+window.onCellClick = onCellClick;
+window.nextTurn = nextTurn;
+window.nextWave = nextWave;
+window.exitTD = exitTD;
 </script>
 </body>
 </html>
