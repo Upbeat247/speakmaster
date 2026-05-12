@@ -1153,6 +1153,305 @@ main { flex: 1; }
 }
 
 /* ================================================================
+   SESSION 4 — Composer mode
+   ================================================================ */
+.composer { max-width: 1100px; margin: 0 auto; }
+
+/* Top banner — prompt + framework guidance */
+.composer-banner {
+  padding: 1.25rem 1.4rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--orange); border-radius: var(--radius-lg);
+  position: relative; overflow: hidden;
+}
+.composer-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at top right, rgba(255,138,76,0.2), transparent 60%);
+  pointer-events: none;
+}
+.composer-meta {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-mute);
+  position: relative;
+}
+.composer-meta .divider { color: var(--border-strong); }
+.composer-meta .framework {
+  color: var(--orange); background: rgba(255,138,76,0.12);
+  padding: 0.15rem 0.5rem; border-radius: 999px;
+  border: 1px solid rgba(255,138,76,0.3);
+}
+.composer-prompt {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 600;
+  line-height: 1.45; position: relative;
+}
+.composer-suggested {
+  margin-top: 0.65rem; font-size: 0.78rem; color: var(--text-dim);
+  position: relative;
+}
+.composer-suggested-roles {
+  display: inline-flex; align-items: center; gap: 0.3rem; flex-wrap: wrap;
+}
+.role-pill {
+  display: inline-flex; align-items: center;
+  padding: 0.15rem 0.5rem; border-radius: 999px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  font-size: 0.7rem; font-weight: 700; text-transform: capitalize;
+  color: var(--text-dim);
+}
+.role-pill[data-role="hook"]     { color: var(--pink);   border-color: var(--pink); }
+.role-pill[data-role="point"]    { color: var(--accent); border-color: var(--accent); }
+.role-pill[data-role="reason"]   { color: var(--orange); border-color: var(--orange); }
+.role-pill[data-role="example"]  { color: var(--gold);   border-color: var(--gold); }
+.role-pill[data-role="bridge"]   { color: var(--purple); border-color: var(--purple); }
+.role-pill[data-role="restated"] { color: var(--green);  border-color: var(--green); }
+.role-pill[data-role="closer"]   { color: var(--red);    border-color: var(--red); }
+.role-pill[data-role="filler"]   { color: var(--text-mute); border-style: dashed; }
+.role-arrow { color: var(--text-mute); font-weight: 700; }
+
+/* Canvas */
+.canvas-section { margin-bottom: 1rem; }
+.canvas-label {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+}
+.canvas-label .count {
+  font-family: var(--font-body); font-weight: 600; color: var(--text); font-size: 0.85rem;
+  text-transform: none; letter-spacing: 0;
+}
+.canvas {
+  min-height: 110px;
+  padding: 0.75rem;
+  background: var(--bg-elev); border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.canvas.empty {
+  align-items: center; justify-content: center;
+  color: var(--text-mute); font-style: italic;
+  font-size: 0.9rem;
+}
+.canvas-tile {
+  display: flex; align-items: stretch; gap: 0.4rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.85rem; line-height: 1.4;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.canvas-tile:hover { transform: translateX(2px); }
+.canvas-tile[data-role="hook"]     { border-left-color: var(--pink); }
+.canvas-tile[data-role="point"]    { border-left-color: var(--accent); }
+.canvas-tile[data-role="reason"]   { border-left-color: var(--orange); }
+.canvas-tile[data-role="example"]  { border-left-color: var(--gold); }
+.canvas-tile[data-role="bridge"]   { border-left-color: var(--purple); }
+.canvas-tile[data-role="restated"] { border-left-color: var(--green); }
+.canvas-tile[data-role="closer"]   { border-left-color: var(--red); }
+.canvas-tile[data-role="filler"]   { border-left-color: var(--text-mute); border-left-style: dashed; opacity: 0.85; }
+.canvas-tile-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.canvas-tile-role {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-mute);
+}
+.canvas-tile-text { color: var(--text); }
+.canvas-tile-actions {
+  display: flex; flex-direction: column; gap: 0.2rem;
+  align-items: center;
+}
+.canvas-tile-actions button {
+  width: 28px; height: 22px; padding: 0; border-radius: 6px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 0.78rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.1s ease;
+}
+.canvas-tile-actions button:hover:not([disabled]) { color: var(--text); border-color: var(--accent); }
+.canvas-tile-actions button[disabled] { opacity: 0.3; cursor: not-allowed; }
+.canvas-tile-actions .remove { color: var(--red); }
+.canvas-tile-actions .remove:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+/* Pool */
+.pool-section { margin-bottom: 1rem; }
+.pool-label {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+}
+.pool-grid {
+  display: grid; gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+@media (max-width: 520px) { .pool-grid { grid-template-columns: 1fr 1fr; gap: 0.4rem; } }
+.pool-tile {
+  position: relative;
+  padding: 0.6rem 0.75rem; min-height: 64px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer; text-align: left;
+  font-size: 0.82rem; line-height: 1.4;
+  user-select: none;
+  transition: transform 0.1s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+.pool-tile:hover:not(.used) { transform: translateY(-2px); }
+.pool-tile.used { opacity: 0.32; cursor: not-allowed; }
+.pool-tile[data-role="hook"]     { border-left-color: var(--pink); }
+.pool-tile[data-role="point"]    { border-left-color: var(--accent); }
+.pool-tile[data-role="reason"]   { border-left-color: var(--orange); }
+.pool-tile[data-role="example"]  { border-left-color: var(--gold); }
+.pool-tile[data-role="bridge"]   { border-left-color: var(--purple); }
+.pool-tile[data-role="restated"] { border-left-color: var(--green); }
+.pool-tile[data-role="closer"]   { border-left-color: var(--red); }
+.pool-tile[data-role="filler"]   { border-left-color: var(--text-mute); border-left-style: dashed; opacity: 0.85; }
+.pool-tile-role {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-mute); display: block; margin-bottom: 0.2rem;
+}
+.pool-tile-text { color: var(--text); }
+
+/* Composer actions */
+.composer-actions {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  margin: 1rem 0; align-items: center;
+}
+.composer-actions .spacer { flex: 1; }
+.composer-best {
+  font-size: 0.8rem; color: var(--text-dim); font-weight: 600;
+}
+.composer-best strong { color: var(--accent); }
+
+/* Score screen — Composer */
+.composer-result {
+  max-width: 900px; margin: 0 auto;
+}
+.composer-result-hero {
+  padding: 1.5rem 1.4rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 2px solid var(--orange); border-radius: var(--radius-lg);
+  text-align: center;
+  animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.composer-result-hero.great { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+.composer-result-hero.solid { border-color: var(--gold); }
+.composer-result-hero h2 {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 900;
+  margin-bottom: 0.25rem;
+}
+.composer-result-score {
+  font-family: var(--font-display); font-size: 3.5rem; font-weight: 900; line-height: 1;
+  color: var(--accent);
+}
+.composer-result-score-label {
+  font-size: 0.75rem; color: var(--text-mute); text-transform: uppercase;
+  letter-spacing: 0.08em; font-weight: 700; margin-top: 0.4rem;
+}
+.composer-result-rewards {
+  display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
+/* Score axis breakdown */
+.score-axes {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.score-axes h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+.score-axis {
+  display: flex; align-items: center; gap: 0.65rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--border);
+}
+.score-axis:last-child { border-bottom: none; }
+.score-axis-label {
+  flex: 0 0 130px; font-weight: 600; font-size: 0.85rem;
+}
+.score-axis-bar-wrap {
+  flex: 1; height: 8px; background: var(--bg-elev-2); border-radius: 999px;
+  overflow: hidden;
+}
+.score-axis-bar { height: 100%; transition: width 0.5s ease; }
+.score-axis-bar.positive { background: linear-gradient(90deg, var(--accent), var(--green)); }
+.score-axis-bar.neutral  { background: var(--gold); }
+.score-axis-bar.negative { background: var(--red); }
+.score-axis-value {
+  flex: 0 0 60px; text-align: right;
+  font-family: var(--font-display); font-weight: 800; font-size: 0.92rem;
+}
+.score-axis-value.negative { color: var(--red); }
+.score-axis-detail { flex-basis: 100%; font-size: 0.75rem; color: var(--text-mute); margin-top: 0.15rem; }
+@media (max-width: 600px) {
+  .score-axis { flex-wrap: wrap; }
+  .score-axis-label { flex-basis: auto; }
+  .score-axis-bar-wrap { flex-basis: 100%; order: 3; }
+}
+
+/* Combos triggered */
+.combos {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.combos h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+.combo {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.55rem 0.85rem; margin-bottom: 0.4rem;
+  background: var(--bg-elev); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+.combo.penalty { border-left-color: var(--red); }
+.combo-icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+.combo-body { flex: 1; min-width: 0; }
+.combo-name {
+  font-family: var(--font-display); font-weight: 800; font-size: 0.92rem;
+}
+.combo-desc { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.1rem; }
+.combo-bonus {
+  font-family: var(--font-display); font-weight: 900; font-size: 1rem;
+  color: var(--accent);
+}
+.combo.penalty .combo-bonus { color: var(--red); }
+
+/* Composition transcript on score screen */
+.composer-transcript {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.composer-transcript h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.65rem;
+}
+.composer-transcript-line {
+  padding: 0.4rem 0.6rem; margin-bottom: 0.3rem;
+  background: var(--bg-elev); border-radius: var(--radius-sm);
+  font-size: 0.85rem; line-height: 1.4;
+  border-left: 3px solid var(--accent);
+}
+.composer-transcript-line[data-role="hook"]     { border-left-color: var(--pink); }
+.composer-transcript-line[data-role="point"]    { border-left-color: var(--accent); }
+.composer-transcript-line[data-role="reason"]   { border-left-color: var(--orange); }
+.composer-transcript-line[data-role="example"]  { border-left-color: var(--gold); }
+.composer-transcript-line[data-role="bridge"]   { border-left-color: var(--purple); }
+.composer-transcript-line[data-role="restated"] { border-left-color: var(--green); }
+.composer-transcript-line[data-role="closer"]   { border-left-color: var(--red); }
+.composer-transcript-line[data-role="filler"]   { border-left-color: var(--text-mute); opacity: 0.7; }
+
+/* ================================================================
    RESPONSIVE TWEAKS
    ================================================================ */
 @media (max-width: 520px) {
@@ -1221,6 +1520,11 @@ main { flex: 1; }
     <!-- DECK RUN -->
     <section id="view-deck" class="view">
       <div id="deck-content"></div>
+    </section>
+
+    <!-- COMPOSER -->
+    <section id="view-composer" class="view">
+      <div id="composer-content"></div>
     </section>
 
     <!-- SETTINGS -->
@@ -1552,6 +1856,522 @@ function buildTilePool(puzzle, dayKey) {
   const shuffledOthers = shuffleWithRng(allOthers, rng);
   const decoys = shuffledOthers.slice(0, WORDLE_TILE_POOL_SIZE - correctIds.length);
   return shuffleWithRng([...correctIds, ...decoys], rng);
+}
+
+// ================================================================
+// SESSION 4 — COMPOSER MODE
+// Sandbox: a prompt + a pool of phrase tiles. Build a response by
+// tapping tiles onto a canvas in order. Score is multi-axis:
+// framework coverage / sequence / specificity / length / filler-penalty
+// + bonuses for named combos that fire on patterns.
+// ================================================================
+
+// Each prompt declares its framework name and an "ideal" sequence of roles.
+// Scoring is permissive: many sequences score well, but matching the
+// suggested order gives the highest framework + sequence bonus.
+const COMPOSER_PROMPTS = [
+  { id: 'cm01',
+    framework: 'AIDA pitch',
+    prompt: 'You\'re pitching a new product to a skeptical investor in 60 seconds. Make them lean forward and ask for the next meeting.',
+    suggested: ['hook', 'point', 'example', 'closer'] },
+  { id: 'cm02',
+    framework: 'Tough quarter all-hands',
+    prompt: 'Open the all-hands as CEO during a tough quarter. Acknowledge reality, set direction, and rally the team.',
+    suggested: ['hook', 'point', 'reason', 'example', 'restated'] },
+  { id: 'cm03',
+    framework: 'Persuasive PREP',
+    prompt: 'Convince your team to commit to a 6-week sprint that will be painful but necessary.',
+    suggested: ['point', 'reason', 'example', 'restated'] },
+  { id: 'cm04',
+    framework: 'Pivot pitch to the board',
+    prompt: 'Tell the board the company needs to pivot the product. Make the case in two minutes.',
+    suggested: ['hook', 'point', 'reason', 'example', 'closer'] },
+  { id: 'cm05',
+    framework: 'Hostile Q&A bridge',
+    prompt: 'A regulator asks a sharp question about an incident. Answer truthfully and bridge to what changes next.',
+    suggested: ['point', 'reason', 'example', 'bridge', 'closer'] },
+  { id: 'cm06',
+    framework: 'Renewal save',
+    prompt: 'A long-time customer is wavering on renewal. Turn them around in one short call.',
+    suggested: ['hook', 'point', 'example', 'restated', 'closer'] }
+];
+function composerPromptById(id) { return COMPOSER_PROMPTS.find(p => p.id === id); }
+
+// Combos detected after compose. Each takes the composition (array of role strings)
+// and returns { fired: bool, bonus: number }.
+const COMBOS = [
+  { id: 'cb-punchline', icon: '🎯', name: 'Punchline',     bonus: 12, penalty: false,
+    desc: 'Hook → … → Closer, with at least one Example between.',
+    detect: roles => {
+      const hookIdx   = roles.indexOf('hook');
+      const closerIdx = roles.lastIndexOf('closer');
+      if (hookIdx < 0 || closerIdx < 0 || closerIdx <= hookIdx) return false;
+      const between = roles.slice(hookIdx + 1, closerIdx);
+      return between.includes('example');
+    } },
+  { id: 'cb-prep', icon: '🧱', name: 'Tight PREP',         bonus: 18, penalty: false,
+    desc: 'Point → Reason → Example → Restated, in order.',
+    detect: roles => {
+      // Look for the subsequence p r e x (allowing bridges between)
+      const filtered = roles.filter(r => ['point','reason','example','restated','bridge'].includes(r));
+      const seq = filtered.filter(r => r !== 'bridge'); // bridges are allowed but don't break the chain
+      let i = 0; const target = ['point','reason','example','restated'];
+      for (const r of seq) {
+        if (r === target[i]) i++;
+        if (i === target.length) return true;
+      }
+      return false;
+    } },
+  { id: 'cb-arc', icon: '🌅', name: 'Story Arc',           bonus: 12, penalty: false,
+    desc: 'Hook → Example → Bridge → Restated.',
+    detect: roles => {
+      const target = ['hook','example','bridge','restated'];
+      let i = 0;
+      for (const r of roles) {
+        if (r === target[i]) i++;
+        if (i === target.length) return true;
+      }
+      return false;
+    } },
+  { id: 'cb-receipts', icon: '🧾', name: 'Receipts',       bonus: 8, penalty: false,
+    desc: 'Two or more Examples consecutively.',
+    detect: roles => {
+      for (let i = 0; i < roles.length - 1; i++) {
+        if (roles[i] === 'example' && roles[i+1] === 'example') return true;
+      }
+      return false;
+    } },
+  { id: 'cb-buzzsalad', icon: '🥴', name: 'Buzzword Salad', bonus: -20, penalty: true,
+    desc: 'Three or more Filler phrases used.',
+    detect: roles => roles.filter(r => r === 'filler').length >= 3 }
+];
+
+// Build today's tile pool: pull tiles from each non-filler role + 2 filler traps.
+// Pool is regenerated each composition (fresh random) so each session is varied.
+function buildComposerPool(promptId, seed) {
+  const rng = seed ? seedFromString(promptId + '|' + seed) : Math.random.bind(Math);
+  // Per-role draw counts — slightly weighted toward roles likely needed for variety.
+  const draws = { hook: 2, point: 3, reason: 3, example: 3, bridge: 2, restated: 2, closer: 2, filler: 2 };
+  const out = [];
+  for (const [role, count] of Object.entries(draws)) {
+    const pool = PHRASES.filter(p => p.role === role);
+    const shuffled = shuffleArr(pool.slice(), rng);
+    for (let i = 0; i < count && i < shuffled.length; i++) out.push(shuffled[i].id);
+  }
+  return shuffleArr(out, rng);
+}
+
+// Multi-axis scoring engine. Returns:
+// { total, axes: [{label, value, max, detail}], combos: [{combo, fired}], xpEarned, coinsEarned }
+function scoreComposition(composition, prompt) {
+  const tiles = composition.map(id => phraseById(id)).filter(Boolean);
+  const roles = tiles.map(t => t.role);
+  const sug = prompt.suggested;
+
+  // 1. Framework coverage (0-25): credit per suggested role that appears.
+  const sugSet = new Set(sug);
+  const hit = sug.filter(r => roles.includes(r));
+  const coveragePct = sug.length ? hit.length / sug.length : 0;
+  const frameworkScore = Math.round(coveragePct * 25);
+  const frameworkDetail = `${hit.length}/${sug.length} suggested roles present (${sug.join(' → ')})`;
+
+  // 2. Sequence (0-25): how well does the order of present suggested roles match the suggested order?
+  // Compute the longest common subsequence of roles vs sug.
+  const presentInOrder = roles.filter(r => sugSet.has(r));
+  let i = 0; let inOrder = 0;
+  for (const r of presentInOrder) {
+    if (sug.indexOf(r, i) >= 0) { i = sug.indexOf(r, i) + 1; inOrder++; }
+  }
+  const seqPct = sug.length ? inOrder / sug.length : 0;
+  const sequenceScore = Math.round(seqPct * 25);
+  const sequenceDetail = `${inOrder} role${inOrder === 1 ? '' : 's'} in suggested order`;
+
+  // 3. Specificity (0-20): bonus for Example tiles + tiles containing numbers/percentages/dollar signs
+  let specificityScore = 0;
+  let numericTiles = 0;
+  tiles.forEach(t => {
+    if (t.role === 'example') specificityScore += 4;
+    if (/\d/.test(t.text)) { specificityScore += 3; numericTiles++; }
+  });
+  specificityScore = Math.min(20, specificityScore);
+  const specificityDetail = numericTiles > 0
+    ? `${numericTiles} tile${numericTiles === 1 ? '' : 's'} with concrete numbers`
+    : 'No numeric specificity — add an Example with a number.';
+
+  // 4. Length sweet-spot (0-15): 5-7 tiles = full credit; sliding penalty either side.
+  const len = tiles.length;
+  let lengthScore = 0;
+  let lengthDetail = '';
+  if (len === 0)        { lengthScore = 0;  lengthDetail = 'Empty composition.'; }
+  else if (len <= 2)    { lengthScore = 3;  lengthDetail = 'Too short — develop the argument.'; }
+  else if (len === 3)   { lengthScore = 8;  lengthDetail = 'Short but workable.'; }
+  else if (len === 4)   { lengthScore = 12; lengthDetail = 'Close to ideal.'; }
+  else if (len <= 7)    { lengthScore = 15; lengthDetail = 'Right in the sweet spot.'; }
+  else if (len === 8)   { lengthScore = 12; lengthDetail = 'Slightly long — could tighten.'; }
+  else                  { lengthScore = 7;  lengthDetail = 'Long — every extra tile dilutes.'; }
+
+  // 5. Filler penalty (0 → -15): -5 per filler tile, capped at -15
+  const fillerCount = roles.filter(r => r === 'filler').length;
+  const fillerPenalty = -Math.min(15, fillerCount * 5);
+  const fillerDetail = fillerCount === 0
+    ? 'Clean — no buzzword phrases used.'
+    : `${fillerCount} filler tile${fillerCount === 1 ? '' : 's'} — buzzwords cost credibility.`;
+
+  // 6. Combos (variable +/-)
+  const comboResults = COMBOS.map(c => ({ combo: c, fired: c.detect(roles) }));
+  const comboFired = comboResults.filter(c => c.fired);
+  const comboBonus = comboFired.reduce((s, c) => s + c.combo.bonus, 0);
+
+  // Total — sum then cap at 100, floor at 0
+  let total = frameworkScore + sequenceScore + specificityScore + lengthScore + fillerPenalty + comboBonus;
+  total = Math.max(0, Math.min(100, Math.round(total)));
+
+  const axes = [
+    { label: 'Framework',   value: frameworkScore,   max: 25, kind: 'positive', detail: frameworkDetail },
+    { label: 'Sequence',    value: sequenceScore,    max: 25, kind: 'positive', detail: sequenceDetail },
+    { label: 'Specificity', value: specificityScore, max: 20, kind: 'positive', detail: specificityDetail },
+    { label: 'Length',      value: lengthScore,      max: 15, kind: 'neutral',  detail: lengthDetail },
+    { label: 'Filler',      value: fillerPenalty,    max: 0,  kind: 'negative', detail: fillerDetail }
+  ];
+
+  // Reward: XP + Coins scaled by total
+  const xpEarned = Math.round(20 + (total / 100) * 60); // 20-80 XP
+  const coinsEarned = Math.round(5 + (total / 100) * 30); // 5-35 Coins
+
+  return { total, axes, combos: comboResults, xpEarned, coinsEarned };
+}
+
+// ----- Composer state -----
+if (!state.composer) {
+  state.composer = {
+    totalCompositions: 0,
+    bestScore: 0
+  };
+}
+let _composer = null; // transient session
+
+function startComposerSession(promptId) {
+  // Pick the prompt: explicit > rotate next > random
+  let prompt;
+  if (promptId) prompt = composerPromptById(promptId);
+  if (!prompt) prompt = COMPOSER_PROMPTS[Math.floor(Math.random() * COMPOSER_PROMPTS.length)];
+  const poolSeed = String(Date.now()) + Math.random().toString(36).slice(2, 7);
+  _composer = {
+    prompt,
+    composition: [],
+    pool: buildComposerPool(prompt.id, poolSeed),
+    poolSeed,
+    result: null
+  };
+  renderComposer();
+}
+
+function newComposerPrompt() {
+  SFX.click();
+  // Cycle to a different prompt than the current one
+  let candidates = COMPOSER_PROMPTS;
+  if (_composer && _composer.prompt) candidates = COMPOSER_PROMPTS.filter(p => p.id !== _composer.prompt.id);
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  startComposerSession(pick.id);
+}
+
+function tryThisPromptAgain() {
+  SFX.click();
+  if (!_composer || !_composer.prompt) { startComposerSession(null); return; }
+  startComposerSession(_composer.prompt.id);
+}
+
+function addTileToCanvas(tileId) {
+  if (!_composer) return;
+  if (_composer.result) return; // composition submitted
+  if (_composer.composition.includes(tileId)) return; // each tile usable once
+  if (_composer.composition.length >= 9) {
+    showToast('Canvas is full — remove a tile first.', 'error');
+    return;
+  }
+  _composer.composition.push(tileId);
+  SFX.place();
+  renderComposer();
+}
+
+function removeFromCanvas(idx) {
+  if (!_composer || _composer.result) return;
+  if (idx < 0 || idx >= _composer.composition.length) return;
+  _composer.composition.splice(idx, 1);
+  SFX.unplace();
+  renderComposer();
+}
+
+function moveCanvasTile(idx, direction) {
+  if (!_composer || _composer.result) return;
+  const target = idx + direction;
+  if (target < 0 || target >= _composer.composition.length) return;
+  const arr = _composer.composition;
+  [arr[idx], arr[target]] = [arr[target], arr[idx]];
+  SFX.click();
+  renderComposer();
+}
+
+function clearComposition() {
+  if (!_composer || _composer.result) return;
+  if (_composer.composition.length === 0) return;
+  _composer.composition = [];
+  SFX.unplace();
+  renderComposer();
+}
+
+function submitComposition() {
+  if (!_composer || _composer.result) return;
+  if (_composer.composition.length < 2) {
+    showToast('Place at least 2 tiles before composing.', 'error');
+    return;
+  }
+  SFX.submit();
+  const result = scoreComposition(_composer.composition, _composer.prompt);
+  _composer.result = result;
+
+  // Apply rewards + bookkeeping
+  state.xp += result.xpEarned;
+  state.coins += result.coinsEarned;
+  state.composer.totalCompositions++;
+  if (result.total > state.composer.bestScore) state.composer.bestScore = result.total;
+  refreshHeaderStats();
+  saveState();
+
+  // Sound for outcome
+  if (result.total >= 80) setTimeout(() => SFX.win(), 200);
+  else if (result.total >= 60) setTimeout(() => SFX.correct(), 200);
+  else setTimeout(() => SFX.miss(), 200);
+
+  renderComposer();
+}
+
+// ----- Renderers -----
+function renderComposer() {
+  const container = document.getElementById('composer-content');
+  if (!container) return;
+  if (!_composer) {
+    container.innerHTML = renderComposerIntro();
+    return;
+  }
+  if (_composer.result) {
+    container.innerHTML = renderComposerResult(_composer.result);
+    return;
+  }
+  container.innerHTML = renderComposerCompose();
+}
+
+function renderComposerIntro() {
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+    <div class="composer">
+      <div class="composer-banner">
+        <div class="composer-meta">
+          <span>SpeakGame · Composer</span>
+          <span class="divider">·</span>
+          <span>Sandbox</span>
+        </div>
+        <div class="composer-prompt">
+          A sandbox of rhetoric. Pick a prompt, sequence phrase tiles into a response,
+          and the engine scores you on framework, order, specificity, length, and combos triggered.
+        </div>
+      </div>
+      <div class="side-card" style="margin-bottom:1rem">
+        <h4>Your record</h4>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.95rem;margin-top:0.4rem">
+          <div><strong style="color:var(--accent);font-size:1.4rem">${state.composer.totalCompositions}</strong> <span style="color:var(--text-dim)">compositions</span></div>
+          <div><strong style="color:var(--gold);font-size:1.4rem">${state.composer.bestScore}</strong> <span style="color:var(--text-dim)">best score</span></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:1.5rem">
+        <button class="btn btn-primary btn-lg" onclick="startComposerSession(null)">
+          Start composing →
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderComposerCompose() {
+  const c = _composer;
+  const prompt = c.prompt;
+  const compTiles = c.composition.map(id => phraseById(id));
+  const usedIds = new Set(c.composition);
+
+  return `
+    <div class="wordle-back" onclick="confirmLeaveComposer()">← Back to modes</div>
+
+    <div class="composer">
+      <div class="composer-banner">
+        <div class="composer-meta">
+          <span>SpeakGame · Composer</span>
+          <span class="divider">·</span>
+          <span class="framework">${prompt.framework}</span>
+        </div>
+        <div class="composer-prompt">${prompt.prompt}</div>
+        <div class="composer-suggested">
+          Suggested arc:
+          <span class="composer-suggested-roles">
+            ${prompt.suggested.map((r, i) => `
+              <span class="role-pill" data-role="${r}">${r}</span>
+              ${i < prompt.suggested.length - 1 ? '<span class="role-arrow">→</span>' : ''}
+            `).join('')}
+          </span>
+        </div>
+      </div>
+
+      <div class="canvas-section">
+        <div class="canvas-label">
+          Your composition
+          <span class="count">${compTiles.length} tile${compTiles.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="canvas ${compTiles.length === 0 ? 'empty' : ''}">
+          ${compTiles.length === 0
+            ? 'Tap tiles below to build a response. Aim for 5–7 in a clean order.'
+            : compTiles.map((t, i) => `
+                <div class="canvas-tile" data-role="${t.role}">
+                  <div class="canvas-tile-body">
+                    <span class="canvas-tile-role">${i + 1}. ${t.role}</span>
+                    <span class="canvas-tile-text">${t.text}</span>
+                  </div>
+                  <div class="canvas-tile-actions">
+                    <button onclick="moveCanvasTile(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up" aria-label="Move up">↑</button>
+                    <button onclick="moveCanvasTile(${i}, 1)" ${i === compTiles.length - 1 ? 'disabled' : ''} title="Move down" aria-label="Move down">↓</button>
+                    <button class="remove" onclick="removeFromCanvas(${i})" title="Remove" aria-label="Remove">✕</button>
+                  </div>
+                </div>
+              `).join('')}
+        </div>
+      </div>
+
+      <div class="composer-actions">
+        <button class="btn btn-ghost btn-sm" onclick="clearComposition()" ${compTiles.length === 0 ? 'disabled' : ''}>
+          Clear canvas
+        </button>
+        <div class="spacer"></div>
+        <span class="composer-best">Best: <strong>${state.composer.bestScore}</strong>/100</span>
+        <button class="btn btn-primary btn-lg" onclick="submitComposition()" ${compTiles.length < 2 ? 'disabled' : ''}>
+          Compose →
+        </button>
+      </div>
+
+      <div class="pool-section">
+        <div class="pool-label">Tile pool — tap to add to canvas</div>
+        <div class="pool-grid">
+          ${c.pool.map(id => {
+            const p = phraseById(id);
+            if (!p) return '';
+            const used = usedIds.has(id);
+            return `
+              <button class="pool-tile ${used ? 'used' : ''}" data-role="${p.role}"
+                      ${used ? '' : `onclick="addTileToCanvas('${id}')"`}>
+                <span class="pool-tile-role">${p.role}</span>
+                <span class="pool-tile-text">${p.text}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function confirmLeaveComposer() {
+  if (_composer && _composer.composition.length > 0 && !_composer.result) {
+    if (!confirm('Leave this composition? Your current canvas will be lost.')) return;
+  }
+  _composer = null;
+  navigate('home');
+}
+
+function renderComposerResult(result) {
+  const c = _composer;
+  const prompt = c.prompt;
+  const tiles = c.composition.map(id => phraseById(id));
+  const tier = result.total >= 80 ? 'great' : result.total >= 60 ? 'solid' : '';
+  const headline = result.total >= 90 ? 'Outstanding.'
+    : result.total >= 80 ? 'Strong composition.'
+    : result.total >= 65 ? 'Solid attempt.'
+    : result.total >= 45 ? 'Workable. Tighten it.'
+    : 'Rough — try again with a different shape.';
+
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+
+    <div class="composer-result">
+      <div class="composer-result-hero ${tier}">
+        <div class="composer-result-score">${result.total}</div>
+        <div class="composer-result-score-label">out of 100</div>
+        <h2 style="margin-top:0.75rem">${headline}</h2>
+        <div style="color:var(--text-dim);font-size:0.9rem">${prompt.framework}</div>
+        <div class="composer-result-rewards">
+          <span class="reward-pill xp">+${result.xpEarned} XP</span>
+          <span class="reward-pill coins">+${result.coinsEarned} 🪙</span>
+          ${result.total > (state.composer.bestScore - result.total === 0 ? -1 : 0) && result.total === state.composer.bestScore && state.composer.totalCompositions > 1
+            ? '<span class="reward-pill heal">🏆 New best</span>'
+            : ''}
+        </div>
+      </div>
+
+      <div class="score-axes">
+        <h3>Score breakdown</h3>
+        ${result.axes.map(a => {
+          const pct = a.kind === 'negative'
+            ? Math.min(100, (Math.abs(a.value) / 15) * 100)
+            : a.max ? Math.min(100, (a.value / a.max) * 100) : 0;
+          const sign = a.value < 0 ? '' : '+';
+          return `
+            <div class="score-axis">
+              <div class="score-axis-label">${a.label}</div>
+              <div class="score-axis-bar-wrap">
+                <div class="score-axis-bar ${a.kind}" style="width:${pct}%"></div>
+              </div>
+              <div class="score-axis-value ${a.value < 0 ? 'negative' : ''}">${sign}${a.value}${a.max ? '/' + a.max : ''}</div>
+              <div class="score-axis-detail">${a.detail}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div class="combos">
+        <h3>Combos</h3>
+        ${result.combos.filter(c => c.fired).length === 0
+          ? `<p style="color:var(--text-mute);font-size:0.85rem">No named combos triggered. Try a Hook + Example + Closer arc, or a tight Point → Reason → Example → Restated chain.</p>`
+          : result.combos.filter(c => c.fired).map(c => `
+              <div class="combo ${c.combo.penalty ? 'penalty' : ''}">
+                <div class="combo-icon">${c.combo.icon}</div>
+                <div class="combo-body">
+                  <div class="combo-name">${c.combo.name}</div>
+                  <div class="combo-desc">${c.combo.desc}</div>
+                </div>
+                <div class="combo-bonus">${c.combo.bonus > 0 ? '+' : ''}${c.combo.bonus}</div>
+              </div>
+            `).join('')}
+      </div>
+
+      <div class="composer-transcript">
+        <h3>Your composition</h3>
+        ${tiles.length === 0 ? '<p style="color:var(--text-mute)">No tiles placed.</p>' : tiles.map((t, i) => `
+          <div class="composer-transcript-line" data-role="${t.role}">
+            <strong style="font-size:0.7rem;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.05em">${i+1}. ${t.role}</strong>
+            <div>${t.text}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin-top:1rem">
+        <button class="btn btn-ghost" onclick="_composer = null; navigate('home')">
+          Back to modes
+        </button>
+        <button class="btn btn-secondary" onclick="tryThisPromptAgain()">
+          Try this prompt again
+        </button>
+        <button class="btn btn-primary" onclick="newComposerPrompt()">
+          New prompt →
+        </button>
+      </div>
+    </div>
+  `;
 }
 
 // ================================================================
@@ -1990,9 +2810,10 @@ function startFight(nodeIdx) {
   renderDeck();
 }
 
-function shuffleArr(arr) {
+function shuffleArr(arr, rng) {
+  const r = rng || Math.random;
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(r() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -3121,6 +3942,7 @@ function navigate(view) {
   if (view === 'home') renderHome();
   if (view === 'wordle') renderWordle();
   if (view === 'deck')  renderDeck();
+  if (view === 'composer') renderComposer();
   if (view === 'settings') renderSettings();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -3166,9 +3988,10 @@ function renderHome() {
       title: 'Composer',
       tag: 'Sandbox · 10 min',
       accent: 'orange',
-      desc: 'Drag phrase tiles onto a canvas. Build combos. Score on flow, framework, and rhetoric.',
-      status: 'Coming session 4',
-      locked: true
+      desc: 'Sequence phrase tiles into a response. Multi-axis scoring on framework, order, specificity, and named combos.',
+      status: null,
+      locked: false,
+      onclick: () => navigate('composer')
     },
     {
       key: 'tower',
@@ -3201,6 +4024,14 @@ function renderHome() {
     modes[1].status = dr.lastResult.won ? `Last run: 👑 Beat the boss` : `Last run: lost at fight ${(dr.lastResult.fightsCompleted || 0) + 1}`;
   } else {
     modes[1].status = `Fresh deck · ${STARTER_DECK_IDS.length} starter cards`;
+  }
+
+  // Composer status
+  const cmp = state.composer;
+  if (cmp && cmp.totalCompositions > 0) {
+    modes[2].status = `${cmp.totalCompositions} composition${cmp.totalCompositions === 1 ? '' : 's'} · best ${cmp.bestScore}/100`;
+  } else {
+    modes[2].status = `${COMPOSER_PROMPTS.length} prompts · 5 combos`;
   }
 
   const grid = document.getElementById('mode-grid');
@@ -3711,6 +4542,16 @@ window.leaveShop = leaveShop;
 window.chooseRest = chooseRest;
 window.applyPickerCard = applyPickerCard;
 window.cancelPicker = cancelPicker;
+// Session 4: composer handlers
+window.startComposerSession = startComposerSession;
+window.newComposerPrompt = newComposerPrompt;
+window.tryThisPromptAgain = tryThisPromptAgain;
+window.addTileToCanvas = addTileToCanvas;
+window.removeFromCanvas = removeFromCanvas;
+window.moveCanvasTile = moveCanvasTile;
+window.clearComposition = clearComposition;
+window.submitComposition = submitComposition;
+window.confirmLeaveComposer = confirmLeaveComposer;
 </script>
 </body>
 </html>
