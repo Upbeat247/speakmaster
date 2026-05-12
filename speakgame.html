@@ -923,6 +923,236 @@ main { flex: 1; }
 }
 
 /* ================================================================
+   SESSION 3 — Crossroads, Shop, Rest, upgrades, audience passives
+   ================================================================ */
+
+/* Crossroads picker — between fights */
+.crossroads { max-width: 900px; margin: 0 auto; text-align: center; }
+.crossroads h2 {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 900;
+  margin-bottom: 0.3rem;
+}
+.crossroads p { color: var(--text-dim); margin-bottom: 1.25rem; }
+.crossroads-grid {
+  display: grid; gap: 0.85rem;
+  grid-template-columns: 1fr;
+  max-width: 700px; margin: 0 auto;
+}
+@media (min-width: 700px) {
+  .crossroads-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.crossroads-card {
+  padding: 1.5rem 1rem; min-height: 200px;
+  background: var(--bg-card); border: 2px solid var(--border);
+  border-radius: var(--radius-lg); cursor: pointer;
+  display: flex; flex-direction: column; gap: 0.55rem;
+  align-items: center; text-align: center;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.crossroads-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.crossroads-card[data-kind="card"]:hover { border-color: var(--accent); }
+.crossroads-card[data-kind="shop"]:hover { border-color: var(--gold); }
+.crossroads-card[data-kind="rest"]:hover { border-color: var(--green); }
+.crossroads-icon { font-size: 2.5rem; line-height: 1; }
+.crossroads-card h3 {
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 800;
+}
+.crossroads-card p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.45; margin: 0; }
+
+/* Shop view */
+.shop { max-width: 980px; margin: 0 auto; }
+.shop-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--gold); border-radius: var(--radius-lg);
+}
+.shop-header h2 {
+  font-family: var(--font-display); font-size: 1.4rem; font-weight: 900;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.shop-coins {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.4rem 0.85rem; border-radius: 999px;
+  background: var(--gold-soft); border: 1px solid var(--gold);
+  color: var(--gold); font-weight: 800;
+}
+.shop-section { margin-bottom: 1.5rem; }
+.shop-section h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+}
+
+/* Buyable card — card + price overlay */
+.shop-card-wrap { position: relative; }
+.shop-card-wrap .card { cursor: pointer; }
+.shop-card-wrap.bought .card { opacity: 0.4; pointer-events: none; }
+.shop-card-wrap.unaffordable .card {
+  opacity: 0.5; cursor: not-allowed; border-style: dashed;
+}
+.shop-price-tag {
+  position: absolute; top: -10px; right: -8px;
+  padding: 0.25rem 0.65rem; border-radius: 999px;
+  background: var(--gold); color: #0a1726;
+  font-weight: 800; font-size: 0.78rem;
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  z-index: 2; pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.shop-card-wrap.bought .shop-price-tag { background: var(--green); }
+.shop-card-wrap.unaffordable .shop-price-tag { background: var(--red); color: #fff; }
+
+.shop-services {
+  display: grid; gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .shop-services { grid-template-columns: 1fr 1fr; }
+}
+.shop-service {
+  padding: 1rem; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+  display: flex; gap: 0.85rem; align-items: center;
+}
+.shop-service:hover:not(.used):not(.unaffordable) {
+  border-color: var(--accent); transform: translateY(-1px);
+}
+.shop-service.used { opacity: 0.5; cursor: not-allowed; }
+.shop-service.unaffordable { opacity: 0.55; cursor: not-allowed; border-style: dashed; }
+.shop-service-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; flex-shrink: 0;
+}
+.shop-service-body { flex: 1; min-width: 0; }
+.shop-service-title { font-weight: 700; font-size: 1rem; }
+.shop-service-desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
+.shop-service-price {
+  font-weight: 800; color: var(--gold); white-space: nowrap;
+  font-size: 0.92rem;
+}
+.shop-service.used .shop-service-price { color: var(--green); }
+
+/* Rest view */
+.rest { max-width: 700px; margin: 0 auto; text-align: center; }
+.rest h2 {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 900;
+  margin-bottom: 0.4rem;
+}
+.rest > p { color: var(--text-dim); margin-bottom: 1.25rem; }
+.rest-options {
+  display: grid; gap: 0.85rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+  .rest-options { grid-template-columns: 1fr 1fr; }
+}
+.rest-option {
+  padding: 1.5rem 1rem; background: var(--bg-card);
+  border: 2px solid var(--border); border-radius: var(--radius-lg);
+  cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease;
+  display: flex; flex-direction: column; gap: 0.5rem; align-items: center;
+}
+.rest-option:hover:not(.unavailable) { transform: translateY(-3px); }
+.rest-option[data-kind="heal"]:hover:not(.unavailable) { border-color: var(--green); }
+.rest-option[data-kind="upgrade"]:hover:not(.unavailable) { border-color: var(--accent); }
+.rest-option.unavailable { opacity: 0.45; cursor: not-allowed; }
+.rest-option-icon { font-size: 2.5rem; }
+.rest-option h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; }
+.rest-option p { font-size: 0.85rem; color: var(--text-dim); margin: 0; }
+
+/* Card-pick (for upgrade or remove inside shop/rest) */
+.card-pick-screen { max-width: 980px; margin: 0 auto; }
+.card-pick-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; margin-bottom: 1rem;
+}
+.card-pick-header h2 {
+  font-family: var(--font-display); font-size: 1.3rem; font-weight: 900;
+}
+.card-pick-header .sub { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.2rem; }
+.card-pick-empty {
+  padding: 2rem; text-align: center;
+  background: var(--bg-card); border: 1px dashed var(--border);
+  border-radius: var(--radius-lg); color: var(--text-mute);
+}
+
+/* Upgrade badge on cards */
+.card.upgraded { box-shadow: 0 0 14px rgba(45,212,191,0.35); }
+.card .upgrade-badge {
+  position: absolute; top: 4px; right: 28px;
+  padding: 0.1rem 0.4rem; border-radius: 999px;
+  background: var(--accent); color: #0a1726;
+  font-size: 0.62rem; font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+/* Audience passive ability badge */
+.audience-passive {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.7rem; border-radius: var(--radius-sm);
+  background: var(--bg-elev-2); border: 1px solid var(--purple);
+  font-size: 0.78rem; line-height: 1.35;
+}
+.audience-passive .pass-ico { color: var(--purple); font-weight: 800; flex-shrink: 0; }
+
+/* Animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.audience-panel.hit { animation: shake 0.35s ease; }
+.audience-emoji.hit { animation: shake 0.45s ease; }
+.composure-bar-wrap.hit { animation: shake 0.3s ease; }
+
+@keyframes damage-float {
+  0%   { transform: translate(-50%, 0) scale(0.8); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(-50%, -50px) scale(1.2); opacity: 0; }
+}
+.damage-float {
+  position: absolute; left: 50%; top: 30%;
+  font-family: var(--font-display); font-weight: 900; font-size: 1.8rem;
+  color: var(--orange); text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  pointer-events: none; z-index: 5;
+  animation: damage-float 0.9s ease-out forwards;
+}
+.damage-float.persuasion { color: var(--accent); }
+.damage-float.heavy { font-size: 2.4rem; color: var(--red); }
+
+@keyframes mini-card-pop {
+  0%   { transform: scale(0.4) translateY(30px) rotateZ(-10deg); opacity: 0; }
+  60%  { transform: scale(1.08) translateY(-2px) rotateZ(2deg); opacity: 1; }
+  100% { transform: scale(1) translateY(0) rotateZ(0); opacity: 1; }
+}
+.play-log .mini-card { animation: mini-card-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(167,139,250,0); }
+  50%      { box-shadow: 0 0 0 8px rgba(167,139,250,0.4); }
+}
+.block-pill.pulse { animation: pulse-glow 0.6s ease; }
+
+/* Coin-fly when buying */
+@keyframes coin-fly {
+  0%   { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -60px) scale(0.6); opacity: 0; }
+}
+.coin-fly {
+  position: absolute; left: 50%; top: 50%;
+  font-weight: 900; color: var(--gold); font-size: 1.4rem;
+  pointer-events: none; z-index: 5;
+  animation: coin-fly 0.7s ease-out forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+/* ================================================================
    RESPONSIVE TWEAKS
    ================================================================ */
 @media (max-width: 520px) {
@@ -1343,108 +1573,223 @@ const CARD_LIBRARY = [
   // ----- STARTER (in every starting deck) -----
   { id: 'c01', name: 'Quick Point',    type: 'attack', cost: 1, rarity: 'starter',
     text: 'Deal <span class="hl">5</span> persuasion.',
-    effect: { persuasion: 5 } },
+    effect: { persuasion: 5 },
+    upgrade: { text: 'Deal <span class="hl">8</span> persuasion.', effect: { persuasion: 8 } } },
   { id: 'c02', name: 'Make a Point',   type: 'attack', cost: 1, rarity: 'starter',
     text: 'Deal <span class="hl">6</span> persuasion.',
-    effect: { persuasion: 6 } },
+    effect: { persuasion: 6 },
+    upgrade: { text: 'Deal <span class="hl">9</span> persuasion.', effect: { persuasion: 9 } } },
   { id: 'c03', name: 'Cite a Reason',  type: 'attack', cost: 1, rarity: 'starter',
     text: 'Deal <span class="hl">5</span>. If you played an Attack this turn, deal <span class="hl">+3</span>.',
-    effect: { persuasion: 5, comboWith: 'attack', comboBonus: 3 } },
+    effect: { persuasion: 5, comboWith: 'attack', comboBonus: 3 },
+    upgrade: { text: 'Deal <span class="hl">7</span>. If you played an Attack this turn, deal <span class="hl">+5</span>.',
+              effect: { persuasion: 7, comboWith: 'attack', comboBonus: 5 } } },
   { id: 'c04', name: 'Pause',          type: 'skill',  cost: 1, rarity: 'starter',
     text: 'Gain <span class="hl">5</span> composure block.',
-    effect: { block: 5 } },
+    effect: { block: 5 },
+    upgrade: { text: 'Gain <span class="hl">8</span> composure block.', effect: { block: 8 } } },
   { id: 'c05', name: 'Listen',         type: 'skill',  cost: 0, rarity: 'starter',
     text: 'Draw <span class="hl">1</span> card.',
-    effect: { draw: 1 } },
+    effect: { draw: 1 },
+    upgrade: { text: 'Draw <span class="hl">2</span> cards.', effect: { draw: 2 } } },
 
   // ----- COMMON (reward pool) -----
   { id: 'c06', name: 'Concrete Example', type: 'attack', cost: 1, rarity: 'common',
     text: 'Deal <span class="hl">4</span>. If you played a Skill this turn, deal <span class="hl">+5</span>.',
-    effect: { persuasion: 4, comboWith: 'skill', comboBonus: 5 } },
+    effect: { persuasion: 4, comboWith: 'skill', comboBonus: 5 },
+    upgrade: { text: 'Deal <span class="hl">6</span>. If you played a Skill this turn, deal <span class="hl">+7</span>.',
+              effect: { persuasion: 6, comboWith: 'skill', comboBonus: 7 } } },
   { id: 'c07', name: 'Reframe', type: 'skill', cost: 2, rarity: 'common',
     text: 'Deal <span class="hl">7</span> persuasion. The audience\'s next intent is <strong>skipped</strong>.',
-    effect: { persuasion: 7, special: 'skip-next-intent' } },
+    effect: { persuasion: 7, special: 'skip-next-intent' },
+    upgrade: { cost: 1, text: 'Deal <span class="hl">7</span> persuasion. The audience\'s next intent is <strong>skipped</strong>.' } },
   { id: 'c08', name: 'Bridge', type: 'skill', cost: 0, rarity: 'common',
     text: 'Deal <span class="hl">3</span>. Draw <span class="hl">1</span> card.',
-    effect: { persuasion: 3, draw: 1 } },
+    effect: { persuasion: 3, draw: 1 },
+    upgrade: { text: 'Deal <span class="hl">5</span>. Draw <span class="hl">1</span> card.',
+              effect: { persuasion: 5, draw: 1 } } },
   { id: 'c09', name: 'Strong Hook', type: 'attack', cost: 2, rarity: 'common',
     text: 'Deal <span class="hl">10</span> persuasion. Lose <span class="hl">3</span> composure.',
-    effect: { persuasion: 10, selfDamage: 3 } },
+    effect: { persuasion: 10, selfDamage: 3 },
+    upgrade: { text: 'Deal <span class="hl">14</span> persuasion. Lose <span class="hl">3</span> composure.',
+              effect: { persuasion: 14, selfDamage: 3 } } },
   { id: 'c10', name: 'Closer', type: 'attack', cost: 3, rarity: 'common',
     text: 'Deal <span class="hl">14</span> persuasion. <strong>Exhaust</strong>.',
-    effect: { persuasion: 14, exhaust: true } },
+    effect: { persuasion: 14, exhaust: true },
+    upgrade: { cost: 2, text: 'Deal <span class="hl">14</span> persuasion. <strong>Exhaust</strong>.' } },
   { id: 'c11', name: 'Recover', type: 'skill', cost: 1, rarity: 'common',
     text: 'Gain <span class="hl">8</span> composure block.',
-    effect: { block: 8 } },
+    effect: { block: 8 },
+    upgrade: { text: 'Gain <span class="hl">12</span> composure block.', effect: { block: 12 } } },
   { id: 'c12', name: 'Specifics', type: 'attack', cost: 1, rarity: 'common',
     text: 'Deal <span class="hl">4</span>. Deal <span class="hl">+6</span> if your discard has 3+ cards.',
-    effect: { persuasion: 4, special: 'big-if-discard-3' } },
+    effect: { persuasion: 4, special: 'big-if-discard-3' },
+    upgrade: { text: 'Deal <span class="hl">6</span>. Deal <span class="hl">+8</span> if your discard has 3+ cards.',
+              effect: { persuasion: 6, special: 'big-if-discard-3', _bigBonus: 8 } } },
   { id: 'c13', name: 'Probing Question', type: 'skill', cost: 1, rarity: 'common',
     text: 'Draw <span class="hl">2</span> cards.',
-    effect: { draw: 2 } },
+    effect: { draw: 2 },
+    upgrade: { text: 'Draw <span class="hl">3</span> cards.', effect: { draw: 3 } } },
   { id: 'c14', name: 'Confident Tone', type: 'power', cost: 1, rarity: 'common',
     text: '<strong>Power</strong>: Your Attacks deal <span class="hl">+1</span> persuasion this fight.',
-    effect: { powerful: true, special: 'attack-buff-1' } },
+    effect: { powerful: true, special: 'attack-buff-1' },
+    upgrade: { text: '<strong>Power</strong>: Your Attacks deal <span class="hl">+2</span> persuasion this fight.',
+              effect: { powerful: true, special: 'attack-buff-2' } } },
   { id: 'c15', name: 'Steady Voice', type: 'skill', cost: 1, rarity: 'common',
     text: 'Gain <span class="hl">5</span> block. Draw <span class="hl">1</span> card.',
-    effect: { block: 5, draw: 1 } },
+    effect: { block: 5, draw: 1 },
+    upgrade: { text: 'Gain <span class="hl">8</span> block. Draw <span class="hl">1</span> card.',
+              effect: { block: 8, draw: 1 } } },
   { id: 'c16', name: 'Acknowledge', type: 'skill', cost: 0, rarity: 'common',
     text: 'Gain <span class="hl">3</span> block.',
-    effect: { block: 3 } },
+    effect: { block: 3 },
+    upgrade: { text: 'Gain <span class="hl">5</span> block.', effect: { block: 5 } } },
   { id: 'c17', name: 'Sharp Retort', type: 'attack', cost: 1, rarity: 'common',
     text: 'Deal <span class="hl">7</span> persuasion.',
-    effect: { persuasion: 7 } },
+    effect: { persuasion: 7 },
+    upgrade: { text: 'Deal <span class="hl">10</span> persuasion.', effect: { persuasion: 10 } } },
+
+  // NEW COMMON CARDS (session 3)
+  { id: 'c18', name: 'Clarify', type: 'skill', cost: 1, rarity: 'common',
+    text: 'Reduce the audience\'s resistance by <span class="hl">6</span>.',
+    effect: { special: 'reduce-resistance', _val: 6 },
+    upgrade: { text: 'Reduce the audience\'s resistance by <span class="hl">10</span>.',
+              effect: { special: 'reduce-resistance', _val: 10 } } },
+  { id: 'c19', name: 'Deflect', type: 'skill', cost: 1, rarity: 'common',
+    text: 'Gain <span class="hl">4</span> block. Deal <span class="hl">2</span> persuasion.',
+    effect: { block: 4, persuasion: 2 },
+    upgrade: { text: 'Gain <span class="hl">6</span> block. Deal <span class="hl">3</span> persuasion.',
+              effect: { block: 6, persuasion: 3 } } },
 
   // ----- UNCOMMON -----
   { id: 'c20', name: 'Devil\'s Advocate', type: 'combo', cost: 0, rarity: 'uncommon',
     text: 'Deal persuasion equal to your current <strong>block</strong>. <strong>Exhaust</strong>.',
-    effect: { exhaust: true, special: 'damage-equals-block' } },
+    effect: { exhaust: true, special: 'damage-equals-block' },
+    upgrade: { text: 'Deal persuasion equal to your current <strong>block × 1.5</strong>. <strong>Exhaust</strong>.',
+              effect: { exhaust: true, special: 'damage-equals-block', _mult: 1.5 } } },
   { id: 'c21', name: 'Pivot', type: 'skill', cost: 1, rarity: 'uncommon',
     text: 'Skip the audience\'s next intent. Gain <span class="hl">3</span> block.',
-    effect: { block: 3, special: 'skip-next-intent' } },
+    effect: { block: 3, special: 'skip-next-intent' },
+    upgrade: { text: 'Skip the audience\'s next intent. Gain <span class="hl">6</span> block.',
+              effect: { block: 6, special: 'skip-next-intent' } } },
   { id: 'c22', name: 'Power Pose', type: 'skill', cost: 0, rarity: 'uncommon',
     text: 'Gain <span class="hl">1</span> energy this turn.',
-    effect: { gainEnergy: 1 } },
+    effect: { gainEnergy: 1 },
+    upgrade: { text: 'Gain <span class="hl">1</span> energy this turn. Gain <span class="hl">3</span> block.',
+              effect: { gainEnergy: 1, block: 3 } } },
   { id: 'c23', name: 'Storytelling Arc', type: 'power', cost: 1, rarity: 'uncommon',
     text: '<strong>Power</strong>: At the start of each turn, draw <span class="hl">1</span> extra card.',
-    effect: { powerful: true, special: 'draw-extra' } },
+    effect: { powerful: true, special: 'draw-extra' },
+    upgrade: { cost: 0, text: '<strong>Power</strong>: At the start of each turn, draw <span class="hl">1</span> extra card.' } },
   { id: 'c24', name: 'Authority', type: 'skill', cost: 1, rarity: 'uncommon',
     text: 'Your next Attack deals <span class="hl">double</span> persuasion this turn.',
-    effect: { special: 'double-next-attack' } },
+    effect: { special: 'double-next-attack' },
+    upgrade: { cost: 0, text: 'Your next Attack deals <span class="hl">double</span> persuasion this turn.' } },
   { id: 'c25', name: 'Mic Drop', type: 'combo', cost: 2, rarity: 'uncommon',
     text: 'Deal <span class="hl">15</span>. Playable only as the <strong>last card</strong> in hand. <strong>Exhaust</strong>.',
-    effect: { persuasion: 15, exhaust: true, special: 'must-be-last' } },
+    effect: { persuasion: 15, exhaust: true, special: 'must-be-last' },
+    upgrade: { text: 'Deal <span class="hl">22</span>. Playable only as the <strong>last card</strong>. <strong>Exhaust</strong>.',
+              effect: { persuasion: 22, exhaust: true, special: 'must-be-last' } } },
   { id: 'c26', name: 'Anaphora', type: 'attack', cost: 1, rarity: 'uncommon',
     text: 'Deal <span class="hl">3</span>×N, where N = Attacks played this turn (including this one).',
-    effect: { special: 'scale-with-attacks' } },
+    effect: { special: 'scale-with-attacks', _scale: 3 },
+    upgrade: { text: 'Deal <span class="hl">4</span>×N, where N = Attacks played this turn (including this one).',
+              effect: { special: 'scale-with-attacks', _scale: 4 } } },
   { id: 'c27', name: 'Strategic Silence', type: 'skill', cost: 0, rarity: 'uncommon',
     text: 'Gain block equal to the audience\'s telegraphed damage. <strong>Exhaust</strong>.',
-    effect: { exhaust: true, special: 'block-equals-intent' } },
+    effect: { exhaust: true, special: 'block-equals-intent' },
+    upgrade: { text: 'Gain block equal to <span class="hl">1.5×</span> the audience\'s telegraphed damage. <strong>Exhaust</strong>.',
+              effect: { exhaust: true, special: 'block-equals-intent', _mult: 1.5 } } },
+
+  // NEW UNCOMMON (session 3)
+  { id: 'c28', name: 'Disarm', type: 'skill', cost: 1, rarity: 'uncommon',
+    text: 'The audience\'s next attack deals <span class="hl">half</span> damage.',
+    effect: { special: 'halve-next-attack' },
+    upgrade: { text: 'The audience\'s next attack deals <span class="hl">0</span> damage.',
+              effect: { special: 'nullify-next-attack' } } },
+  { id: 'c29', name: 'Steel Resolve', type: 'power', cost: 2, rarity: 'uncommon',
+    text: '<strong>Power</strong>: Whenever you take damage, deal <span class="hl">2</span> persuasion back.',
+    effect: { powerful: true, special: 'thorns-2' },
+    upgrade: { text: '<strong>Power</strong>: Whenever you take damage, deal <span class="hl">4</span> persuasion back.',
+              effect: { powerful: true, special: 'thorns-4' } } },
+  { id: 'c34', name: 'Punchline', type: 'attack', cost: 1, rarity: 'uncommon',
+    text: 'Deal <span class="hl">8</span>. If this is the first card you play this turn, draw <span class="hl">1</span>.',
+    effect: { persuasion: 8, special: 'draw-if-first' },
+    upgrade: { text: 'Deal <span class="hl">11</span>. If this is the first card you play this turn, draw <span class="hl">2</span>.',
+              effect: { persuasion: 11, special: 'draw-if-first', _drawN: 2 } } },
+  { id: 'c35', name: 'Concession', type: 'skill', cost: 1, rarity: 'uncommon',
+    text: 'Gain <span class="hl">10</span> block. Audience gains <span class="hl">3</span> conviction.',
+    effect: { block: 10, special: 'give-conviction', _val: 3 },
+    upgrade: { text: 'Gain <span class="hl">14</span> block. Audience gains <span class="hl">2</span> conviction.',
+              effect: { block: 14, special: 'give-conviction', _val: 2 } } },
 
   // ----- RARE -----
   { id: 'c30', name: 'Closing Argument', type: 'combo', cost: 3, rarity: 'rare',
     text: 'Deal <span class="hl">8</span> + <span class="hl">1</span> per card in discard. <strong>Exhaust</strong>.',
-    effect: { exhaust: true, special: 'scale-with-discard' } },
+    effect: { exhaust: true, special: 'scale-with-discard', _base: 8 },
+    upgrade: { text: 'Deal <span class="hl">12</span> + <span class="hl">1</span> per card in discard. <strong>Exhaust</strong>.',
+              effect: { exhaust: true, special: 'scale-with-discard', _base: 12 } } },
   { id: 'c31', name: 'Conviction', type: 'power', cost: 2, rarity: 'rare',
     text: '<strong>Power</strong>: At start of each turn, deal <span class="hl">3</span> automatic persuasion.',
-    effect: { powerful: true, special: 'turn-start-damage' } },
+    effect: { powerful: true, special: 'turn-start-damage', _val: 3 },
+    upgrade: { text: '<strong>Power</strong>: At start of each turn, deal <span class="hl">5</span> automatic persuasion.',
+              effect: { powerful: true, special: 'turn-start-damage', _val: 5 } } },
   { id: 'c32', name: 'Total Recall', type: 'skill', cost: 2, rarity: 'rare',
     text: 'Shuffle your discard back into your deck. <strong>Exhaust</strong>.',
-    effect: { exhaust: true, special: 'recall-discard' } },
+    effect: { exhaust: true, special: 'recall-discard' },
+    upgrade: { cost: 1, text: 'Shuffle your discard back into your deck. <strong>Exhaust</strong>.' } },
   { id: 'c33', name: 'Rhetorical Question', type: 'combo', cost: 1, rarity: 'rare',
     text: 'Deal <span class="hl">10</span>. If you have a Power active, draw <span class="hl">2</span>.',
-    effect: { persuasion: 10, special: 'draw-if-power' } }
+    effect: { persuasion: 10, special: 'draw-if-power' },
+    upgrade: { text: 'Deal <span class="hl">14</span>. If you have a Power active, draw <span class="hl">2</span>.',
+              effect: { persuasion: 14, special: 'draw-if-power' } } },
+
+  // NEW RARE (session 3)
+  { id: 'c36', name: 'The Big Reveal', type: 'attack', cost: 2, rarity: 'rare',
+    text: 'Deal <span class="hl">20</span> persuasion. <strong>Exhaust</strong>. Add a "Quick Point" to your discard.',
+    effect: { persuasion: 20, exhaust: true, special: 'add-card-to-discard', _addId: 'c01' },
+    upgrade: { text: 'Deal <span class="hl">28</span> persuasion. <strong>Exhaust</strong>. Add a "Quick Point+" to your discard.',
+              effect: { persuasion: 28, exhaust: true, special: 'add-card-to-discard', _addId: 'c01+' } } },
+  { id: 'c37', name: 'Charisma', type: 'power', cost: 2, rarity: 'rare',
+    text: '<strong>Power</strong>: At start of each turn, gain <span class="hl">1</span> energy.',
+    effect: { powerful: true, special: 'energy-power' },
+    upgrade: { text: '<strong>Power</strong>: At start of each turn, gain <span class="hl">2</span> energy.',
+              effect: { powerful: true, special: 'energy-power-2' } } }
 ];
-function cardById(id) { return CARD_LIBRARY.find(c => c.id === id); }
+
+// Resolve a card id, supporting "+" suffix for upgraded variants.
+function cardById(id) {
+  if (!id) return null;
+  const upgraded = id.endsWith('+');
+  const baseId = upgraded ? id.slice(0, -1) : id;
+  const base = CARD_LIBRARY.find(c => c.id === baseId);
+  if (!base) return null;
+  if (!upgraded || !base.upgrade) return base;
+  // Build the upgraded card by overlaying upgrade fields on the base.
+  const up = base.upgrade;
+  return {
+    ...base,
+    name: base.name + '+',
+    cost: up.cost !== undefined ? up.cost : base.cost,
+    text: up.text || base.text,
+    effect: up.effect || base.effect,
+    _upgraded: true,
+    _id: id
+  };
+}
 function cardsByRarity(rarity) { return CARD_LIBRARY.filter(c => c.rarity === rarity); }
+function isUpgradedId(id) { return typeof id === 'string' && id.endsWith('+'); }
+function upgradedIdOf(id) { return isUpgradedId(id) ? id : id + '+'; }
 
 // ================================================================
 // DECK MODE — Audience library
 // ================================================================
 const AUDIENCE_LIBRARY = [
-  // ----- NORMAL (3) -----
+  // ----- NORMAL (4) -----
   { id: 'a01', name: 'Skeptical CFO',          emoji: '💼', skepticism: 26,
     desc: 'Hates surprises. Wants numbers.',
+    passive: { id: 'numbers-demanded', label: 'Numbers Demanded',
+               text: 'Your Attacks deal −1 unless you played a Skill earlier this turn.' },
     intents: [
       { kind: 'attack', value: 5,  label: 'Pokes a hole in your logic' },
       { kind: 'defend', value: 6,  label: 'Folds arms — gains 6 resistance' },
@@ -1452,6 +1797,8 @@ const AUDIENCE_LIBRARY = [
     ] },
   { id: 'a02', name: 'Distracted Executive',   emoji: '📱', skepticism: 22,
     desc: 'Half on their phone. Quick to lose interest.',
+    passive: { id: 'phone-buzz', label: 'Phone Buzz',
+               text: 'At end of your turn, you discard 1 random card from hand.' },
     intents: [
       { kind: 'attack', value: 4,  label: 'Glances at phone — half-listens' },
       { kind: 'attack', value: 8,  label: 'Snaps back: "What\'s the point?"' },
@@ -1459,6 +1806,8 @@ const AUDIENCE_LIBRARY = [
     ] },
   { id: 'a03', name: 'Hostile Reporter',       emoji: '🎤', skepticism: 28,
     desc: 'Looking for the headline. Will twist words.',
+    passive: { id: 'twisted-quotes', label: 'Twisted Quotes',
+               text: 'When you play a card costing 2+, they gain 2 conviction.' },
     intents: [
       { kind: 'attack', value: 6,  label: 'Quotes you out of context' },
       { kind: 'attack', value: 6,  label: 'Asks a leading question' },
@@ -1466,15 +1815,31 @@ const AUDIENCE_LIBRARY = [
     ] },
   { id: 'a04', name: 'Bored Board Member',     emoji: '😐', skepticism: 24,
     desc: 'Has heard this pitch before. Wants something fresh.',
+    passive: { id: 'heard-it-all', label: 'Heard It All',
+               text: 'Your first Attack each turn deals −2 persuasion.' },
     intents: [
       { kind: 'defend', value: 8,  label: 'Sits back — gains 8 resistance' },
       { kind: 'attack', value: 9,  label: 'Skewers with one cutting line' },
       { kind: 'attack', value: 5,  label: 'Sighs audibly' }
     ] },
 
+  // ----- ELITE (1 NEW) -----
+  { id: 'e01', name: 'The Founder',            emoji: '🚀', skepticism: 42, isElite: true,
+    desc: 'Built it from nothing. Won\'t be told.',
+    passive: { id: 'pivot-master', label: 'Pivot Master',
+               text: 'At start of each turn, gains 2 resistance.' },
+    intents: [
+      { kind: 'attack', value: 6,  label: 'Counters with their own story' },
+      { kind: 'defend', value: 6,  label: 'Doubles down — gains 6 resistance' },
+      { kind: 'attack', value: 11, label: 'Hard pivot: cuts you off' },
+      { kind: 'buff',   value: 3,  label: 'Locks in (+3 conviction)' }
+    ] },
+
   // ----- BOSS -----
-  { id: 'b01', name: 'The Distinguished Skeptic', emoji: '👑', skepticism: 50, isBoss: true,
+  { id: 'b01', name: 'The Distinguished Skeptic', emoji: '👑', skepticism: 58, isBoss: true,
     desc: 'Has heard every pitch. Unmoved. Watch for the cutting question.',
+    passive: { id: 'cutting-mind', label: 'Cutting Mind',
+               text: 'If you end your turn with an empty hand, take 4 damage.' },
     intents: [
       { kind: 'attack', value: 7,  label: 'Raises an eyebrow' },
       { kind: 'buff',   value: 4,  label: 'Sharpens focus (+4 conviction)' },
@@ -1484,7 +1849,11 @@ const AUDIENCE_LIBRARY = [
 ];
 function audienceById(id) { return AUDIENCE_LIBRARY.find(a => a.id === id); }
 function pickNormalAudience(excludeIds, rng) {
-  const pool = AUDIENCE_LIBRARY.filter(a => !a.isBoss && !excludeIds.includes(a.id));
+  const pool = AUDIENCE_LIBRARY.filter(a => !a.isBoss && !a.isElite && !excludeIds.includes(a.id));
+  return pool[Math.floor((rng ? rng() : Math.random()) * pool.length)];
+}
+function pickEliteAudience(rng) {
+  const pool = AUDIENCE_LIBRARY.filter(a => a.isElite);
   return pool[Math.floor((rng ? rng() : Math.random()) * pool.length)];
 }
 
@@ -1518,15 +1887,18 @@ if (!state.deckRun) {
 
 function startNewRun() {
   SFX.click();
-  // Build the run map: 4 normal fights with distinct audiences + 1 boss
+  // Build the run map: 3 normal fights (distinct audiences) + 1 elite + 1 boss.
+  // The elite slots in at position 3 (4th node).
   const usedIds = [];
   const nodes = [];
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     const aud = pickNormalAudience(usedIds);
     usedIds.push(aud.id);
-    nodes.push({ kind: 'fight', audienceId: aud.id, done: false, isBoss: false });
+    nodes.push({ kind: 'fight', audienceId: aud.id, done: false, isBoss: false, isElite: false });
   }
-  nodes.push({ kind: 'fight', audienceId: 'b01', done: false, isBoss: true });
+  const elite = pickEliteAudience();
+  nodes.push({ kind: 'fight', audienceId: elite.id, done: false, isBoss: false, isElite: true });
+  nodes.push({ kind: 'fight', audienceId: 'b01', done: false, isBoss: true, isElite: false });
 
   state.deckRun = {
     active: true,
@@ -1537,7 +1909,10 @@ function startNewRun() {
     fightsCompleted: 0,
     totalFights: 5,
     nodes,
-    pendingReward: null,
+    crossroads: null,           // {kind:'pick'|'shop'|'rest'} or null
+    shopState: null,            // {cardsForSale, prices, sold:[bool], removeUsed, upgradeUsed} or null
+    pickerState: null,          // {kind:'remove'|'upgrade-shop'|'upgrade-rest', returnTo:'shop'|'map', priceCharged:N}
+    pendingReward: null,        // legacy: now only populated for new-card pick within crossroads
     runsCompleted: state.deckRun?.runsCompleted || 0,
     runsLost: state.deckRun?.runsLost || 0
   };
@@ -1575,13 +1950,18 @@ function startFight(nodeIdx) {
       emoji: audience.emoji,
       desc: audience.desc,
       isBoss: audience.isBoss || false,
+      isElite: audience.isElite || false,
+      passive: audience.passive || null,
       skepticismMax: audience.skepticism,
       skepticism: audience.skepticism,
       resistance: 0,
       conviction: 0,
       intents: audience.intents.slice(),
       intentIdx: 0,
-      skipNextIntent: false
+      skipNextIntent: false,
+      // Session-3 modifiers
+      halveNextAttack: false,
+      nullifyNextAttack: false
     },
     composureMax: state.deckRun.composureMax,
     composure: state.deckRun.composure,
@@ -1593,14 +1973,18 @@ function startFight(nodeIdx) {
     discard: [],
     exhaust: [],
     playLog: [],          // mini cards shown for this turn
-    powers: [],           // {cardId, kind}
+    powers: [],           // {cardId, special}
     turnFlags: {
       attacksPlayed: 0,
       skillsPlayed: 0,
-      doubleNextAttack: false
+      doubleNextAttack: false,
+      cardsPlayed: 0,                     // for first-card / empty-hand checks
+      firstAttackBoardDebuffApplied: false // tracks the Bored Board's -2-on-first-attack passive
     },
     over: false,
-    won: false
+    won: false,
+    // Animation queue — UI consumes once per render
+    _fx: []
   };
   drawCards(5);
   renderDeck();
@@ -1629,6 +2013,44 @@ function getCurrentIntent() {
   return _fight.audience.intents[_fight.audience.intentIdx % _fight.audience.intents.length];
 }
 
+// Deal damage to player composure. Respects block. Triggers passives (thorns).
+// Returns the damage that actually went through to composure.
+function damagePlayer(rawAmount) {
+  const blocked = Math.min(_fight.block, rawAmount);
+  const through = rawAmount - blocked;
+  _fight.block -= blocked;
+  _fight.composure = Math.max(0, _fight.composure - through);
+  if (through > 0) {
+    SFX.miss();
+    _fight._fx.push({ kind: 'damage', value: through, target: 'player' });
+    // Thorns power: deal persuasion back when hit
+    const thorns2 = _fight.powers.find(p => p.special === 'thorns-2');
+    const thorns4 = _fight.powers.find(p => p.special === 'thorns-4');
+    const thornsAmt = thorns4 ? 4 : (thorns2 ? 2 : 0);
+    if (thornsAmt > 0) {
+      const resisted = Math.max(0, thornsAmt - _fight.audience.resistance);
+      _fight.audience.resistance = Math.max(0, _fight.audience.resistance - thornsAmt);
+      _fight.audience.skepticism = Math.max(0, _fight.audience.skepticism - resisted);
+      _fight._fx.push({ kind: 'damage', value: resisted, target: 'audience', flavor: 'thorns' });
+    }
+  }
+  return through;
+}
+
+// Audience passive: numbers-demanded (CFO) reduces attacks by 1 unless a Skill was played earlier this turn.
+function applyAttackPassiveModifier(card, basePersuasion) {
+  let p = basePersuasion;
+  const passId = _fight.audience.passive && _fight.audience.passive.id;
+  if (passId === 'numbers-demanded' && card.type === 'attack' && _fight.turnFlags.skillsPlayed === 0) {
+    p = Math.max(0, p - 1);
+  }
+  if (passId === 'heard-it-all' && card.type === 'attack' && !_fight.turnFlags.firstAttackBoardDebuffApplied) {
+    p = Math.max(0, p - 2);
+    _fight.turnFlags.firstAttackBoardDebuffApplied = true;
+  }
+  return p;
+}
+
 function playCard(handIdx) {
   if (!_fight || _fight.over) return;
   const cardId = _fight.hand[handIdx];
@@ -1650,6 +2072,10 @@ function playCard(handIdx) {
   _fight.playLog.push(card.name);
   SFX.place();
 
+  // Was this the first card played this turn? (used by Punchline)
+  const isFirstCardThisTurn = _fight.turnFlags.cardsPlayed === 0;
+  _fight.turnFlags.cardsPlayed++;
+
   // Tally turn flags
   if (card.type === 'attack') _fight.turnFlags.attacksPlayed++;
   if (card.type === 'skill')  _fight.turnFlags.skillsPlayed++;
@@ -1660,7 +2086,6 @@ function playCard(handIdx) {
 
   // Combo bonus: comboWith ('attack'|'skill') checks prior plays this turn
   if (e.comboWith === 'attack' && _fight.turnFlags.attacksPlayed > 1) {
-    // The current card already counted as an attack — bonus if any OTHER attack was played
     persuasion += e.comboBonus || 0;
   } else if (e.comboWith === 'skill' && _fight.turnFlags.skillsPlayed > (card.type === 'skill' ? 1 : 0)) {
     persuasion += e.comboBonus || 0;
@@ -1668,32 +2093,58 @@ function playCard(handIdx) {
 
   // Special effects
   if (e.special === 'damage-equals-block') {
-    persuasion += _fight.block;
+    const mult = e._mult || 1;
+    persuasion += Math.floor(_fight.block * mult);
   }
   if (e.special === 'big-if-discard-3' && _fight.discard.length >= 3) {
-    persuasion += 6;
+    persuasion += e._bigBonus || 6;
   }
   if (e.special === 'scale-with-attacks') {
-    persuasion += 3 * _fight.turnFlags.attacksPlayed;
+    const scale = e._scale || 3;
+    persuasion += scale * _fight.turnFlags.attacksPlayed;
   }
   if (e.special === 'scale-with-discard') {
-    persuasion += _fight.discard.length;
+    const base = e._base !== undefined ? e._base : 8;
+    persuasion = base + _fight.discard.length;
   }
   if (e.special === 'block-equals-intent') {
     const intent = getCurrentIntent();
     if (intent.kind === 'attack') {
-      _fight.block += intent.value;
+      const mult = e._mult || 1;
+      _fight.block += Math.floor((intent.value + _fight.audience.conviction) * mult);
     }
   }
   if (e.special === 'recall-discard') {
     _fight.drawPile = shuffleArr([..._fight.drawPile, ..._fight.discard]);
     _fight.discard = [];
   }
-
-  // Apply Confident Tone (+1 to all attacks) if active
-  if (card.type === 'attack' && _fight.powers.some(p => p.special === 'attack-buff-1')) {
-    persuasion += 1;
+  if (e.special === 'reduce-resistance') {
+    _fight.audience.resistance = Math.max(0, _fight.audience.resistance - (e._val || 6));
   }
+  if (e.special === 'halve-next-attack') {
+    _fight.audience.halveNextAttack = true;
+  }
+  if (e.special === 'nullify-next-attack') {
+    _fight.audience.nullifyNextAttack = true;
+  }
+  if (e.special === 'give-conviction') {
+    _fight.audience.conviction += (e._val || 3);
+  }
+  if (e.special === 'add-card-to-discard') {
+    _fight.discard.push(e._addId);
+  }
+  if (e.special === 'draw-if-first' && isFirstCardThisTurn) {
+    drawCards(e._drawN || 1);
+  }
+
+  // Apply Confident Tone (+1 / +2 to all attacks) if active
+  if (card.type === 'attack') {
+    if (_fight.powers.some(p => p.special === 'attack-buff-2')) persuasion += 2;
+    else if (_fight.powers.some(p => p.special === 'attack-buff-1')) persuasion += 1;
+  }
+
+  // Audience passive: numbers-demanded / heard-it-all modify attack damage
+  persuasion = applyAttackPassiveModifier(card, persuasion);
 
   // Authority: double next attack
   if (_fight.turnFlags.doubleNextAttack && card.type === 'attack') {
@@ -1710,11 +2161,13 @@ function playCard(handIdx) {
     const resisted = Math.max(0, persuasion - _fight.audience.resistance);
     _fight.audience.resistance = Math.max(0, _fight.audience.resistance - persuasion);
     _fight.audience.skepticism = Math.max(0, _fight.audience.skepticism - resisted);
+    if (resisted > 0) _fight._fx.push({ kind: 'damage', value: resisted, target: 'audience' });
   }
 
-  // Self damage (Strong Hook)
+  // Self damage (Strong Hook) — does NOT trigger thorns since it's self-inflicted
   if (e.selfDamage) {
     _fight.composure = Math.max(0, _fight.composure - e.selfDamage);
+    _fight._fx.push({ kind: 'damage', value: e.selfDamage, target: 'player', flavor: 'self' });
   }
 
   // Energy gain
@@ -1736,6 +2189,11 @@ function playCard(handIdx) {
   // Draw if power (for c33)
   if (e.special === 'draw-if-power' && _fight.powers.length > 0) {
     drawCards(2);
+  }
+
+  // Audience passive: twisted-quotes — costly cards build their conviction
+  if (_fight.audience.passive && _fight.audience.passive.id === 'twisted-quotes' && card.cost >= 2) {
+    _fight.audience.conviction += 2;
   }
 
   // Where does the card go?
@@ -1763,6 +2221,19 @@ function endTurn() {
   if (!_fight || _fight.over) return;
   SFX.submit();
 
+  // Audience passive: cutting-mind — empty hand at end of turn = 4 damage
+  const passId = _fight.audience.passive && _fight.audience.passive.id;
+  if (passId === 'cutting-mind' && _fight.hand.length === 0) {
+    damagePlayer(4);
+    if (_fight.composure <= 0) { finishFight(false); return; }
+  }
+
+  // Audience passive: phone-buzz — discard 1 random card from hand at end of turn
+  if (passId === 'phone-buzz' && _fight.hand.length > 0) {
+    const idx = Math.floor(Math.random() * _fight.hand.length);
+    _fight.discard.push(_fight.hand.splice(idx, 1)[0]);
+  }
+
   // Discard remaining hand
   while (_fight.hand.length > 0) {
     _fight.discard.push(_fight.hand.shift());
@@ -1779,13 +2250,17 @@ function endTurn() {
     showToast('Audience intent skipped.', 'success');
   } else {
     if (intent.kind === 'attack') {
-      const dmg = intent.value + audience.conviction;
+      let dmg = intent.value + audience.conviction;
       audience.conviction = 0; // conviction is consumed on attack
-      const blocked = Math.min(_fight.block, dmg);
-      const through = dmg - blocked;
-      _fight.block -= blocked;
-      _fight.composure = Math.max(0, _fight.composure - through);
-      if (through > 0) SFX.miss();
+      // Disarm modifiers
+      if (audience.nullifyNextAttack) {
+        dmg = 0;
+        audience.nullifyNextAttack = false;
+      } else if (audience.halveNextAttack) {
+        dmg = Math.floor(dmg / 2);
+        audience.halveNextAttack = false;
+      }
+      damagePlayer(dmg);
     } else if (intent.kind === 'defend') {
       audience.resistance += intent.value;
     } else if (intent.kind === 'buff') {
@@ -1804,17 +2279,31 @@ function endTurn() {
   _fight.energy = _fight.energyMax;
   _fight.block = 0;
   _fight.playLog = [];
-  _fight.turnFlags = { attacksPlayed: 0, skillsPlayed: 0, doubleNextAttack: false };
+  _fight.turnFlags = {
+    attacksPlayed: 0, skillsPlayed: 0, doubleNextAttack: false,
+    cardsPlayed: 0, firstAttackBoardDebuffApplied: false
+  };
+
+  // Audience passive: pivot-master (elite Founder) — +2 resistance at turn start
+  if (passId === 'pivot-master') {
+    _fight.audience.resistance += 2;
+  }
 
   // Powers that trigger at start of turn
   for (const p of _fight.powers) {
     if (p.special === 'draw-extra') drawCards(1);
     if (p.special === 'turn-start-damage') {
-      const through = Math.max(0, 3 - _fight.audience.resistance);
-      _fight.audience.resistance = Math.max(0, _fight.audience.resistance - 3);
+      const power = _fight.powers.find(pp => pp.special === 'turn-start-damage');
+      const card = power ? cardById(power.cardId) : null;
+      const val = (card && card.effect && card.effect._val) || 3;
+      const through = Math.max(0, val - _fight.audience.resistance);
+      _fight.audience.resistance = Math.max(0, _fight.audience.resistance - val);
       _fight.audience.skepticism = Math.max(0, _fight.audience.skepticism - through);
+      if (through > 0) _fight._fx.push({ kind: 'damage', value: through, target: 'audience', flavor: 'aura' });
       if (_fight.audience.skepticism <= 0) { finishFight(true); return; }
     }
+    if (p.special === 'energy-power')   _fight.energy += 1;
+    if (p.special === 'energy-power-2') _fight.energy += 2;
   }
 
   drawCards(5);
@@ -1833,10 +2322,11 @@ function finishFight(won) {
     state.deckRun.fightsCompleted++;
     state.deckRun.composure = _fight.composure; // persist remaining composure
 
-    // Heal a bit between fights (not after boss — run ends anyway)
     const isBoss = node.isBoss;
-    const baseXp = isBoss ? 100 : 30;
-    const baseCoins = isBoss ? 60 : 18;
+    const isElite = node.isElite;
+    // Elite gives bigger rewards than normal; boss is biggest.
+    const baseXp = isBoss ? 100 : isElite ? 60 : 30;
+    const baseCoins = isBoss ? 60 : isElite ? 35 : 18;
     const composureBonus = Math.round(_fight.composure / 8);
     const xpEarned = baseXp + composureBonus;
     const coinsEarned = baseCoins + composureBonus;
@@ -1847,14 +2337,15 @@ function finishFight(won) {
     refreshHeaderStats();
 
     if (!isBoss) {
-      // Heal 12 between fights
-      state.deckRun.composure = Math.min(state.deckRun.composureMax, state.deckRun.composure + 12);
-      // Offer 3 reward cards (common-weighted; small chance of uncommon/rare)
-      state.deckRun.pendingReward = {
+      // Crossroads: player picks New Card / Shop / Rest. No auto-heal —
+      // the user makes a meaningful choice. The fight reward (XP+Coins)
+      // is shown on the Crossroads.
+      state.deckRun.crossroads = {
+        kind: 'choose',
         fightLabel: node.audienceId,
         xpEarned,
         coinsEarned,
-        choices: rollRewardCards()
+        isElite
       };
     } else {
       // Run complete!
@@ -1878,39 +2369,194 @@ function finishFight(won) {
   renderDeck();
 }
 
-function rollRewardCards() {
-  // 70% common, 25% uncommon, 5% rare per slot — sample 3 distinct
+function rollRewardCards(rarityBoostUncommon) {
+  // Default odds: 70% common, 25% uncommon, 5% rare. Elite boost: more uncommons.
   const pool = [];
+  const seen = new Set();
   for (let i = 0; i < 3; i++) {
     const r = Math.random();
-    const rarity = r < 0.05 ? 'rare' : r < 0.30 ? 'uncommon' : 'common';
+    let rarity;
+    if (rarityBoostUncommon) {
+      rarity = r < 0.10 ? 'rare' : r < 0.55 ? 'uncommon' : 'common';
+    } else {
+      rarity = r < 0.05 ? 'rare' : r < 0.30 ? 'uncommon' : 'common';
+    }
     const tier = cardsByRarity(rarity);
-    let pick;
-    let tries = 0;
-    do {
-      pick = tier[Math.floor(Math.random() * tier.length)];
-      tries++;
-    } while (pool.includes(pick.id) && tries < 10);
+    let pick = null;
+    for (let tries = 0; tries < 10; tries++) {
+      const candidate = tier[Math.floor(Math.random() * tier.length)];
+      if (!seen.has(candidate.id)) { pick = candidate; break; }
+    }
+    if (!pick) pick = tier[Math.floor(Math.random() * tier.length)];
+    seen.add(pick.id);
     pool.push(pick.id);
   }
   return pool;
 }
 
-function pickRewardCard(cardId) {
-  if (!state.deckRun.pendingReward) return;
-  if (!state.deckRun.pendingReward.choices.includes(cardId)) return;
-  state.deckRun.deck.push(cardId);
-  state.deckRun.pendingReward = null;
-  SFX.coin();
+// ---------- Crossroads (between-fight choice) ----------
+function chooseCrossroads(kind) {
+  SFX.click();
+  const cr = state.deckRun.crossroads;
+  if (!cr) return;
+  if (kind === 'card') {
+    cr.kind = 'pick-card';
+    cr.cardChoices = rollRewardCards(cr.isElite);
+  } else if (kind === 'shop') {
+    openShop();
+    return;
+  } else if (kind === 'rest') {
+    cr.kind = 'rest';
+  }
   saveState();
   renderDeck();
 }
 
-function skipReward() {
-  if (!state.deckRun.pendingReward) return;
-  // Skip and heal a bit more instead
-  state.deckRun.composure = Math.min(state.deckRun.composureMax, state.deckRun.composure + 8);
-  state.deckRun.pendingReward = null;
+function pickCrossroadsCard(cardId) {
+  const cr = state.deckRun.crossroads;
+  if (!cr || cr.kind !== 'pick-card') return;
+  if (!cr.cardChoices.includes(cardId)) return;
+  state.deckRun.deck.push(cardId);
+  SFX.coin();
+  state.deckRun.crossroads = null;
+  saveState();
+  renderDeck();
+}
+function skipCrossroadsCard() {
+  // Free skip — return to crossroads choice, no penalty
+  const cr = state.deckRun.crossroads;
+  if (!cr) return;
+  cr.kind = 'choose';
+  delete cr.cardChoices;
+  SFX.click();
+  saveState();
+  renderDeck();
+}
+
+// ---------- Shop ----------
+const SHOP_PRICES = { common: 30, uncommon: 55, rare: 90, remove: 50, upgrade: 35 };
+
+function openShop() {
+  // Build shop state: 3 random cards (mix of rarities) for sale
+  const cards = rollRewardCards(false);
+  const prices = cards.map(id => {
+    const c = cardById(id);
+    return SHOP_PRICES[c.rarity] || 50;
+  });
+  state.deckRun.shopState = {
+    cards, prices,
+    sold: [false, false, false],
+    removeUsed: false,
+    upgradeUsed: false
+  };
+  state.deckRun.crossroads.kind = 'shop';
+  saveState();
+  renderDeck();
+}
+function buyShopCard(idx) {
+  const ss = state.deckRun.shopState;
+  if (!ss || ss.sold[idx]) return;
+  const price = ss.prices[idx];
+  if (state.coins < price) { showToast('Not enough Charisma Coins.', 'error'); return; }
+  state.coins -= price;
+  ss.sold[idx] = true;
+  state.deckRun.deck.push(ss.cards[idx]);
+  SFX.coin();
+  refreshHeaderStats();
+  saveState();
+  renderDeck();
+}
+function shopOpenRemove() {
+  const ss = state.deckRun.shopState;
+  if (!ss || ss.removeUsed) return;
+  if (state.coins < SHOP_PRICES.remove) { showToast('Not enough Charisma Coins.', 'error'); return; }
+  if (state.deckRun.deck.length <= 5) { showToast('Deck is too small to remove from.', 'error'); return; }
+  state.deckRun.pickerState = { kind: 'remove', returnTo: 'shop', price: SHOP_PRICES.remove };
+  saveState();
+  renderDeck();
+}
+function shopOpenUpgrade() {
+  const ss = state.deckRun.shopState;
+  if (!ss || ss.upgradeUsed) return;
+  if (state.coins < SHOP_PRICES.upgrade) { showToast('Not enough Charisma Coins.', 'error'); return; }
+  // Need at least one un-upgraded card
+  if (!state.deckRun.deck.some(id => !isUpgradedId(id) && cardById(id) && cardById(id).upgrade)) {
+    showToast('No upgradeable cards in deck.', 'error');
+    return;
+  }
+  state.deckRun.pickerState = { kind: 'upgrade-shop', returnTo: 'shop', price: SHOP_PRICES.upgrade };
+  saveState();
+  renderDeck();
+}
+function leaveShop() {
+  state.deckRun.shopState = null;
+  state.deckRun.crossroads = null; // done with this crossroads
+  SFX.click();
+  saveState();
+  renderDeck();
+}
+
+// ---------- Rest ----------
+function chooseRest(option) {
+  SFX.click();
+  if (option === 'heal') {
+    const healAmt = 25;
+    state.deckRun.composure = Math.min(state.deckRun.composureMax, state.deckRun.composure + healAmt);
+    state.deckRun.crossroads = null;
+    saveState();
+    renderDeck();
+  } else if (option === 'upgrade') {
+    if (!state.deckRun.deck.some(id => !isUpgradedId(id) && cardById(id) && cardById(id).upgrade)) {
+      showToast('No upgradeable cards in deck.', 'error');
+      return;
+    }
+    state.deckRun.pickerState = { kind: 'upgrade-rest', returnTo: 'map', price: 0 };
+    saveState();
+    renderDeck();
+  }
+}
+
+// ---------- Card-pick (for upgrade or remove) ----------
+function applyPickerCard(deckIdx) {
+  const ps = state.deckRun.pickerState;
+  if (!ps) return;
+  const currentId = state.deckRun.deck[deckIdx];
+  if (currentId === undefined) return;
+
+  if (ps.kind === 'remove') {
+    state.deckRun.deck.splice(deckIdx, 1);
+    state.coins -= ps.price;
+    state.deckRun.shopState.removeUsed = true;
+    SFX.unplace();
+    refreshHeaderStats();
+  } else if (ps.kind === 'upgrade-shop') {
+    if (isUpgradedId(currentId)) { showToast('Already upgraded.', 'error'); return; }
+    const c = cardById(currentId);
+    if (!c || !c.upgrade) { showToast('Card has no upgrade.', 'error'); return; }
+    state.deckRun.deck[deckIdx] = upgradedIdOf(currentId);
+    state.coins -= ps.price;
+    state.deckRun.shopState.upgradeUsed = true;
+    SFX.coin();
+    refreshHeaderStats();
+  } else if (ps.kind === 'upgrade-rest') {
+    if (isUpgradedId(currentId)) { showToast('Already upgraded.', 'error'); return; }
+    const c = cardById(currentId);
+    if (!c || !c.upgrade) { showToast('Card has no upgrade.', 'error'); return; }
+    state.deckRun.deck[deckIdx] = upgradedIdOf(currentId);
+    SFX.coin();
+  }
+
+  // Return to shop or close crossroads
+  const returnTo = ps.returnTo;
+  state.deckRun.pickerState = null;
+  if (returnTo === 'map') {
+    state.deckRun.crossroads = null;
+  }
+  saveState();
+  renderDeck();
+}
+function cancelPicker() {
+  state.deckRun.pickerState = null;
   SFX.click();
   saveState();
   renderDeck();
@@ -1930,7 +2576,7 @@ function renderDeck() {
   if (!container) return;
   const dr = state.deckRun;
 
-  // 1. End-of-run modal takes priority
+  // 1. End-of-run screen takes priority
   if (dr.lastResult && !dr.active) {
     container.innerHTML = renderRunEnd(dr.lastResult);
     return;
@@ -1938,20 +2584,83 @@ function renderDeck() {
   // 2. Mid-fight has its own UI
   if (_fight && !_fight.over) {
     container.innerHTML = renderFight();
+    applyFightAnimations();
     return;
   }
-  // 3. Between fights: reward picker
-  if (dr.active && dr.pendingReward) {
-    container.innerHTML = renderReward(dr.pendingReward);
-    return;
-  }
-  // 4. Active run: show map
+  // 3. Active run states (in priority order):
   if (dr.active) {
+    // Card picker (for upgrade or remove) overrides everything
+    if (dr.pickerState) {
+      container.innerHTML = renderCardPicker(dr.pickerState);
+      return;
+    }
+    // Crossroads sub-states
+    if (dr.crossroads) {
+      if (dr.crossroads.kind === 'choose') {
+        container.innerHTML = renderCrossroads(dr.crossroads);
+        return;
+      }
+      if (dr.crossroads.kind === 'pick-card') {
+        container.innerHTML = renderCardPick(dr.crossroads);
+        return;
+      }
+      if (dr.crossroads.kind === 'shop') {
+        container.innerHTML = renderShop();
+        return;
+      }
+      if (dr.crossroads.kind === 'rest') {
+        container.innerHTML = renderRest();
+        return;
+      }
+    }
+    // Default: run map
     container.innerHTML = renderRunMap();
     return;
   }
   // 5. No active run: show home
   container.innerHTML = renderDeckHome();
+}
+
+// Consume any queued FX from the last play action (damage floats, shakes).
+function applyFightAnimations() {
+  if (!_fight || !_fight._fx || _fight._fx.length === 0) return;
+  const fx = _fight._fx.slice();
+  _fight._fx = [];
+  for (const f of fx) {
+    if (f.kind === 'damage') {
+      if (f.target === 'player') {
+        const el = document.querySelector('.composure-bar-wrap');
+        if (el) {
+          el.classList.add('hit');
+          setTimeout(() => el.classList.remove('hit'), 320);
+          spawnDamageFloat(el, '-' + f.value);
+        }
+        const ap = document.querySelector('.audience-panel');
+        if (ap && f.flavor !== 'self' && !f.flavor) {
+          // No shake on self-damage
+        }
+      } else if (f.target === 'audience') {
+        const em = document.querySelector('.audience-emoji');
+        const panel = document.querySelector('.audience-panel');
+        if (em) { em.classList.add('hit'); setTimeout(() => em.classList.remove('hit'), 460); }
+        if (panel) {
+          spawnDamageFloat(panel, '-' + f.value, 'persuasion' + (f.value >= 12 ? ' heavy' : ''));
+        }
+      }
+    }
+  }
+}
+function spawnDamageFloat(parent, text, extraCls) {
+  if (!parent) return;
+  if (state.settings && state.settings.animations === false) return;
+  // Parent needs position:relative; .audience-panel and .composure-bar-wrap both have it implicitly
+  const wrap = parent;
+  if (getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
+  const el = document.createElement('div');
+  el.className = 'damage-float ' + (extraCls || '');
+  el.textContent = text;
+  wrap.appendChild(el);
+  setTimeout(() => { try { el.remove(); } catch(e){} }, 900);
 }
 
 function renderDeckHome() {
@@ -2052,15 +2761,17 @@ function renderMapNode(node, idx, dr) {
   const done = node.done;
   const isCurrent = !done && idx === dr.fightsCompleted;
   const isLocked = !done && !isCurrent;
-  const cls = [done ? 'done' : '', isCurrent ? 'current' : '', isLocked ? 'locked' : '', node.isBoss ? 'boss' : ''].filter(Boolean).join(' ');
+  const tierLabel = node.isBoss ? 'Boss' : node.isElite ? 'Elite' : 'Normal';
+  const cls = [done ? 'done' : '', isCurrent ? 'current' : '', isLocked ? 'locked' : '',
+               node.isBoss ? 'boss' : '', node.isElite ? 'boss' : ''].filter(Boolean).join(' ');
   const click = isCurrent ? `onclick="startFight(${idx})"` : '';
-  const cta = done ? '✓ Done' : isCurrent ? `Fight ${node.isBoss ? '👑' : '→'}` : 'Locked';
+  const cta = done ? '✓ Done' : isCurrent ? `Fight ${node.isBoss ? '👑' : node.isElite ? '⚡' : '→'}` : 'Locked';
   return `
     <div class="map-node ${cls}" ${click}>
       <div class="map-node-icon">${aud ? aud.emoji : '?'}</div>
       <div class="map-node-body">
-        <div class="map-node-title">${aud ? aud.name : 'Unknown'}${node.isBoss ? ' (Boss)' : ''}</div>
-        <div class="map-node-sub">${aud ? aud.desc : ''}</div>
+        <div class="map-node-title">${aud ? aud.name : 'Unknown'}${node.isBoss ? ' (Boss)' : node.isElite ? ' (Elite)' : ''}</div>
+        <div class="map-node-sub">${aud ? aud.desc : ''}${aud && aud.passive ? ` · <em style="color:var(--purple)">${aud.passive.label}</em>` : ''}</div>
       </div>
       <div class="map-node-cta">${cta}</div>
     </div>
@@ -2070,12 +2781,14 @@ function renderMapNode(node, idx, dr) {
 function renderCardHTML(card) {
   if (!card) return '';
   const typeLabel = card.type[0].toUpperCase() + card.type.slice(1);
+  const upgraded = card._upgraded;
   return `
-    <div class="card" data-type="${card.type}" data-cost="${card.cost}" data-rarity="${card.rarity}">
+    <div class="card ${upgraded ? 'upgraded' : ''}" data-type="${card.type}" data-cost="${card.cost}" data-rarity="${card.rarity}">
       <div class="card-head">
         <span class="card-cost">${card.cost}</span>
         <span class="card-name">${card.name}</span>
       </div>
+      ${upgraded ? '<span class="upgrade-badge">+1</span>' : ''}
       <span class="card-type-pill">${typeLabel}</span>
       <div class="card-text">${card.text}</div>
     </div>
@@ -2086,7 +2799,8 @@ function renderCardHTMLForHand(card, handIdx, energy) {
   if (!card) return '';
   const typeLabel = card.type[0].toUpperCase() + card.type.slice(1);
   const unaffordable = card.cost > energy;
-  const cls = unaffordable ? 'unaffordable' : '';
+  const upgraded = card._upgraded;
+  const cls = (unaffordable ? 'unaffordable' : '') + (upgraded ? ' upgraded' : '');
   const click = unaffordable ? '' : `onclick="playCard(${handIdx})"`;
   return `
     <div class="card ${cls}" data-type="${card.type}" data-cost="${card.cost}" data-rarity="${card.rarity}" ${click}>
@@ -2094,6 +2808,7 @@ function renderCardHTMLForHand(card, handIdx, energy) {
         <span class="card-cost">${card.cost}</span>
         <span class="card-name">${card.name}</span>
       </div>
+      ${upgraded ? '<span class="upgrade-badge">+1</span>' : ''}
       <span class="card-type-pill">${typeLabel}</span>
       <div class="card-text">${card.text}</div>
     </div>
@@ -2115,7 +2830,7 @@ function renderFight() {
         <div class="audience-head">
           <div class="audience-emoji">${a.emoji}</div>
           <div style="flex:1;min-width:0">
-            <div class="audience-name">${a.name}${a.isBoss ? ' 👑' : ''}</div>
+            <div class="audience-name">${a.name}${a.isBoss ? ' 👑' : a.isElite ? ' ⚡' : ''}</div>
             <div class="audience-desc">${a.desc}</div>
           </div>
         </div>
@@ -2127,10 +2842,17 @@ function renderFight() {
           ${a.resistance > 0 ? `<span class="badge resistance">🛡 ${a.resistance} resistance</span>` : ''}
           ${a.conviction > 0 ? `<span class="badge conviction">🔥 +${a.conviction} conviction next attack</span>` : ''}
           ${a.skipNextIntent ? `<span class="badge">⏭ Intent skipped</span>` : ''}
+          ${a.nullifyNextAttack ? `<span class="badge resistance">🚫 Next attack nullified</span>` : ''}
+          ${a.halveNextAttack ? `<span class="badge resistance">½ Next attack halved</span>` : ''}
         </div>
+        ${a.passive ? `
+          <div class="audience-passive" title="${a.passive.text}">
+            <span class="pass-ico">⚙</span> <strong>${a.passive.label}:</strong> ${a.passive.text}
+          </div>
+        ` : ''}
         <div class="intent-card ${intent.kind}">
           <div class="intent-label">Next turn — intent</div>
-          <div>${a.skipNextIntent ? '(skipped this turn)' : intent.label + (intent.kind === 'attack' ? ` — ${intent.value + a.conviction} damage` : intent.kind === 'defend' ? ` — gains ${intent.value} resistance` : '')}</div>
+          <div>${a.skipNextIntent ? '(skipped this turn)' : intent.label + (intent.kind === 'attack' ? ` — ${intent.value + a.conviction}${a.nullifyNextAttack ? ' (NULLIFIED)' : a.halveNextAttack ? ` halved → ${Math.floor((intent.value + a.conviction) / 2)}` : ''} damage` : intent.kind === 'defend' ? ` — gains ${intent.value} resistance` : '')}</div>
         </div>
       </div>
 
@@ -2167,26 +2889,189 @@ function renderFight() {
   `;
 }
 
-function renderReward(reward) {
+// ---------- Crossroads view ----------
+function renderCrossroads(cr) {
   const node = state.deckRun.nodes[state.deckRun.fightsCompleted - 1];
   const aud = audienceById(node.audienceId);
   return `
-    <div class="reward-screen">
-      <h2>✓ Persuaded ${aud.name}</h2>
-      <p class="victory-sub">Healed 12 composure. Pick a card to add to your deck.</p>
+    <div class="crossroads">
+      <h2>✓ Persuaded ${aud.name}${cr.isElite ? ' ⚡' : ''}</h2>
+      <p>You came out ${state.deckRun.composure}/${state.deckRun.composureMax} composure. Pick your path.</p>
       <div class="reward-rewards">
-        <span class="reward-pill xp">+${reward.xpEarned} XP</span>
-        <span class="reward-pill coins">+${reward.coinsEarned} 🪙</span>
-        <span class="reward-pill heal">+12 composure</span>
+        <span class="reward-pill xp">+${cr.xpEarned} XP</span>
+        <span class="reward-pill coins">+${cr.coinsEarned} 🪙</span>
+      </div>
+      <div class="crossroads-grid">
+        <button class="crossroads-card" data-kind="card" onclick="chooseCrossroads('card')">
+          <div class="crossroads-icon">🃏</div>
+          <h3>Add a Card</h3>
+          <p>Pick one of three reward cards to add to your deck.${cr.isElite ? ' <strong>Better odds</strong> after an elite.' : ''}</p>
+        </button>
+        <button class="crossroads-card" data-kind="shop" onclick="chooseCrossroads('shop')">
+          <div class="crossroads-icon">🛒</div>
+          <h3>Visit Shop</h3>
+          <p>Spend Coins. Buy cards, remove a card, or upgrade one.<br><strong>You have: ${state.coins} 🪙</strong></p>
+        </button>
+        <button class="crossroads-card" data-kind="rest" onclick="chooseCrossroads('rest')">
+          <div class="crossroads-icon">🏕️</div>
+          <h3>Rest</h3>
+          <p>Heal <strong>+25</strong> composure, <em>or</em> upgrade one card for free.</p>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Card pick from rewards ----------
+function renderCardPick(cr) {
+  return `
+    <div class="card-pick-screen">
+      <div class="card-pick-header">
+        <div>
+          <h2>Pick a card to add to your deck</h2>
+          <div class="sub">Three offerings. Pick wisely — your deck only grows from here.</div>
+        </div>
+        <button class="btn btn-ghost" onclick="skipCrossroadsCard()">← Back</button>
       </div>
       <div class="card-pick-row">
-        ${reward.choices.map(id => {
+        ${cr.cardChoices.map(id => {
           const c = cardById(id);
           if (!c) return '';
-          return `<div onclick="pickRewardCard('${id}')">${renderCardHTML(c)}</div>`;
+          return `<div onclick="pickCrossroadsCard('${id}')">${renderCardHTML(c)}</div>`;
         }).join('')}
       </div>
-      <button class="btn btn-ghost" onclick="skipReward()">Skip — heal +8 instead</button>
+      <div style="text-align:center;margin-top:1rem">
+        <button class="btn btn-ghost" onclick="skipCrossroadsCard()">Skip — none of these</button>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Shop view ----------
+function renderShop() {
+  const ss = state.deckRun.shopState;
+  if (!ss) return '';
+  return `
+    <div class="shop">
+      <div class="shop-header">
+        <h2>🛒 Charisma Shop</h2>
+        <div class="shop-coins">🪙 ${state.coins} Coins</div>
+      </div>
+
+      <div class="shop-section">
+        <h3>Cards for sale</h3>
+        <div class="card-pick-row">
+          ${ss.cards.map((id, i) => {
+            const c = cardById(id);
+            if (!c) return '';
+            const sold = ss.sold[i];
+            const aff = state.coins >= ss.prices[i];
+            const cls = sold ? 'bought' : (aff ? '' : 'unaffordable');
+            const click = (sold || !aff) ? '' : `onclick="buyShopCard(${i})"`;
+            const tag = sold ? '✓ Sold' : `${ss.prices[i]} 🪙`;
+            return `
+              <div class="shop-card-wrap ${cls}">
+                <div class="shop-price-tag">${tag}</div>
+                <div ${click}>${renderCardHTML(c)}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="shop-section">
+        <h3>Services</h3>
+        <div class="shop-services">
+          <div class="shop-service ${ss.removeUsed ? 'used' : (state.coins < SHOP_PRICES.remove ? 'unaffordable' : '')}"
+               ${ss.removeUsed || state.coins < SHOP_PRICES.remove ? '' : 'onclick="shopOpenRemove()"'}>
+            <div class="shop-service-icon">🗑️</div>
+            <div class="shop-service-body">
+              <div class="shop-service-title">Remove a card</div>
+              <div class="shop-service-desc">Permanently remove one card from your deck (this run).</div>
+            </div>
+            <div class="shop-service-price">${ss.removeUsed ? '✓ Used' : SHOP_PRICES.remove + ' 🪙'}</div>
+          </div>
+          <div class="shop-service ${ss.upgradeUsed ? 'used' : (state.coins < SHOP_PRICES.upgrade ? 'unaffordable' : '')}"
+               ${ss.upgradeUsed || state.coins < SHOP_PRICES.upgrade ? '' : 'onclick="shopOpenUpgrade()"'}>
+            <div class="shop-service-icon">⚡</div>
+            <div class="shop-service-body">
+              <div class="shop-service-title">Upgrade a card</div>
+              <div class="shop-service-desc">Permanently upgrade one card from your deck (this run).</div>
+            </div>
+            <div class="shop-service-price">${ss.upgradeUsed ? '✓ Used' : SHOP_PRICES.upgrade + ' 🪙'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center">
+        <button class="btn btn-primary btn-lg" onclick="leaveShop()">Leave shop →</button>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Rest view ----------
+function renderRest() {
+  const canUpgrade = state.deckRun.deck.some(id => !isUpgradedId(id) && cardById(id) && cardById(id).upgrade);
+  return `
+    <div class="rest">
+      <h2>🏕️ Rest</h2>
+      <p>Catch your breath before the next audience.</p>
+      <div class="rest-options">
+        <button class="rest-option" data-kind="heal" onclick="chooseRest('heal')">
+          <div class="rest-option-icon">❤️‍🩹</div>
+          <h3>Recover</h3>
+          <p>Heal <strong>+25</strong> composure.<br>(Current: ${state.deckRun.composure}/${state.deckRun.composureMax})</p>
+        </button>
+        <button class="rest-option ${canUpgrade ? '' : 'unavailable'}" data-kind="upgrade"
+                ${canUpgrade ? `onclick="chooseRest('upgrade')"` : ''}>
+          <div class="rest-option-icon">⚡</div>
+          <h3>Upgrade a card</h3>
+          <p>${canUpgrade ? 'Permanently upgrade one card in your deck.' : 'No upgradeable cards remaining.'}</p>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Card picker (for upgrade or remove) ----------
+function renderCardPicker(ps) {
+  // For upgrade: only show un-upgraded cards with available upgrade defs.
+  // For remove: show everything.
+  const showAll = ps.kind === 'remove';
+  const eligible = state.deckRun.deck
+    .map((id, idx) => ({ id, idx }))
+    .filter(({ id }) => {
+      if (showAll) return true;
+      if (isUpgradedId(id)) return false;
+      const c = cardById(id);
+      return c && c.upgrade;
+    });
+
+  let title, sub;
+  if (ps.kind === 'remove')       { title = 'Pick a card to remove'; sub = 'It will be permanently removed from this run\'s deck.'; }
+  else                            { title = 'Pick a card to upgrade'; sub = ps.kind === 'upgrade-shop' ? `Cost: ${ps.price} 🪙. The upgraded version replaces the original in your deck.` : 'The upgraded version replaces the original in your deck.'; }
+
+  return `
+    <div class="card-pick-screen">
+      <div class="card-pick-header">
+        <div>
+          <h2>${title}</h2>
+          <div class="sub">${sub}</div>
+        </div>
+        <button class="btn btn-ghost" onclick="cancelPicker()">Cancel</button>
+      </div>
+      ${eligible.length === 0 ? `
+        <div class="card-pick-empty">Nothing eligible to ${ps.kind === 'remove' ? 'remove' : 'upgrade'}.</div>
+      ` : `
+        <div class="card-grid">
+          ${eligible.map(({ id, idx }) => {
+            const c = cardById(id);
+            if (!c) return '';
+            return `<div onclick="applyPickerCard(${idx})">${renderCardHTML(c)}</div>`;
+          }).join('')}
+        </div>
+      `}
     </div>
   `;
 }
@@ -2197,7 +3082,7 @@ function renderRunEnd(result) {
       <div class="run-end">
         <div class="crown">👑</div>
         <h2>You beat the run.</h2>
-        <p>You persuaded the Distinguished Skeptic. 5 audiences down. The whole library bows.</p>
+        <p>You persuaded the Distinguished Skeptic. 3 normals, 1 elite, 1 boss. The whole library bows.</p>
         <div class="reward-rewards">
           <span class="reward-pill xp">+${result.xpEarned} XP (boss bonus)</span>
           <span class="reward-pill coins">+${result.coinsEarned} 🪙</span>
@@ -2814,9 +3699,18 @@ window.abandonRun = abandonRun;
 window.startFight = startFight;
 window.playCard = playCard;
 window.endTurn = endTurn;
-window.pickRewardCard = pickRewardCard;
-window.skipReward = skipReward;
 window.dismissRunResult = dismissRunResult;
+// Session 3: crossroads / shop / rest / picker
+window.chooseCrossroads = chooseCrossroads;
+window.pickCrossroadsCard = pickCrossroadsCard;
+window.skipCrossroadsCard = skipCrossroadsCard;
+window.buyShopCard = buyShopCard;
+window.shopOpenRemove = shopOpenRemove;
+window.shopOpenUpgrade = shopOpenUpgrade;
+window.leaveShop = leaveShop;
+window.chooseRest = chooseRest;
+window.applyPickerCard = applyPickerCard;
+window.cancelPicker = cancelPicker;
 </script>
 </body>
 </html>
