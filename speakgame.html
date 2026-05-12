@@ -546,6 +546,383 @@ main { flex: 1; }
 .toast.success { color: var(--green); border-color: var(--green); }
 
 /* ================================================================
+   DECK MODE — run map, fight UI, cards, audience
+   ================================================================ */
+
+/* --- Deck home / run map --- */
+.deck-screen { max-width: 980px; margin: 0 auto; }
+
+.run-banner {
+  padding: 1.5rem 1.4rem; margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--gold); border-radius: var(--radius-lg);
+  position: relative; overflow: hidden;
+}
+.run-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at top right, var(--gold-soft), transparent 60%);
+  pointer-events: none;
+}
+.run-banner h2 {
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 900;
+  margin-bottom: 0.25rem; position: relative;
+}
+.run-banner p { color: var(--text-dim); position: relative; }
+
+.run-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;
+  margin: 0.85rem 0 0.5rem; position: relative;
+}
+.run-stat {
+  padding: 0.6rem 0.8rem; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--radius);
+}
+.run-stat-label {
+  font-size: 0.65rem; font-weight: 700; color: var(--text-mute);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.run-stat-value {
+  font-family: var(--font-display); font-size: 1.4rem; font-weight: 800;
+  margin-top: 0.15rem;
+}
+.run-stat-value.coins { color: var(--gold); }
+.run-stat-value.composure { color: var(--green); }
+.run-stat-value.composure.low { color: var(--orange); }
+.run-stat-value.composure.critical { color: var(--red); }
+
+.run-map {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+.map-node {
+  display: flex; align-items: center; gap: 0.85rem;
+  padding: 0.95rem 1.1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+.map-node:hover:not(.locked):not(.done) {
+  transform: translateX(4px); border-color: var(--accent);
+}
+.map-node.done { opacity: 0.6; cursor: default; border-color: var(--green); }
+.map-node.locked { opacity: 0.4; cursor: not-allowed; }
+.map-node.current { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+.map-node.boss { border-color: var(--gold); }
+.map-node.boss.current { box-shadow: 0 0 30px var(--gold-soft); }
+.map-node-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; flex-shrink: 0;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+}
+.map-node.done .map-node-icon { background: var(--green-soft); border-color: var(--green); }
+.map-node.boss .map-node-icon { background: var(--gold-soft); border-color: var(--gold); }
+.map-node-body { flex: 1; min-width: 0; }
+.map-node-title { font-weight: 700; font-size: 1rem; }
+.map-node-sub { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.15rem; }
+.map-node-cta {
+  font-size: 0.82rem; font-weight: 700; color: var(--accent);
+  white-space: nowrap;
+}
+.map-node.done .map-node-cta { color: var(--green); }
+.map-node.locked .map-node-cta { color: var(--text-mute); }
+
+/* --- Deck inspection (between fights) --- */
+.deck-section { margin-bottom: 1.25rem; }
+.deck-section h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+}
+.card-grid {
+  display: grid; gap: 0.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+/* --- Card visuals --- */
+.card {
+  position: relative;
+  padding: 0.75rem 0.85rem; min-height: 130px;
+  background: var(--bg-card); border: 2px solid var(--border);
+  border-radius: var(--radius); cursor: pointer;
+  display: flex; flex-direction: column; gap: 0.45rem;
+  font-size: 0.82rem; line-height: 1.35; user-select: none;
+  transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.12s ease;
+  overflow: hidden;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: var(--shadow); }
+.card[data-type="attack"]  { border-color: var(--orange); }
+.card[data-type="skill"]   { border-color: var(--accent); }
+.card[data-type="power"]   { border-color: var(--purple); }
+.card[data-type="combo"]   { border-color: var(--gold); }
+.card[data-rarity="rare"]      { box-shadow: 0 0 18px rgba(167,139,250,0.25); }
+.card[data-rarity="uncommon"]  { box-shadow: 0 0 12px rgba(45,212,191,0.18); }
+.card.played { opacity: 0.55; transform: scale(0.96); pointer-events: none; }
+.card.unaffordable { opacity: 0.42; cursor: not-allowed; }
+.card.unaffordable:hover { transform: none; }
+.card.selected { transform: translateY(-8px); box-shadow: var(--shadow-glow), 0 12px 24px rgba(0,0,0,0.4); }
+
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.4rem;
+}
+.card-name { font-family: var(--font-display); font-weight: 800; font-size: 0.92rem; line-height: 1.15; }
+.card-cost {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--bg-elev-2); border: 1px solid var(--border-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.85rem; color: var(--accent);
+  flex-shrink: 0;
+}
+.card[data-cost="0"] .card-cost { color: var(--green); }
+.card-type-pill {
+  display: inline-block; padding: 0.05rem 0.45rem;
+  border-radius: 999px; font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--bg-elev-2); color: var(--text-mute);
+  border: 1px solid var(--border);
+}
+.card[data-type="attack"] .card-type-pill { color: var(--orange); border-color: var(--orange); }
+.card[data-type="skill"]  .card-type-pill { color: var(--accent); border-color: var(--accent); }
+.card[data-type="power"]  .card-type-pill { color: var(--purple); border-color: var(--purple); }
+.card[data-type="combo"]  .card-type-pill { color: var(--gold); border-color: var(--gold); }
+.card-text { color: var(--text-dim); font-size: 0.78rem; flex: 1; }
+.card-text strong { color: var(--text); font-weight: 700; }
+.card-text .hl { color: var(--accent); font-weight: 700; }
+
+/* Compact card variant for hand on small screens */
+.card.compact { min-height: 110px; font-size: 0.75rem; }
+
+/* --- Fight screen --- */
+.fight {
+  display: grid; grid-template-rows: auto auto 1fr auto;
+  gap: 0.85rem;
+}
+@media (min-width: 1000px) {
+  .fight { grid-template-rows: auto auto 1fr auto; }
+}
+
+.audience-panel {
+  padding: 1rem 1.1rem;
+  background: var(--bg-card); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  position: relative;
+}
+.audience-head {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.65rem;
+}
+.audience-emoji {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; flex-shrink: 0;
+}
+.audience-name {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 800;
+}
+.audience-desc { font-size: 0.78rem; color: var(--text-dim); }
+.skepticism-bar-wrap {
+  height: 18px; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.skepticism-bar {
+  height: 100%; background: linear-gradient(90deg, var(--red), var(--orange));
+  transition: width 0.4s ease;
+}
+.skepticism-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 800; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.audience-state {
+  display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;
+  flex-wrap: wrap; font-size: 0.8rem;
+}
+.audience-state .badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.2rem 0.55rem; border-radius: 999px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  font-weight: 700;
+}
+.audience-state .badge.resistance { color: var(--purple); border-color: var(--purple); }
+.audience-state .badge.conviction { color: var(--red); border-color: var(--red); }
+.intent-card {
+  margin-top: 0.6rem; padding: 0.55rem 0.8rem;
+  background: var(--bg-elev-2); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+.intent-card .intent-label {
+  font-size: 0.65rem; color: var(--text-mute); font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.15rem;
+}
+.intent-card.attack { border-left-color: var(--red); }
+.intent-card.defend { border-left-color: var(--purple); }
+.intent-card.buff { border-left-color: var(--orange); }
+
+/* Player stats strip */
+.player-strip {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius);
+  align-items: center;
+}
+.composure-block {
+  display: flex; flex-direction: column; gap: 0.25rem; min-width: 0;
+}
+.composure-label {
+  font-size: 0.7rem; color: var(--text-mute); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.composure-bar-wrap {
+  height: 14px; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  overflow: hidden; position: relative;
+}
+.composure-bar {
+  height: 100%; background: linear-gradient(90deg, var(--green) 0%, var(--accent) 100%);
+  transition: width 0.4s ease;
+}
+.composure-text {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 800; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+}
+.block-pill {
+  padding: 0.3rem 0.6rem; border-radius: 999px;
+  background: var(--purple); color: #fff;
+  font-weight: 800; font-size: 0.85rem;
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  border: none; min-width: 50px; justify-content: center;
+}
+.block-pill.zero { background: var(--bg-elev-2); color: var(--text-mute); border: 1px solid var(--border); }
+.energy-pill {
+  padding: 0.3rem 0.7rem; border-radius: 999px;
+  background: var(--accent); color: #0a1726;
+  font-weight: 800; font-size: 0.95rem;
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  border: none;
+}
+.energy-pill.empty { background: var(--bg-elev-2); color: var(--text-mute); }
+
+/* Play log (cards played this turn) */
+.play-log {
+  min-height: 70px; padding: 0.7rem;
+  background: var(--bg-elev); border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  align-items: center; justify-content: center;
+  color: var(--text-mute); font-size: 0.85rem;
+}
+.play-log.empty::before {
+  content: 'Played cards appear here'; font-style: italic;
+}
+.play-log .mini-card {
+  padding: 0.3rem 0.55rem; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 0.75rem; font-weight: 700;
+  animation: card-pop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes card-pop {
+  0%   { transform: scale(0.3) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Hand of cards */
+.hand-area {
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.hand-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; font-size: 0.78rem; color: var(--text-dim);
+}
+.hand-meta .pile { font-weight: 700; }
+.hand-meta .pile span { color: var(--text); }
+.hand {
+  display: grid; gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+@media (max-width: 700px) {
+  .hand {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5rem;
+  }
+  .hand .card { scroll-snap-align: start; }
+}
+.end-turn-btn {
+  width: 100%; padding: 0.85rem; border-radius: var(--radius);
+  background: var(--orange); color: #0a1726;
+  font-weight: 800; font-size: 1rem; cursor: pointer;
+  border: none; transition: filter 0.15s ease, transform 0.1s ease;
+}
+.end-turn-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.end-turn-btn:active { transform: translateY(0); }
+
+/* --- Reward picker --- */
+.reward-screen { max-width: 900px; margin: 0 auto; text-align: center; }
+.reward-screen h2 {
+  font-family: var(--font-display); font-size: 1.8rem; font-weight: 900;
+  margin-bottom: 0.35rem;
+}
+.reward-screen .victory-sub {
+  color: var(--text-dim); margin-bottom: 1.25rem;
+}
+.reward-rewards {
+  display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.reward-pill {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.45rem 0.95rem; border-radius: 999px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  font-weight: 700; font-size: 0.92rem;
+}
+.reward-pill.xp { color: var(--accent); border-color: var(--accent); }
+.reward-pill.coins { color: var(--gold); border-color: var(--gold); }
+.reward-pill.heal { color: var(--green); border-color: var(--green); }
+
+.card-pick-row {
+  display: grid; gap: 0.85rem; margin-bottom: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .card-pick-row { grid-template-columns: repeat(3, 1fr); max-width: 700px; margin: 0 auto 1rem; }
+}
+.card-pick-row .card { min-height: 160px; cursor: pointer; }
+.card-pick-row .card:hover { transform: translateY(-6px); }
+
+/* --- End of run --- */
+.run-end {
+  max-width: 700px; margin: 0 auto; padding: 2rem 1.5rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 2px solid var(--accent); border-radius: var(--radius-lg);
+  text-align: center;
+}
+.run-end.lost { border-color: var(--orange); }
+.run-end .crown {
+  font-size: 3rem; line-height: 1; margin-bottom: 0.5rem;
+}
+.run-end h2 {
+  font-family: var(--font-display); font-size: 2rem; font-weight: 900;
+  margin-bottom: 0.4rem;
+}
+.run-end p { color: var(--text-dim); margin-bottom: 1.25rem; }
+
+/* --- Coming-fight preview chip --- */
+.preview-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.72rem; color: var(--text-mute); font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+/* ================================================================
    RESPONSIVE TWEAKS
    ================================================================ */
 @media (max-width: 520px) {
@@ -609,6 +986,11 @@ main { flex: 1; }
     <!-- WORDLE -->
     <section id="view-wordle" class="view">
       <div id="wordle-content"></div>
+    </section>
+
+    <!-- DECK RUN -->
+    <section id="view-deck" class="view">
+      <div id="deck-content"></div>
     </section>
 
     <!-- SETTINGS -->
@@ -943,6 +1325,907 @@ function buildTilePool(puzzle, dayKey) {
 }
 
 // ================================================================
+// DECK MODE — Card library
+// Card schema:
+//   id, name, text, type ('attack'|'skill'|'power'|'combo'), cost, rarity
+//   effect: declarative spec interpreted by playCard()
+//     persuasion: N      — damage to audience skepticism
+//     block: N           — composure block this turn
+//     draw: N            — draw N cards
+//     gainEnergy: N      — temp energy this turn
+//     exhaust: true      — remove from deck for this fight
+//     comboWith: 'type'  — bonus damage if a card of this type was played this turn
+//     comboBonus: N      — bonus persuasion granted by the combo
+//     powerful: true     — power card: persists for the fight
+//   Effects beyond the simple ones are implemented in playCard() per-card.
+// ================================================================
+const CARD_LIBRARY = [
+  // ----- STARTER (in every starting deck) -----
+  { id: 'c01', name: 'Quick Point',    type: 'attack', cost: 1, rarity: 'starter',
+    text: 'Deal <span class="hl">5</span> persuasion.',
+    effect: { persuasion: 5 } },
+  { id: 'c02', name: 'Make a Point',   type: 'attack', cost: 1, rarity: 'starter',
+    text: 'Deal <span class="hl">6</span> persuasion.',
+    effect: { persuasion: 6 } },
+  { id: 'c03', name: 'Cite a Reason',  type: 'attack', cost: 1, rarity: 'starter',
+    text: 'Deal <span class="hl">5</span>. If you played an Attack this turn, deal <span class="hl">+3</span>.',
+    effect: { persuasion: 5, comboWith: 'attack', comboBonus: 3 } },
+  { id: 'c04', name: 'Pause',          type: 'skill',  cost: 1, rarity: 'starter',
+    text: 'Gain <span class="hl">5</span> composure block.',
+    effect: { block: 5 } },
+  { id: 'c05', name: 'Listen',         type: 'skill',  cost: 0, rarity: 'starter',
+    text: 'Draw <span class="hl">1</span> card.',
+    effect: { draw: 1 } },
+
+  // ----- COMMON (reward pool) -----
+  { id: 'c06', name: 'Concrete Example', type: 'attack', cost: 1, rarity: 'common',
+    text: 'Deal <span class="hl">4</span>. If you played a Skill this turn, deal <span class="hl">+5</span>.',
+    effect: { persuasion: 4, comboWith: 'skill', comboBonus: 5 } },
+  { id: 'c07', name: 'Reframe', type: 'skill', cost: 2, rarity: 'common',
+    text: 'Deal <span class="hl">7</span> persuasion. The audience\'s next intent is <strong>skipped</strong>.',
+    effect: { persuasion: 7, special: 'skip-next-intent' } },
+  { id: 'c08', name: 'Bridge', type: 'skill', cost: 0, rarity: 'common',
+    text: 'Deal <span class="hl">3</span>. Draw <span class="hl">1</span> card.',
+    effect: { persuasion: 3, draw: 1 } },
+  { id: 'c09', name: 'Strong Hook', type: 'attack', cost: 2, rarity: 'common',
+    text: 'Deal <span class="hl">10</span> persuasion. Lose <span class="hl">3</span> composure.',
+    effect: { persuasion: 10, selfDamage: 3 } },
+  { id: 'c10', name: 'Closer', type: 'attack', cost: 3, rarity: 'common',
+    text: 'Deal <span class="hl">14</span> persuasion. <strong>Exhaust</strong>.',
+    effect: { persuasion: 14, exhaust: true } },
+  { id: 'c11', name: 'Recover', type: 'skill', cost: 1, rarity: 'common',
+    text: 'Gain <span class="hl">8</span> composure block.',
+    effect: { block: 8 } },
+  { id: 'c12', name: 'Specifics', type: 'attack', cost: 1, rarity: 'common',
+    text: 'Deal <span class="hl">4</span>. Deal <span class="hl">+6</span> if your discard has 3+ cards.',
+    effect: { persuasion: 4, special: 'big-if-discard-3' } },
+  { id: 'c13', name: 'Probing Question', type: 'skill', cost: 1, rarity: 'common',
+    text: 'Draw <span class="hl">2</span> cards.',
+    effect: { draw: 2 } },
+  { id: 'c14', name: 'Confident Tone', type: 'power', cost: 1, rarity: 'common',
+    text: '<strong>Power</strong>: Your Attacks deal <span class="hl">+1</span> persuasion this fight.',
+    effect: { powerful: true, special: 'attack-buff-1' } },
+  { id: 'c15', name: 'Steady Voice', type: 'skill', cost: 1, rarity: 'common',
+    text: 'Gain <span class="hl">5</span> block. Draw <span class="hl">1</span> card.',
+    effect: { block: 5, draw: 1 } },
+  { id: 'c16', name: 'Acknowledge', type: 'skill', cost: 0, rarity: 'common',
+    text: 'Gain <span class="hl">3</span> block.',
+    effect: { block: 3 } },
+  { id: 'c17', name: 'Sharp Retort', type: 'attack', cost: 1, rarity: 'common',
+    text: 'Deal <span class="hl">7</span> persuasion.',
+    effect: { persuasion: 7 } },
+
+  // ----- UNCOMMON -----
+  { id: 'c20', name: 'Devil\'s Advocate', type: 'combo', cost: 0, rarity: 'uncommon',
+    text: 'Deal persuasion equal to your current <strong>block</strong>. <strong>Exhaust</strong>.',
+    effect: { exhaust: true, special: 'damage-equals-block' } },
+  { id: 'c21', name: 'Pivot', type: 'skill', cost: 1, rarity: 'uncommon',
+    text: 'Skip the audience\'s next intent. Gain <span class="hl">3</span> block.',
+    effect: { block: 3, special: 'skip-next-intent' } },
+  { id: 'c22', name: 'Power Pose', type: 'skill', cost: 0, rarity: 'uncommon',
+    text: 'Gain <span class="hl">1</span> energy this turn.',
+    effect: { gainEnergy: 1 } },
+  { id: 'c23', name: 'Storytelling Arc', type: 'power', cost: 1, rarity: 'uncommon',
+    text: '<strong>Power</strong>: At the start of each turn, draw <span class="hl">1</span> extra card.',
+    effect: { powerful: true, special: 'draw-extra' } },
+  { id: 'c24', name: 'Authority', type: 'skill', cost: 1, rarity: 'uncommon',
+    text: 'Your next Attack deals <span class="hl">double</span> persuasion this turn.',
+    effect: { special: 'double-next-attack' } },
+  { id: 'c25', name: 'Mic Drop', type: 'combo', cost: 2, rarity: 'uncommon',
+    text: 'Deal <span class="hl">15</span>. Playable only as the <strong>last card</strong> in hand. <strong>Exhaust</strong>.',
+    effect: { persuasion: 15, exhaust: true, special: 'must-be-last' } },
+  { id: 'c26', name: 'Anaphora', type: 'attack', cost: 1, rarity: 'uncommon',
+    text: 'Deal <span class="hl">3</span>×N, where N = Attacks played this turn (including this one).',
+    effect: { special: 'scale-with-attacks' } },
+  { id: 'c27', name: 'Strategic Silence', type: 'skill', cost: 0, rarity: 'uncommon',
+    text: 'Gain block equal to the audience\'s telegraphed damage. <strong>Exhaust</strong>.',
+    effect: { exhaust: true, special: 'block-equals-intent' } },
+
+  // ----- RARE -----
+  { id: 'c30', name: 'Closing Argument', type: 'combo', cost: 3, rarity: 'rare',
+    text: 'Deal <span class="hl">8</span> + <span class="hl">1</span> per card in discard. <strong>Exhaust</strong>.',
+    effect: { exhaust: true, special: 'scale-with-discard' } },
+  { id: 'c31', name: 'Conviction', type: 'power', cost: 2, rarity: 'rare',
+    text: '<strong>Power</strong>: At start of each turn, deal <span class="hl">3</span> automatic persuasion.',
+    effect: { powerful: true, special: 'turn-start-damage' } },
+  { id: 'c32', name: 'Total Recall', type: 'skill', cost: 2, rarity: 'rare',
+    text: 'Shuffle your discard back into your deck. <strong>Exhaust</strong>.',
+    effect: { exhaust: true, special: 'recall-discard' } },
+  { id: 'c33', name: 'Rhetorical Question', type: 'combo', cost: 1, rarity: 'rare',
+    text: 'Deal <span class="hl">10</span>. If you have a Power active, draw <span class="hl">2</span>.',
+    effect: { persuasion: 10, special: 'draw-if-power' } }
+];
+function cardById(id) { return CARD_LIBRARY.find(c => c.id === id); }
+function cardsByRarity(rarity) { return CARD_LIBRARY.filter(c => c.rarity === rarity); }
+
+// ================================================================
+// DECK MODE — Audience library
+// ================================================================
+const AUDIENCE_LIBRARY = [
+  // ----- NORMAL (3) -----
+  { id: 'a01', name: 'Skeptical CFO',          emoji: '💼', skepticism: 26,
+    desc: 'Hates surprises. Wants numbers.',
+    intents: [
+      { kind: 'attack', value: 5,  label: 'Pokes a hole in your logic' },
+      { kind: 'defend', value: 6,  label: 'Folds arms — gains 6 resistance' },
+      { kind: 'attack', value: 7,  label: 'Demands evidence' }
+    ] },
+  { id: 'a02', name: 'Distracted Executive',   emoji: '📱', skepticism: 22,
+    desc: 'Half on their phone. Quick to lose interest.',
+    intents: [
+      { kind: 'attack', value: 4,  label: 'Glances at phone — half-listens' },
+      { kind: 'attack', value: 8,  label: 'Snaps back: "What\'s the point?"' },
+      { kind: 'defend', value: 4,  label: 'Tunes out — gains 4 resistance' }
+    ] },
+  { id: 'a03', name: 'Hostile Reporter',       emoji: '🎤', skepticism: 28,
+    desc: 'Looking for the headline. Will twist words.',
+    intents: [
+      { kind: 'attack', value: 6,  label: 'Quotes you out of context' },
+      { kind: 'attack', value: 6,  label: 'Asks a leading question' },
+      { kind: 'buff',   value: 3,  label: 'Sharpens their angle (+3 conviction)' }
+    ] },
+  { id: 'a04', name: 'Bored Board Member',     emoji: '😐', skepticism: 24,
+    desc: 'Has heard this pitch before. Wants something fresh.',
+    intents: [
+      { kind: 'defend', value: 8,  label: 'Sits back — gains 8 resistance' },
+      { kind: 'attack', value: 9,  label: 'Skewers with one cutting line' },
+      { kind: 'attack', value: 5,  label: 'Sighs audibly' }
+    ] },
+
+  // ----- BOSS -----
+  { id: 'b01', name: 'The Distinguished Skeptic', emoji: '👑', skepticism: 50, isBoss: true,
+    desc: 'Has heard every pitch. Unmoved. Watch for the cutting question.',
+    intents: [
+      { kind: 'attack', value: 7,  label: 'Raises an eyebrow' },
+      { kind: 'buff',   value: 4,  label: 'Sharpens focus (+4 conviction)' },
+      { kind: 'attack', value: 13, label: 'CUTTING QUESTION — big hit incoming' },
+      { kind: 'defend', value: 10, label: 'Resists — gains 10 resistance' }
+    ] }
+];
+function audienceById(id) { return AUDIENCE_LIBRARY.find(a => a.id === id); }
+function pickNormalAudience(excludeIds, rng) {
+  const pool = AUDIENCE_LIBRARY.filter(a => !a.isBoss && !excludeIds.includes(a.id));
+  return pool[Math.floor((rng ? rng() : Math.random()) * pool.length)];
+}
+
+// ================================================================
+// DECK MODE — Run state + starter deck
+// ================================================================
+const STARTER_DECK_IDS = [
+  'c01', 'c01',         // 2× Quick Point
+  'c02', 'c02', 'c02',  // 3× Make a Point
+  'c03', 'c03',         // 2× Cite a Reason
+  'c04', 'c04',         // 2× Pause
+  'c05'                 // 1× Listen
+];
+
+// Initialize state.deckRun on first load if missing
+if (!state.deckRun) {
+  state.deckRun = {
+    active: false,
+    deck: [],
+    composureMax: 70,
+    composure: 70,
+    coinsThisRun: 0,
+    fightsCompleted: 0,
+    totalFights: 5,
+    nodes: [],            // [{kind:'fight', audienceId, done, isBoss}, ...]
+    pendingReward: null,  // {choices:[cardId,cardId,cardId]} when between fights
+    runsCompleted: 0,
+    runsLost: 0
+  };
+}
+
+function startNewRun() {
+  SFX.click();
+  // Build the run map: 4 normal fights with distinct audiences + 1 boss
+  const usedIds = [];
+  const nodes = [];
+  for (let i = 0; i < 4; i++) {
+    const aud = pickNormalAudience(usedIds);
+    usedIds.push(aud.id);
+    nodes.push({ kind: 'fight', audienceId: aud.id, done: false, isBoss: false });
+  }
+  nodes.push({ kind: 'fight', audienceId: 'b01', done: false, isBoss: true });
+
+  state.deckRun = {
+    active: true,
+    deck: STARTER_DECK_IDS.slice(),
+    composureMax: 70,
+    composure: 70,
+    coinsThisRun: 0,
+    fightsCompleted: 0,
+    totalFights: 5,
+    nodes,
+    pendingReward: null,
+    runsCompleted: state.deckRun?.runsCompleted || 0,
+    runsLost: state.deckRun?.runsLost || 0
+  };
+  saveState();
+  renderDeck();
+}
+
+function abandonRun() {
+  if (!confirm('Abandon this run? Your deck and progress will be lost — your XP and Coins so far are kept.')) return;
+  state.deckRun.active = false;
+  saveState();
+  renderDeck();
+}
+
+// ================================================================
+// DECK MODE — Fight engine
+// _fight is transient; lives only for the duration of one fight.
+// ================================================================
+let _fight = null;
+
+function startFight(nodeIdx) {
+  const node = state.deckRun.nodes[nodeIdx];
+  if (!node || node.done) return;
+  const audience = audienceById(node.audienceId);
+  if (!audience) return;
+  SFX.click();
+
+  // Build draw pile from full deck, shuffled
+  const draw = shuffleArr(state.deckRun.deck.slice());
+  _fight = {
+    nodeIdx,
+    audience: {
+      id: audience.id,
+      name: audience.name,
+      emoji: audience.emoji,
+      desc: audience.desc,
+      isBoss: audience.isBoss || false,
+      skepticismMax: audience.skepticism,
+      skepticism: audience.skepticism,
+      resistance: 0,
+      conviction: 0,
+      intents: audience.intents.slice(),
+      intentIdx: 0,
+      skipNextIntent: false
+    },
+    composureMax: state.deckRun.composureMax,
+    composure: state.deckRun.composure,
+    block: 0,
+    energyMax: 3,
+    energy: 3,
+    drawPile: draw,
+    hand: [],
+    discard: [],
+    exhaust: [],
+    playLog: [],          // mini cards shown for this turn
+    powers: [],           // {cardId, kind}
+    turnFlags: {
+      attacksPlayed: 0,
+      skillsPlayed: 0,
+      doubleNextAttack: false
+    },
+    over: false,
+    won: false
+  };
+  drawCards(5);
+  renderDeck();
+}
+
+function shuffleArr(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function drawCards(n) {
+  for (let i = 0; i < n; i++) {
+    if (_fight.drawPile.length === 0) {
+      if (_fight.discard.length === 0) return; // truly empty
+      _fight.drawPile = shuffleArr(_fight.discard);
+      _fight.discard = [];
+    }
+    _fight.hand.push(_fight.drawPile.shift());
+  }
+}
+
+function getCurrentIntent() {
+  return _fight.audience.intents[_fight.audience.intentIdx % _fight.audience.intents.length];
+}
+
+function playCard(handIdx) {
+  if (!_fight || _fight.over) return;
+  const cardId = _fight.hand[handIdx];
+  if (!cardId) return;
+  const card = cardById(cardId);
+  if (!card) return;
+  if (_fight.energy < card.cost) {
+    showToast('Not enough energy.', 'error');
+    return;
+  }
+  // Some cards have play conditions
+  if (card.effect && card.effect.special === 'must-be-last' && _fight.hand.length > 1) {
+    showToast('Mic Drop can only be played as your last card.', 'error');
+    return;
+  }
+
+  _fight.energy -= card.cost;
+  _fight.hand.splice(handIdx, 1);
+  _fight.playLog.push(card.name);
+  SFX.place();
+
+  // Tally turn flags
+  if (card.type === 'attack') _fight.turnFlags.attacksPlayed++;
+  if (card.type === 'skill')  _fight.turnFlags.skillsPlayed++;
+
+  // ----- APPLY EFFECTS -----
+  const e = card.effect || {};
+  let persuasion = e.persuasion || 0;
+
+  // Combo bonus: comboWith ('attack'|'skill') checks prior plays this turn
+  if (e.comboWith === 'attack' && _fight.turnFlags.attacksPlayed > 1) {
+    // The current card already counted as an attack — bonus if any OTHER attack was played
+    persuasion += e.comboBonus || 0;
+  } else if (e.comboWith === 'skill' && _fight.turnFlags.skillsPlayed > (card.type === 'skill' ? 1 : 0)) {
+    persuasion += e.comboBonus || 0;
+  }
+
+  // Special effects
+  if (e.special === 'damage-equals-block') {
+    persuasion += _fight.block;
+  }
+  if (e.special === 'big-if-discard-3' && _fight.discard.length >= 3) {
+    persuasion += 6;
+  }
+  if (e.special === 'scale-with-attacks') {
+    persuasion += 3 * _fight.turnFlags.attacksPlayed;
+  }
+  if (e.special === 'scale-with-discard') {
+    persuasion += _fight.discard.length;
+  }
+  if (e.special === 'block-equals-intent') {
+    const intent = getCurrentIntent();
+    if (intent.kind === 'attack') {
+      _fight.block += intent.value;
+    }
+  }
+  if (e.special === 'recall-discard') {
+    _fight.drawPile = shuffleArr([..._fight.drawPile, ..._fight.discard]);
+    _fight.discard = [];
+  }
+
+  // Apply Confident Tone (+1 to all attacks) if active
+  if (card.type === 'attack' && _fight.powers.some(p => p.special === 'attack-buff-1')) {
+    persuasion += 1;
+  }
+
+  // Authority: double next attack
+  if (_fight.turnFlags.doubleNextAttack && card.type === 'attack') {
+    persuasion *= 2;
+    _fight.turnFlags.doubleNextAttack = false;
+  }
+  if (e.special === 'double-next-attack') {
+    _fight.turnFlags.doubleNextAttack = true;
+  }
+
+  // Block + persuasion application
+  if (e.block) _fight.block += e.block;
+  if (persuasion > 0) {
+    const resisted = Math.max(0, persuasion - _fight.audience.resistance);
+    _fight.audience.resistance = Math.max(0, _fight.audience.resistance - persuasion);
+    _fight.audience.skepticism = Math.max(0, _fight.audience.skepticism - resisted);
+  }
+
+  // Self damage (Strong Hook)
+  if (e.selfDamage) {
+    _fight.composure = Math.max(0, _fight.composure - e.selfDamage);
+  }
+
+  // Energy gain
+  if (e.gainEnergy) _fight.energy += e.gainEnergy;
+
+  // Draw cards
+  if (e.draw) drawCards(e.draw);
+
+  // Power card → moves to powers, not discard
+  if (e.powerful) {
+    _fight.powers.push({ cardId: card.id, special: e.special });
+  }
+
+  // Skip next intent
+  if (e.special === 'skip-next-intent') {
+    _fight.audience.skipNextIntent = true;
+  }
+
+  // Draw if power (for c33)
+  if (e.special === 'draw-if-power' && _fight.powers.length > 0) {
+    drawCards(2);
+  }
+
+  // Where does the card go?
+  if (e.exhaust || e.powerful) {
+    _fight.exhaust.push(cardId);
+  } else {
+    _fight.discard.push(cardId);
+  }
+
+  // Check win
+  if (_fight.audience.skepticism <= 0) {
+    finishFight(true);
+    return;
+  }
+  // Check lose (e.g., self-damage killed us)
+  if (_fight.composure <= 0) {
+    finishFight(false);
+    return;
+  }
+
+  renderDeck();
+}
+
+function endTurn() {
+  if (!_fight || _fight.over) return;
+  SFX.submit();
+
+  // Discard remaining hand
+  while (_fight.hand.length > 0) {
+    _fight.discard.push(_fight.hand.shift());
+  }
+  // Block expires
+  _fight.block = 0;
+
+  // --- AUDIENCE TURN ---
+  const audience = _fight.audience;
+  let intent = audience.intents[audience.intentIdx % audience.intents.length];
+
+  if (audience.skipNextIntent) {
+    audience.skipNextIntent = false;
+    showToast('Audience intent skipped.', 'success');
+  } else {
+    if (intent.kind === 'attack') {
+      const dmg = intent.value + audience.conviction;
+      audience.conviction = 0; // conviction is consumed on attack
+      const blocked = Math.min(_fight.block, dmg);
+      const through = dmg - blocked;
+      _fight.block -= blocked;
+      _fight.composure = Math.max(0, _fight.composure - through);
+      if (through > 0) SFX.miss();
+    } else if (intent.kind === 'defend') {
+      audience.resistance += intent.value;
+    } else if (intent.kind === 'buff') {
+      audience.conviction += intent.value;
+    }
+  }
+  audience.intentIdx++;
+
+  // Check lose
+  if (_fight.composure <= 0) {
+    finishFight(false);
+    return;
+  }
+
+  // --- NEW PLAYER TURN ---
+  _fight.energy = _fight.energyMax;
+  _fight.block = 0;
+  _fight.playLog = [];
+  _fight.turnFlags = { attacksPlayed: 0, skillsPlayed: 0, doubleNextAttack: false };
+
+  // Powers that trigger at start of turn
+  for (const p of _fight.powers) {
+    if (p.special === 'draw-extra') drawCards(1);
+    if (p.special === 'turn-start-damage') {
+      const through = Math.max(0, 3 - _fight.audience.resistance);
+      _fight.audience.resistance = Math.max(0, _fight.audience.resistance - 3);
+      _fight.audience.skepticism = Math.max(0, _fight.audience.skepticism - through);
+      if (_fight.audience.skepticism <= 0) { finishFight(true); return; }
+    }
+  }
+
+  drawCards(5);
+  renderDeck();
+}
+
+function finishFight(won) {
+  if (!_fight) return;
+  _fight.over = true;
+  _fight.won = won;
+
+  if (won) {
+    SFX.win();
+    const node = state.deckRun.nodes[_fight.nodeIdx];
+    node.done = true;
+    state.deckRun.fightsCompleted++;
+    state.deckRun.composure = _fight.composure; // persist remaining composure
+
+    // Heal a bit between fights (not after boss — run ends anyway)
+    const isBoss = node.isBoss;
+    const baseXp = isBoss ? 100 : 30;
+    const baseCoins = isBoss ? 60 : 18;
+    const composureBonus = Math.round(_fight.composure / 8);
+    const xpEarned = baseXp + composureBonus;
+    const coinsEarned = baseCoins + composureBonus;
+
+    state.xp += xpEarned;
+    state.coins += coinsEarned;
+    state.deckRun.coinsThisRun += coinsEarned;
+    refreshHeaderStats();
+
+    if (!isBoss) {
+      // Heal 12 between fights
+      state.deckRun.composure = Math.min(state.deckRun.composureMax, state.deckRun.composure + 12);
+      // Offer 3 reward cards (common-weighted; small chance of uncommon/rare)
+      state.deckRun.pendingReward = {
+        fightLabel: node.audienceId,
+        xpEarned,
+        coinsEarned,
+        choices: rollRewardCards()
+      };
+    } else {
+      // Run complete!
+      state.deckRun.runsCompleted++;
+      state.deckRun.active = false;
+      state.deckRun.lastResult = { won: true, xpEarned, coinsEarned, coinsThisRun: state.deckRun.coinsThisRun };
+    }
+    saveState();
+  } else {
+    SFX.lose();
+    state.deckRun.runsLost++;
+    state.deckRun.active = false;
+    state.deckRun.composure = 0;
+    // Consolation reward
+    const xpEarned = 15 + state.deckRun.fightsCompleted * 8;
+    state.xp += xpEarned;
+    state.deckRun.lastResult = { won: false, xpEarned, fightsCompleted: state.deckRun.fightsCompleted };
+    refreshHeaderStats();
+    saveState();
+  }
+  renderDeck();
+}
+
+function rollRewardCards() {
+  // 70% common, 25% uncommon, 5% rare per slot — sample 3 distinct
+  const pool = [];
+  for (let i = 0; i < 3; i++) {
+    const r = Math.random();
+    const rarity = r < 0.05 ? 'rare' : r < 0.30 ? 'uncommon' : 'common';
+    const tier = cardsByRarity(rarity);
+    let pick;
+    let tries = 0;
+    do {
+      pick = tier[Math.floor(Math.random() * tier.length)];
+      tries++;
+    } while (pool.includes(pick.id) && tries < 10);
+    pool.push(pick.id);
+  }
+  return pool;
+}
+
+function pickRewardCard(cardId) {
+  if (!state.deckRun.pendingReward) return;
+  if (!state.deckRun.pendingReward.choices.includes(cardId)) return;
+  state.deckRun.deck.push(cardId);
+  state.deckRun.pendingReward = null;
+  SFX.coin();
+  saveState();
+  renderDeck();
+}
+
+function skipReward() {
+  if (!state.deckRun.pendingReward) return;
+  // Skip and heal a bit more instead
+  state.deckRun.composure = Math.min(state.deckRun.composureMax, state.deckRun.composure + 8);
+  state.deckRun.pendingReward = null;
+  SFX.click();
+  saveState();
+  renderDeck();
+}
+
+function dismissRunResult() {
+  state.deckRun.lastResult = null;
+  saveState();
+  renderDeck();
+}
+
+// ================================================================
+// DECK MODE — Renderers
+// ================================================================
+function renderDeck() {
+  const container = document.getElementById('deck-content');
+  if (!container) return;
+  const dr = state.deckRun;
+
+  // 1. End-of-run modal takes priority
+  if (dr.lastResult && !dr.active) {
+    container.innerHTML = renderRunEnd(dr.lastResult);
+    return;
+  }
+  // 2. Mid-fight has its own UI
+  if (_fight && !_fight.over) {
+    container.innerHTML = renderFight();
+    return;
+  }
+  // 3. Between fights: reward picker
+  if (dr.active && dr.pendingReward) {
+    container.innerHTML = renderReward(dr.pendingReward);
+    return;
+  }
+  // 4. Active run: show map
+  if (dr.active) {
+    container.innerHTML = renderRunMap();
+    return;
+  }
+  // 5. No active run: show home
+  container.innerHTML = renderDeckHome();
+}
+
+function renderDeckHome() {
+  const dr = state.deckRun;
+  const starterPreview = STARTER_DECK_IDS.map(id => cardById(id));
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+    <div class="deck-screen">
+      <div class="run-banner">
+        <h2>Deck Run</h2>
+        <p>A 5-fight gauntlet of audiences. Build a deck of phrase cards. Spend Charisma to play them. Survive to the boss.</p>
+        <div class="run-stats">
+          <div class="run-stat"><div class="run-stat-label">Runs Won</div><div class="run-stat-value">${dr.runsCompleted || 0}</div></div>
+          <div class="run-stat"><div class="run-stat-label">Runs Lost</div><div class="run-stat-value">${dr.runsLost || 0}</div></div>
+          <div class="run-stat"><div class="run-stat-label">Cards in Library</div><div class="run-stat-value">${CARD_LIBRARY.length}</div></div>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="startNewRun()" style="margin-top:0.5rem">
+          Start a new run →
+        </button>
+      </div>
+
+      <div class="deck-section">
+        <h3>Your starting deck (${starterPreview.length} cards)</h3>
+        <div class="card-grid">
+          ${starterPreview.map(c => renderCardHTML(c)).join('')}
+        </div>
+      </div>
+
+      <div class="deck-section">
+        <h3>How it works</h3>
+        <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.55">
+          Each fight is turn-based. You draw 5 cards, get 3 ⚡ energy, and play cards to <strong>persuade</strong> the audience (reduce their <strong>Skepticism</strong> to 0).
+          The audience hits back each turn — telegraphed by their intent — and you lose if your <strong>Composure</strong> hits 0.
+          Win a fight, pick a new card from 3 choices, fight on. Beat the boss (👑) to complete the run.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+function composureClass(cur, max) {
+  const pct = cur / max;
+  if (pct <= 0.25) return 'critical';
+  if (pct <= 0.5) return 'low';
+  return '';
+}
+
+function renderRunMap() {
+  const dr = state.deckRun;
+  const compCls = composureClass(dr.composure, dr.composureMax);
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+    <div class="deck-screen">
+      <div class="run-banner">
+        <h2>Run in progress</h2>
+        <p>${dr.fightsCompleted} / ${dr.totalFights} fights complete. Pick the next audience to face.</p>
+        <div class="run-stats">
+          <div class="run-stat">
+            <div class="run-stat-label">Composure</div>
+            <div class="run-stat-value composure ${compCls}">${dr.composure} / ${dr.composureMax}</div>
+          </div>
+          <div class="run-stat">
+            <div class="run-stat-label">Deck Size</div>
+            <div class="run-stat-value">${dr.deck.length}</div>
+          </div>
+          <div class="run-stat">
+            <div class="run-stat-label">Coins This Run</div>
+            <div class="run-stat-value coins">🪙 ${dr.coinsThisRun}</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.6rem">The Run</h3>
+      <div class="run-map">
+        ${dr.nodes.map((n, i) => renderMapNode(n, i, dr)).join('')}
+      </div>
+
+      <details style="margin-top:1rem">
+        <summary style="cursor:pointer;color:var(--text-dim);font-size:0.85rem;padding:0.4rem 0">
+          View your deck (${dr.deck.length} cards)
+        </summary>
+        <div class="card-grid" style="margin-top:0.5rem">
+          ${dr.deck.map(id => renderCardHTML(cardById(id))).join('')}
+        </div>
+      </details>
+
+      <div style="text-align:center;margin-top:1.5rem">
+        <button class="btn btn-ghost" onclick="abandonRun()" style="color:var(--orange);font-size:0.85rem">
+          Abandon run
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderMapNode(node, idx, dr) {
+  const aud = audienceById(node.audienceId);
+  const done = node.done;
+  const isCurrent = !done && idx === dr.fightsCompleted;
+  const isLocked = !done && !isCurrent;
+  const cls = [done ? 'done' : '', isCurrent ? 'current' : '', isLocked ? 'locked' : '', node.isBoss ? 'boss' : ''].filter(Boolean).join(' ');
+  const click = isCurrent ? `onclick="startFight(${idx})"` : '';
+  const cta = done ? '✓ Done' : isCurrent ? `Fight ${node.isBoss ? '👑' : '→'}` : 'Locked';
+  return `
+    <div class="map-node ${cls}" ${click}>
+      <div class="map-node-icon">${aud ? aud.emoji : '?'}</div>
+      <div class="map-node-body">
+        <div class="map-node-title">${aud ? aud.name : 'Unknown'}${node.isBoss ? ' (Boss)' : ''}</div>
+        <div class="map-node-sub">${aud ? aud.desc : ''}</div>
+      </div>
+      <div class="map-node-cta">${cta}</div>
+    </div>
+  `;
+}
+
+function renderCardHTML(card) {
+  if (!card) return '';
+  const typeLabel = card.type[0].toUpperCase() + card.type.slice(1);
+  return `
+    <div class="card" data-type="${card.type}" data-cost="${card.cost}" data-rarity="${card.rarity}">
+      <div class="card-head">
+        <span class="card-cost">${card.cost}</span>
+        <span class="card-name">${card.name}</span>
+      </div>
+      <span class="card-type-pill">${typeLabel}</span>
+      <div class="card-text">${card.text}</div>
+    </div>
+  `;
+}
+
+function renderCardHTMLForHand(card, handIdx, energy) {
+  if (!card) return '';
+  const typeLabel = card.type[0].toUpperCase() + card.type.slice(1);
+  const unaffordable = card.cost > energy;
+  const cls = unaffordable ? 'unaffordable' : '';
+  const click = unaffordable ? '' : `onclick="playCard(${handIdx})"`;
+  return `
+    <div class="card ${cls}" data-type="${card.type}" data-cost="${card.cost}" data-rarity="${card.rarity}" ${click}>
+      <div class="card-head">
+        <span class="card-cost">${card.cost}</span>
+        <span class="card-name">${card.name}</span>
+      </div>
+      <span class="card-type-pill">${typeLabel}</span>
+      <div class="card-text">${card.text}</div>
+    </div>
+  `;
+}
+
+function renderFight() {
+  const f = _fight;
+  const a = f.audience;
+  const intent = getCurrentIntent();
+  const compCls = composureClass(f.composure, f.composureMax);
+  const skepPct = Math.round((a.skepticism / a.skepticismMax) * 100);
+  const compPct = Math.round((f.composure / f.composureMax) * 100);
+
+  return `
+    <div class="deck-screen fight">
+
+      <div class="audience-panel">
+        <div class="audience-head">
+          <div class="audience-emoji">${a.emoji}</div>
+          <div style="flex:1;min-width:0">
+            <div class="audience-name">${a.name}${a.isBoss ? ' 👑' : ''}</div>
+            <div class="audience-desc">${a.desc}</div>
+          </div>
+        </div>
+        <div class="skepticism-bar-wrap">
+          <div class="skepticism-bar" style="width:${skepPct}%"></div>
+          <div class="skepticism-label">Skepticism ${a.skepticism} / ${a.skepticismMax}</div>
+        </div>
+        <div class="audience-state">
+          ${a.resistance > 0 ? `<span class="badge resistance">🛡 ${a.resistance} resistance</span>` : ''}
+          ${a.conviction > 0 ? `<span class="badge conviction">🔥 +${a.conviction} conviction next attack</span>` : ''}
+          ${a.skipNextIntent ? `<span class="badge">⏭ Intent skipped</span>` : ''}
+        </div>
+        <div class="intent-card ${intent.kind}">
+          <div class="intent-label">Next turn — intent</div>
+          <div>${a.skipNextIntent ? '(skipped this turn)' : intent.label + (intent.kind === 'attack' ? ` — ${intent.value + a.conviction} damage` : intent.kind === 'defend' ? ` — gains ${intent.value} resistance` : '')}</div>
+        </div>
+      </div>
+
+      <div class="player-strip">
+        <div class="composure-block">
+          <div class="composure-label">Composure</div>
+          <div class="composure-bar-wrap">
+            <div class="composure-bar" style="width:${compPct}%"></div>
+            <div class="composure-text">${f.composure} / ${f.composureMax}</div>
+          </div>
+        </div>
+        <button class="block-pill ${f.block === 0 ? 'zero' : ''}" disabled>🛡 ${f.block}</button>
+        <button class="energy-pill ${f.energy === 0 ? 'empty' : ''}" disabled>⚡ ${f.energy}/${f.energyMax}</button>
+      </div>
+
+      <div class="play-log ${f.playLog.length === 0 ? 'empty' : ''}">
+        ${f.playLog.map(name => `<span class="mini-card">${name}</span>`).join('')}
+        ${f.powers.length > 0 ? f.powers.map(p => `<span class="mini-card" style="border-color:var(--purple);color:var(--purple)">⚡ ${cardById(p.cardId).name}</span>`).join('') : ''}
+      </div>
+
+      <div class="hand-area">
+        <div class="hand-meta">
+          <span class="pile">Draw: <span>${f.drawPile.length}</span> · Discard: <span>${f.discard.length}</span>${f.exhaust.length ? ' · Exhausted: <span>' + f.exhaust.length + '</span>' : ''}</span>
+          <span style="font-size:0.78rem;color:var(--text-mute)">Tap a card to play</span>
+        </div>
+        <div class="hand">
+          ${f.hand.map((id, i) => renderCardHTMLForHand(cardById(id), i, f.energy)).join('')}
+        </div>
+        <button class="end-turn-btn" onclick="endTurn()">
+          End turn — audience: ${a.skipNextIntent ? 'skipped' : intent.kind === 'attack' ? `attacks for ${intent.value + a.conviction}` : intent.kind === 'defend' ? `gains ${intent.value} resistance` : `+${intent.value} conviction`}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderReward(reward) {
+  const node = state.deckRun.nodes[state.deckRun.fightsCompleted - 1];
+  const aud = audienceById(node.audienceId);
+  return `
+    <div class="reward-screen">
+      <h2>✓ Persuaded ${aud.name}</h2>
+      <p class="victory-sub">Healed 12 composure. Pick a card to add to your deck.</p>
+      <div class="reward-rewards">
+        <span class="reward-pill xp">+${reward.xpEarned} XP</span>
+        <span class="reward-pill coins">+${reward.coinsEarned} 🪙</span>
+        <span class="reward-pill heal">+12 composure</span>
+      </div>
+      <div class="card-pick-row">
+        ${reward.choices.map(id => {
+          const c = cardById(id);
+          if (!c) return '';
+          return `<div onclick="pickRewardCard('${id}')">${renderCardHTML(c)}</div>`;
+        }).join('')}
+      </div>
+      <button class="btn btn-ghost" onclick="skipReward()">Skip — heal +8 instead</button>
+    </div>
+  `;
+}
+
+function renderRunEnd(result) {
+  if (result.won) {
+    return `
+      <div class="run-end">
+        <div class="crown">👑</div>
+        <h2>You beat the run.</h2>
+        <p>You persuaded the Distinguished Skeptic. 5 audiences down. The whole library bows.</p>
+        <div class="reward-rewards">
+          <span class="reward-pill xp">+${result.xpEarned} XP (boss bonus)</span>
+          <span class="reward-pill coins">+${result.coinsEarned} 🪙</span>
+        </div>
+        <p style="margin:1rem 0;font-size:0.9rem">Total coins earned this run: <strong>${result.coinsThisRun} 🪙</strong></p>
+        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
+          <button class="btn btn-primary" onclick="dismissRunResult()">Continue</button>
+        </div>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="run-end lost">
+        <div class="crown">💀</div>
+        <h2>Run lost.</h2>
+        <p>Composure shattered after ${result.fightsCompleted} ${result.fightsCompleted === 1 ? 'fight' : 'fights'}. The audience walks. Tomorrow you debate again.</p>
+        <div class="reward-rewards">
+          <span class="reward-pill xp">+${result.xpEarned} XP</span>
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
+          <button class="btn btn-primary" onclick="dismissRunResult()">Back to home</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ================================================================
 // NAVIGATION
 // ================================================================
 function navigate(view) {
@@ -952,6 +2235,7 @@ function navigate(view) {
   if (target) target.classList.add('active');
   if (view === 'home') renderHome();
   if (view === 'wordle') renderWordle();
+  if (view === 'deck')  renderDeck();
   if (view === 'settings') renderSettings();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -984,11 +2268,12 @@ function renderHome() {
       key: 'deck',
       icon: '🃏',
       title: 'Deck Run',
-      tag: 'Roguelike · 30 min',
+      tag: 'Roguelike · 20–30 min',
       accent: 'gold',
-      desc: 'Build a deck of phrase cards. Spend Charisma to play them. Battle audiences across an escalating run.',
-      status: 'Coming session 2',
-      locked: true
+      desc: 'Build a deck of phrase cards. Spend Charisma to play them. Battle 4 audiences and one boss across an escalating run.',
+      status: null,
+      locked: false,
+      onclick: () => navigate('deck')
     },
     {
       key: 'composer',
@@ -1022,6 +2307,16 @@ function renderHome() {
     : inProgress
       ? `In progress — attempt ${state.wordleInProgress.attempts.length + 1}/${WORDLE_MAX_ATTEMPTS}`
       : 'Fresh puzzle ready';
+
+  // Deck Run status
+  const dr = state.deckRun;
+  if (dr && dr.active) {
+    modes[1].status = `Run in progress — ${dr.fightsCompleted}/${dr.totalFights} fights`;
+  } else if (dr && dr.lastResult) {
+    modes[1].status = dr.lastResult.won ? `Last run: 👑 Beat the boss` : `Last run: lost at fight ${(dr.lastResult.fightsCompleted || 0) + 1}`;
+  } else {
+    modes[1].status = `Fresh deck · ${STARTER_DECK_IDS.length} starter cards`;
+  }
 
   const grid = document.getElementById('mode-grid');
   grid.innerHTML = modes.map(m => `
@@ -1513,6 +2808,15 @@ window.submitWordleAttempt = submitWordleAttempt;
 window.copyShareGrid = copyShareGrid;
 window.toggleSetting = toggleSetting;
 window.resetEverything = resetEverything;
+// Deck mode handlers
+window.startNewRun = startNewRun;
+window.abandonRun = abandonRun;
+window.startFight = startFight;
+window.playCard = playCard;
+window.endTurn = endTurn;
+window.pickRewardCard = pickRewardCard;
+window.skipReward = skipReward;
+window.dismissRunResult = dismissRunResult;
 </script>
 </body>
 </html>
