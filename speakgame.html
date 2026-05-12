@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#0a1726" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#fdfaf5" media="(prefers-color-scheme: light)" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="SpeakGame" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="description" content="A game of rhetoric: build winning arguments from phrase cards. Wordle, Deckbuilder, Composer, Tower Defense modes." />
+
+<!-- PWA manifest inlined so single-file deploy keeps working -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"SpeakGame","short_name":"SpeakGame","description":"A game of rhetoric: build winning arguments.","start_url":"./speakgame.html","scope":"./","display":"standalone","background_color":"#0a1726","theme_color":"#0a1726","orientation":"any","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230a1726%22/><text x=%2250%22 y=%2270%22 font-family=%22system-ui%22 font-weight=%22900%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22%23a3f7e9%22>S</text></svg>","sizes":"any","type":"image/svg+xml"}]}' />
+
+<title>SpeakGame — A game of rhetoric</title>
+
+<style>
+/* ================================================================
+   THEME VARIABLES — dark mode primary, light mode also supported
+   ================================================================ */
+:root {
+  /* Dark theme (default) */
+  --bg: #0a1726;
+  --bg-elev: #122236;
+  --bg-elev-2: #1a2d45;
+  --bg-card: #14253b;
+  --border: #243752;
+  --border-strong: #34527a;
+
+  --text: #e6eef8;
+  --text-dim: #9ab0c8;
+  --text-mute: #5e7796;
+
+  --accent: #2dd4bf;          /* neon teal — primary action */
+  --accent-soft: rgba(45,212,191,0.14);
+  --accent-glow: rgba(45,212,191,0.45);
+
+  --gold: #ffd166;
+  --gold-soft: rgba(255,209,102,0.16);
+  --orange: #ff8a4c;
+  --pink: #ff5d8f;
+  --red: #ef5350;
+  --red-soft: rgba(239,83,80,0.18);
+  --green: #4ade80;
+  --green-soft: rgba(74,222,128,0.18);
+  --yellow: #facc15;
+  --yellow-soft: rgba(250,204,21,0.18);
+  --purple: #a78bfa;
+
+  --shadow: 0 8px 30px rgba(0,0,0,0.45);
+  --shadow-lg: 0 18px 50px rgba(0,0,0,0.55);
+  --shadow-glow: 0 0 30px var(--accent-glow);
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
+
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-display: "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+[data-theme="light"] {
+  --bg: #fdfaf5;
+  --bg-elev: #ffffff;
+  --bg-elev-2: #f5efe4;
+  --bg-card: #ffffff;
+  --border: #e8dccb;
+  --border-strong: #cdb999;
+
+  --text: #1f1a14;
+  --text-dim: #5a5045;
+  --text-mute: #95887a;
+
+  --accent: #0d9488;
+  --accent-soft: rgba(13,148,136,0.10);
+  --accent-glow: rgba(13,148,136,0.25);
+
+  --gold: #d4a017;
+  --gold-soft: rgba(212,160,23,0.12);
+  --orange: #ea580c;
+  --pink: #be185d;
+  --red: #b91c1c;
+  --red-soft: rgba(185,28,28,0.10);
+  --green: #15803d;
+  --green-soft: rgba(21,128,61,0.12);
+  --yellow: #ca8a04;
+  --yellow-soft: rgba(202,138,4,0.12);
+  --purple: #7c3aed;
+
+  --shadow: 0 4px 14px rgba(60,40,10,0.10);
+  --shadow-lg: 0 10px 30px rgba(60,40,10,0.15);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+}
+
+/* ================================================================
+   GLOBAL RESET + BASE
+   ================================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px; line-height: 1.45;
+  overscroll-behavior: none;
+  /* iOS safe-area handling */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); text-decoration: none; }
+[hidden] { display: none !important; }
+
+/* ================================================================
+   LAYOUT — header + main + view system
+   ================================================================ */
+.app {
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column;
+  max-width: 1400px; margin: 0 auto;
+  padding: 1rem;
+}
+@media (min-width: 900px) { .app { padding: 1.5rem 2rem; } }
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; margin-bottom: 1.25rem;
+  padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+}
+.brand {
+  display: flex; align-items: center; gap: 0.6rem;
+  font-family: var(--font-display); font-weight: 800; font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; color: #0a1726; font-size: 1.1rem;
+  box-shadow: var(--shadow-glow);
+}
+.brand-name span { color: var(--accent); }
+
+.header-stats {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.stat-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.4rem 0.7rem; border-radius: 999px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  font-size: 0.85rem; font-weight: 600;
+}
+.stat-chip.xp { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.stat-chip.coins { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); }
+.stat-chip-ico { font-size: 1rem; line-height: 1; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.icon-btn:active { transform: translateY(0); }
+.icon-btn svg { width: 18px; height: 18px; }
+
+main { flex: 1; }
+.view { display: none; }
+.view.active { display: block; animation: fade-in 0.18s ease; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ================================================================
+   HOME — mode picker
+   ================================================================ */
+.hero {
+  padding: 1.5rem; margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at top right, var(--accent-glow), transparent 50%);
+  opacity: 0.5; pointer-events: none;
+}
+.hero h1 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.6rem, 4vw, 2.4rem); line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
+  position: relative;
+}
+.hero h1 span { color: var(--accent); }
+.hero p {
+  color: var(--text-dim); max-width: 560px;
+  position: relative;
+}
+
+.mode-grid {
+  display: grid; gap: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) { .mode-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1100px) { .mode-grid { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; } }
+
+.mode-card {
+  position: relative;
+  padding: 1.5rem; min-height: 180px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); cursor: pointer;
+  display: flex; flex-direction: column; gap: 0.65rem;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
+  text-align: left;
+}
+.mode-card:hover:not(.locked) {
+  border-color: var(--accent); transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.mode-card.locked { opacity: 0.55; cursor: not-allowed; }
+.mode-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--accent-tint, transparent);
+  opacity: 0.06; pointer-events: none;
+}
+.mode-card[data-accent="teal"]   { --accent-tint: var(--accent); }
+.mode-card[data-accent="gold"]   { --accent-tint: var(--gold); }
+.mode-card[data-accent="orange"] { --accent-tint: var(--orange); }
+.mode-card[data-accent="purple"] { --accent-tint: var(--purple); }
+
+.mode-card-head {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.mode-card-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; line-height: 1; flex-shrink: 0;
+}
+.mode-card[data-accent="teal"] .mode-card-icon   { color: var(--accent); border-color: var(--accent); }
+.mode-card[data-accent="gold"] .mode-card-icon   { color: var(--gold); border-color: var(--gold); }
+.mode-card[data-accent="orange"] .mode-card-icon { color: var(--orange); border-color: var(--orange); }
+.mode-card[data-accent="purple"] .mode-card-icon { color: var(--purple); border-color: var(--purple); }
+.mode-card h3 {
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.mode-card-tag {
+  font-size: 0.68rem; font-weight: 700; color: var(--text-mute);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.mode-card p { color: var(--text-dim); font-size: 0.92rem; line-height: 1.45; flex: 1; }
+.mode-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.mode-card-status {
+  font-size: 0.78rem; color: var(--text-dim); font-weight: 600;
+}
+.mode-card-status.fresh { color: var(--accent); }
+.mode-card-status.done { color: var(--green); }
+.mode-card-cta {
+  font-size: 0.85rem; font-weight: 700; color: var(--accent);
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.locked-pill {
+  display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  color: var(--text-mute); font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.5rem; padding: 0.7rem 1.1rem; border-radius: var(--radius);
+  font-weight: 700; font-size: 0.95rem; cursor: pointer;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  color: var(--text); transition: all 0.15s ease;
+  user-select: none;
+}
+.btn:hover { transform: translateY(-1px); border-color: var(--text-mute); }
+.btn:active { transform: translateY(0); }
+.btn-primary {
+  background: var(--accent); border-color: var(--accent);
+  color: #0a1726; box-shadow: var(--shadow-glow);
+}
+.btn-primary:hover { filter: brightness(1.1); border-color: var(--accent); }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--text-dim); }
+.btn-ghost:hover { color: var(--text); background: var(--bg-elev); }
+.btn-sm { padding: 0.4rem 0.7rem; font-size: 0.82rem; }
+.btn-lg { padding: 0.85rem 1.4rem; font-size: 1.02rem; }
+.btn[disabled] { opacity: 0.5; pointer-events: none; }
+
+/* ================================================================
+   WORDLE MODE
+   ================================================================ */
+.wordle {
+  display: grid; gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 1100px) {
+  .wordle { grid-template-columns: 1fr 360px; }
+}
+
+.wordle-back {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.85rem; color: var(--text-dim); font-weight: 600;
+  margin-bottom: 0.75rem; cursor: pointer;
+}
+.wordle-back:hover { color: var(--accent); }
+
+.wordle-main { min-width: 0; }
+
+.wordle-prompt-card {
+  padding: 1.25rem 1.4rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); margin-bottom: 1rem;
+}
+.wordle-meta {
+  display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+  font-size: 0.75rem; color: var(--text-mute);
+  letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700;
+}
+.wordle-meta-divider { color: var(--border-strong); }
+.wordle-prompt {
+  font-family: var(--font-display); font-size: 1.1rem; line-height: 1.45;
+  font-weight: 600;
+}
+.wordle-prompt em { font-style: normal; color: var(--accent); font-weight: 700; }
+
+.wordle-slots {
+  display: grid; gap: 0.6rem; margin-bottom: 1.2rem;
+  grid-template-columns: 1fr;
+}
+.wordle-slot {
+  position: relative;
+  display: flex; align-items: center;
+  min-height: 56px; padding: 0.7rem 1rem;
+  background: var(--bg-elev); border: 2px dashed var(--border);
+  border-radius: var(--radius); transition: all 0.15s ease;
+  font-size: 0.92rem; line-height: 1.35;
+}
+.wordle-slot:hover { border-color: var(--text-mute); }
+.wordle-slot.selected { border-color: var(--accent); background: var(--accent-soft); border-style: solid; }
+.wordle-slot.filled { border-style: solid; }
+.wordle-slot-label {
+  font-size: 0.65rem; font-weight: 700; color: var(--text-mute);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  position: absolute; top: -8px; left: 14px;
+  padding: 0 0.4rem; background: var(--bg);
+}
+.wordle-slot-content { width: 100%; }
+.wordle-slot-empty {
+  color: var(--text-mute); font-style: italic; font-size: 0.85rem;
+}
+.wordle-slot-text { color: var(--text); }
+.wordle-slot-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg-elev-2); color: var(--text-mute);
+  display: none; align-items: center; justify-content: center; font-size: 0.85rem;
+}
+.wordle-slot.filled .wordle-slot-clear { display: inline-flex; }
+.wordle-slot-clear:hover { color: var(--red); }
+
+.tile-pool {
+  display: grid; gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  margin-bottom: 1.25rem;
+}
+@media (min-width: 900px) {
+  .tile-pool { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+}
+.tile {
+  padding: 0.7rem 0.9rem; min-height: 60px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 0.85rem; line-height: 1.4;
+  text-align: left; user-select: none;
+  transition: transform 0.1s ease, border-color 0.15s ease, opacity 0.15s ease;
+  position: relative;
+}
+.tile:hover { transform: translateY(-2px); border-color: var(--accent); }
+.tile.used { opacity: 0.35; cursor: not-allowed; }
+.tile.used:hover { transform: none; border-color: var(--border); }
+.tile.feedback-correct { border-color: var(--green); background: var(--green-soft); }
+.tile.feedback-misplaced { border-color: var(--yellow); background: var(--yellow-soft); }
+.tile.feedback-wrong { border-color: var(--border); opacity: 0.4; }
+
+.wordle-actions {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;
+  align-items: center;
+}
+.wordle-actions .spacer { flex: 1; }
+.wordle-attempts-left {
+  font-size: 0.85rem; color: var(--text-dim); font-weight: 600;
+}
+
+/* Attempts history grid (a la Wordle) */
+.wordle-history {
+  padding: 1rem 1.1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.wordle-history h4 {
+  font-family: var(--font-display); font-size: 0.92rem; font-weight: 700;
+  margin-bottom: 0.6rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.wordle-history-row {
+  display: flex; gap: 0.35rem; margin-bottom: 0.4rem;
+}
+.wordle-history-cell {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+}
+.wordle-history-cell.correct  { background: var(--green); color: #0a1726; border-color: var(--green); }
+.wordle-history-cell.misplaced { background: var(--yellow); color: #0a1726; border-color: var(--yellow); }
+.wordle-history-cell.wrong    { background: var(--bg-elev-2); color: var(--text-mute); }
+
+.wordle-side {
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.side-card {
+  padding: 1rem 1.2rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.side-card h4 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+}
+.streak-big {
+  font-family: var(--font-display); font-size: 2.5rem; font-weight: 900;
+  line-height: 1; color: var(--accent);
+}
+.streak-sub { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+/* End-of-game overlay */
+.endgame {
+  padding: 1.5rem 1.4rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 2px solid var(--accent); border-radius: var(--radius-lg);
+  text-align: center;
+  animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.endgame.lose { border-color: var(--orange); }
+.endgame h2 {
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 900;
+  margin-bottom: 0.4rem;
+}
+.endgame p { color: var(--text-dim); margin-bottom: 0.85rem; }
+.endgame-rewards {
+  display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+.endgame-reward {
+  padding: 0.4rem 0.85rem; border-radius: 999px;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  font-weight: 700;
+}
+.endgame-reward.xp { color: var(--accent); border-color: var(--accent); }
+.endgame-reward.coins { color: var(--gold); border-color: var(--gold); }
+.endgame-share-grid {
+  font-family: var(--font-mono); font-size: 1.3rem; line-height: 1.2;
+  margin: 0.85rem 0; user-select: all;
+  white-space: pre;
+}
+@keyframes pop-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Tile flip animation when feedback arrives */
+@keyframes flip-cell {
+  0%   { transform: rotateX(0); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
+}
+.wordle-history-cell.flipping { animation: flip-cell 0.45s ease; }
+
+/* ================================================================
+   SETTINGS
+   ================================================================ */
+.settings-card {
+  padding: 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.settings-card h3 {
+  font-family: var(--font-display); font-size: 0.92rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+.setting-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-weight: 600; }
+.setting-desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.2rem; }
+.setting-toggle {
+  width: 46px; height: 26px; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  position: relative; cursor: pointer; transition: background 0.18s ease;
+  flex-shrink: 0;
+}
+.setting-toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--text-dim); transition: all 0.18s ease;
+}
+.setting-toggle.on { background: var(--accent); border-color: var(--accent); }
+.setting-toggle.on::after { left: 22px; background: #0a1726; }
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+.toast {
+  position: fixed; bottom: max(1rem, env(safe-area-inset-bottom));
+  left: 50%; transform: translateX(-50%);
+  padding: 0.7rem 1.1rem; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border-strong);
+  font-size: 0.9rem; font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { color: var(--red); border-color: var(--red); }
+.toast.success { color: var(--green); border-color: var(--green); }
+
+/* ================================================================
+   RESPONSIVE TWEAKS
+   ================================================================ */
+@media (max-width: 520px) {
+  .header { gap: 0.5rem; }
+  .header-stats { gap: 0.3rem; }
+  .stat-chip { font-size: 0.75rem; padding: 0.3rem 0.55rem; }
+  .brand { font-size: 1.05rem; }
+  .brand-mark { width: 30px; height: 30px; font-size: 0.95rem; }
+  .hero { padding: 1.1rem 1rem; }
+  .tile-pool { grid-template-columns: 1fr 1fr; }
+  .tile { font-size: 0.78rem; padding: 0.55rem 0.7rem; }
+  .wordle-history-cell { width: 26px; height: 26px; font-size: 0.7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand" onclick="navigate('home')">
+      <div class="brand-mark">S</div>
+      <div class="brand-name">Speak<span>Game</span></div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-chip xp" title="Experience points">
+        <span class="stat-chip-ico">⚡</span>
+        <span id="header-xp">0</span> XP
+      </div>
+      <div class="stat-chip coins" title="Charisma Coins">
+        <span class="stat-chip-ico">🪙</span>
+        <span id="header-coins">0</span>
+      </div>
+      <button class="icon-btn" onclick="navigate('settings')" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HOME -->
+    <section id="view-home" class="view active">
+      <div class="hero">
+        <h1>A game of <span>rhetoric</span>.</h1>
+        <p>Build winning arguments from phrase cards. Four modes. One shared deck. Daily puzzle resets at local midnight — current modes ship below, more arriving in future sessions.</p>
+      </div>
+
+      <div class="mode-grid" id="mode-grid">
+        <!-- Mode cards rendered by renderHome() -->
+      </div>
+    </section>
+
+    <!-- WORDLE -->
+    <section id="view-wordle" class="view">
+      <div id="wordle-content"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view">
+      <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin-bottom:1rem">Settings</h2>
+      <div id="settings-content"></div>
+    </section>
+
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ================================================================
+// STATE
+// ================================================================
+const STATE_KEY = 'speakgame-state-v1';
+
+const state = {
+  xp: 0,
+  coins: 0,
+  // Wordle progression
+  wordleStreak: 0,           // current streak in consecutive days
+  wordleLongestStreak: 0,    // best ever
+  wordleLastPlayedDay: null, // YYYY-MM-DD of last day completed
+  wordleDailyResult: null,   // {day, won, attempts, rows, xpEarned, coinsEarned} for today only
+  wordleInProgress: null,    // {day, attempts: [], slots: [null,null,...], puzzleId} mid-game
+  settings: {
+    theme: 'dark',
+    sound: true,
+    animations: true
+  }
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify(state));
+  } catch (e) { /* quota or private mode — ignore */ }
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    // Merge keys that exist; preserve defaults for new fields
+    for (const k of Object.keys(state)) {
+      if (parsed[k] !== undefined) {
+        if (typeof state[k] === 'object' && state[k] !== null && !Array.isArray(state[k])) {
+          Object.assign(state[k], parsed[k]);
+        } else {
+          state[k] = parsed[k];
+        }
+      }
+    }
+  } catch (e) { /* corrupted — ignore */ }
+}
+
+// ================================================================
+// SOUND — Web Audio API, lightweight tones; no external assets
+// ================================================================
+let _audioCtx = null;
+function audioCtx() {
+  if (_audioCtx) return _audioCtx;
+  const Ctor = window.AudioContext || window.webkitAudioContext;
+  if (!Ctor) return null;
+  _audioCtx = new Ctor();
+  return _audioCtx;
+}
+function tone(freq, durMs, type = 'sine', volume = 0.06, attack = 0.005) {
+  if (!state.settings.sound) return;
+  const ctx = audioCtx();
+  if (!ctx) return;
+  // iOS Safari: resume after user gesture
+  if (ctx.state === 'suspended') { ctx.resume().catch(()=>{}); }
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  osc.connect(gain); gain.connect(ctx.destination);
+  const now = ctx.currentTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(volume, now + attack);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + durMs / 1000);
+  osc.start(now); osc.stop(now + durMs / 1000 + 0.02);
+}
+const SFX = {
+  click:    () => tone(740, 50, 'square', 0.04),
+  place:    () => tone(880, 70, 'sine',   0.05),
+  unplace:  () => tone(520, 60, 'sine',   0.04),
+  submit:   () => { tone(620, 80, 'triangle', 0.05); setTimeout(()=>tone(820, 90, 'triangle', 0.05), 70); },
+  correct:  () => { tone(880, 90, 'sine', 0.06); setTimeout(()=>tone(1320, 100, 'sine', 0.06), 80); },
+  miss:     () => tone(220, 200, 'sawtooth', 0.05),
+  win:      () => {
+    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 160, 'triangle', 0.07), i * 110));
+  },
+  lose:     () => {
+    [330, 277, 247].forEach((f, i) => setTimeout(() => tone(f, 180, 'sawtooth', 0.05), i * 130));
+  },
+  coin:     () => { tone(1320, 80, 'triangle', 0.05); setTimeout(()=>tone(1760, 100, 'triangle', 0.05), 70); }
+};
+
+// ================================================================
+// PHRASE LIBRARY — hand-authored, framework-tagged
+// Role taxonomy:
+//   point     — a clear declarative position
+//   reason    — a "because" / justification
+//   example   — a concrete instance, often with numbers
+//   restated  — restates the point with conviction
+//   hook      — opening grabber
+//   bridge    — transitional connector
+//   closer    — call to action / summary
+//   filler    — vague buzzword (trap)
+// Used across all 4 modes.
+// ================================================================
+const PHRASES = [
+  // ----- POINT -----
+  { id: 'p01', text: 'We should ship the new pricing model this quarter.',                    role: 'point' },
+  { id: 'p02', text: 'Our onboarding flow is the biggest leak in the funnel.',                role: 'point' },
+  { id: 'p03', text: 'Remote-first delivery has materially raised our throughput.',           role: 'point' },
+  { id: 'p04', text: 'Customer churn is the single most important metric this year.',        role: 'point' },
+  { id: 'p05', text: 'We need to rewrite the integration layer before scaling.',              role: 'point' },
+  { id: 'p06', text: 'The roadmap should be cut in half and re-prioritized.',                 role: 'point' },
+  { id: 'p07', text: 'Our hiring bar has slipped over the last six months.',                  role: 'point' },
+  { id: 'p08', text: 'A four-day work week would not hurt this team’s output.',          role: 'point' },
+  // ----- REASON -----
+  { id: 'r01', text: 'Because every week of delay compounds the support load.',               role: 'reason' },
+  { id: 'r02', text: 'Because the data tells us where buyers actually fall off.',             role: 'reason' },
+  { id: 'r03', text: 'Because acquisition cost only matters if retention holds.',             role: 'reason' },
+  { id: 'r04', text: 'Because legacy debt has eaten three of the last six sprints.',          role: 'reason' },
+  { id: 'r05', text: 'Because focused teams ship faster than busy teams.',                    role: 'reason' },
+  { id: 'r06', text: 'Because culture follows the lowest standard you tolerate.',             role: 'reason' },
+  { id: 'r07', text: 'Because deep work compounds; reactive work decays.',                    role: 'reason' },
+  { id: 'r08', text: 'Because the cost of switching is rising faster than the upside.',       role: 'reason' },
+  // ----- EXAMPLE -----
+  { id: 'e01', text: 'Last quarter we converted 11% of trials — down from 17% a year ago.', role: 'example' },
+  { id: 'e02', text: 'In April, three of our four largest accounts opened renewal pushback.',    role: 'example' },
+  { id: 'e03', text: 'The Madrid team shipped 40% faster after we cut their meeting load in half.', role: 'example' },
+  { id: 'e04', text: 'Engineering velocity dropped from 38 to 22 weekly tickets after the merge.', role: 'example' },
+  { id: 'e05', text: 'We saw two senior engineers leave inside the same six-week window.',         role: 'example' },
+  { id: 'e06', text: 'When we trimmed the demo from 30 to 12 minutes, close rates doubled.',       role: 'example' },
+  { id: 'e07', text: 'A pilot with two reps and a four-day week beat the five-day baseline.',      role: 'example' },
+  { id: 'e08', text: 'After the rewrite, p99 latency dropped from 1.4s to 240ms.',                 role: 'example' },
+  // ----- RESTATED POINT (the "P" at the end of PREP) -----
+  { id: 'x01', text: 'So shipping the new pricing model this quarter is the call.',           role: 'restated' },
+  { id: 'x02', text: 'Which is why onboarding has to be our top priority.',                   role: 'restated' },
+  { id: 'x03', text: 'Remote-first is working — let’s commit to it formally.',           role: 'restated' },
+  { id: 'x04', text: 'Churn is the metric. Make every other goal serve it.',                  role: 'restated' },
+  { id: 'x05', text: 'Rewrite the integration layer. Then scale.',                            role: 'restated' },
+  { id: 'x06', text: 'Cut the roadmap in half and let focus do the rest.',                    role: 'restated' },
+  { id: 'x07', text: 'Reset the hiring bar to where it was — this is fixable.',          role: 'restated' },
+  { id: 'x08', text: 'A four-day week, on a six-week pilot. Let the numbers decide.',         role: 'restated' },
+  // ----- HOOK -----
+  { id: 'h01', text: 'Here’s what nobody on the leadership team is saying out loud.',    role: 'hook' },
+  { id: 'h02', text: 'I want to walk you through a number that should be making us nervous.', role: 'hook' },
+  { id: 'h03', text: 'Three weeks ago I saw something that changed how I think about this.',  role: 'hook' },
+  { id: 'h04', text: 'Forget the dashboard for a second — let me tell you what I saw.',  role: 'hook' },
+  // ----- BRIDGE -----
+  { id: 'b01', text: 'Which brings me to the harder question:',                                role: 'bridge' },
+  { id: 'b02', text: 'And here’s what makes that genuinely worrying:',                    role: 'bridge' },
+  { id: 'b03', text: 'But the real story is one layer down:',                                  role: 'bridge' },
+  { id: 'b04', text: 'Step back from the numbers and ask:',                                    role: 'bridge' },
+  // ----- CLOSER -----
+  { id: 'c01', text: 'Give me two weeks and one engineer and I’ll prove it.',             role: 'closer' },
+  { id: 'c02', text: 'Greenlight the pilot. I’ll own the outcome.',                       role: 'closer' },
+  { id: 'c03', text: 'Either we move now or we explain it to the board next quarter.',         role: 'closer' },
+  { id: 'c04', text: 'I’m asking for one decision today, not a debate.',                   role: 'closer' },
+  // ----- FILLER (TRAPS) -----
+  { id: 'f01', text: 'We need to leverage synergies across the organization.',                 role: 'filler' },
+  { id: 'f02', text: 'Going forward, we’ll circle back on the deliverables.',             role: 'filler' },
+  { id: 'f03', text: 'At the end of the day, it’s all about the customer.',               role: 'filler' },
+  { id: 'f04', text: 'It is what it is, and we need to think outside the box.',                role: 'filler' },
+  { id: 'f05', text: 'Let’s take this offline and align on the strategy.',                role: 'filler' },
+  { id: 'f06', text: 'Basically, we’re going to do a deep dive on the low-hanging fruit.', role: 'filler' }
+];
+function phrasesByRole(role) {
+  return PHRASES.filter(p => p.role === role);
+}
+function phraseById(id) {
+  return PHRASES.find(p => p.id === id);
+}
+
+// ================================================================
+// DAILY WORDLE — puzzle data
+// Each puzzle: prompt + framework slots + the SPECIFIC correct phrase ID per slot.
+// Decoy phrases are drawn at runtime to fill the 24-tile pool.
+// We hand-author 7 puzzles for v1 (1 week of content); they cycle by day-of-year.
+// ================================================================
+const WORDLE_PUZZLES = [
+  {
+    id: 'w001',
+    prompt: 'You’ve got 90 seconds with the CEO to argue that <em>customer churn</em> should be this year’s top company metric. Use PREP.',
+    framework: 'PREP',
+    slots: [
+      { label: 'Point',    role: 'point',    correctId: 'p04' },
+      { label: 'Reason',   role: 'reason',   correctId: 'r03' },
+      { label: 'Example',  role: 'example',  correctId: 'e01' },
+      { label: 'Point (restated)', role: 'restated', correctId: 'x04' }
+    ]
+  },
+  {
+    id: 'w002',
+    prompt: 'A board member asks: "Was the integration-layer rewrite really worth a sprint?" Defend the call using PREP.',
+    framework: 'PREP',
+    slots: [
+      { label: 'Point',    role: 'point',    correctId: 'p05' },
+      { label: 'Reason',   role: 'reason',   correctId: 'r04' },
+      { label: 'Example',  role: 'example',  correctId: 'e08' },
+      { label: 'Point (restated)', role: 'restated', correctId: 'x05' }
+    ]
+  },
+  {
+    id: 'w003',
+    prompt: 'Pitch a focused 4-day work-week pilot to a skeptical COO. Use PREP.',
+    framework: 'PREP',
+    slots: [
+      { label: 'Point',    role: 'point',    correctId: 'p08' },
+      { label: 'Reason',   role: 'reason',   correctId: 'r05' },
+      { label: 'Example',  role: 'example',  correctId: 'e07' },
+      { label: 'Point (restated)', role: 'restated', correctId: 'x08' }
+    ]
+  },
+  {
+    id: 'w004',
+    prompt: 'You’re the head of growth. Make the case that <em>onboarding</em> is the biggest leak in your funnel.',
+    framework: 'PREP',
+    slots: [
+      { label: 'Point',    role: 'point',    correctId: 'p02' },
+      { label: 'Reason',   role: 'reason',   correctId: 'r02' },
+      { label: 'Example',  role: 'example',  correctId: 'e06' },
+      { label: 'Point (restated)', role: 'restated', correctId: 'x02' }
+    ]
+  },
+  {
+    id: 'w005',
+    prompt: 'Argue that the roadmap needs to be cut in half. PREP — your audience is two-stretched product managers.',
+    framework: 'PREP',
+    slots: [
+      { label: 'Point',    role: 'point',    correctId: 'p06' },
+      { label: 'Reason',   role: 'reason',   correctId: 'r07' },
+      { label: 'Example',  role: 'example',  correctId: 'e03' },
+      { label: 'Point (restated)', role: 'restated', correctId: 'x06' }
+    ]
+  },
+  {
+    id: 'w006',
+    prompt: 'The hiring bar has slipped. Tell the founder — honestly, in PREP — what you’ve seen.',
+    framework: 'PREP',
+    slots: [
+      { label: 'Point',    role: 'point',    correctId: 'p07' },
+      { label: 'Reason',   role: 'reason',   correctId: 'r06' },
+      { label: 'Example',  role: 'example',  correctId: 'e05' },
+      { label: 'Point (restated)', role: 'restated', correctId: 'x07' }
+    ]
+  },
+  {
+    id: 'w007',
+    prompt: 'You’re ready to ship a new pricing model. Earn the green light from a cautious CFO.',
+    framework: 'PREP',
+    slots: [
+      { label: 'Point',    role: 'point',    correctId: 'p01' },
+      { label: 'Reason',   role: 'reason',   correctId: 'r01' },
+      { label: 'Example',  role: 'example',  correctId: 'e02' },
+      { label: 'Point (restated)', role: 'restated', correctId: 'x01' }
+    ]
+  }
+];
+
+const WORDLE_MAX_ATTEMPTS = 6;
+const WORDLE_TILE_POOL_SIZE = 16; // tiles shown to the player
+
+// ================================================================
+// DAILY SEED — deterministic per local day
+// ================================================================
+function todayKey() {
+  // YYYY-MM-DD in user's local timezone — matches "daily reset at local midnight"
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function dayOfYear() {
+  const d = new Date();
+  const start = new Date(d.getFullYear(), 0, 0);
+  return Math.floor((d - start) / 86400000);
+}
+function todayPuzzleNumber() {
+  // Stable counter shown to user; cycles weekly through WORDLE_PUZZLES.
+  return dayOfYear();
+}
+function todayPuzzle() {
+  const idx = dayOfYear() % WORDLE_PUZZLES.length;
+  return WORDLE_PUZZLES[idx];
+}
+
+// Seeded RNG (mulberry32) for stable daily decoy selection.
+function seedFromString(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return () => {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return ((h ^= h >>> 16) >>> 0) / 4294967296;
+  };
+}
+function shuffleWithRng(arr, rng) {
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// Build today's tile pool: 4 correct + N decoys; same seed -> same arrangement.
+function buildTilePool(puzzle, dayKey) {
+  const rng = seedFromString(`${puzzle.id}|${dayKey}`);
+  const correctIds = puzzle.slots.map(s => s.correctId);
+  const allOthers = PHRASES
+    .filter(p => !correctIds.includes(p.id))
+    .map(p => p.id);
+  const shuffledOthers = shuffleWithRng(allOthers, rng);
+  const decoys = shuffledOthers.slice(0, WORDLE_TILE_POOL_SIZE - correctIds.length);
+  return shuffleWithRng([...correctIds, ...decoys], rng);
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function navigate(view) {
+  SFX.click();
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById('view-' + view);
+  if (target) target.classList.add('active');
+  if (view === 'home') renderHome();
+  if (view === 'wordle') renderWordle();
+  if (view === 'settings') renderSettings();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ================================================================
+// HEADER — XP + Coins display
+// ================================================================
+function refreshHeaderStats() {
+  document.getElementById('header-xp').textContent = state.xp.toLocaleString();
+  document.getElementById('header-coins').textContent = state.coins.toLocaleString();
+}
+
+// ================================================================
+// HOME — mode picker
+// ================================================================
+function renderHome() {
+  const modes = [
+    {
+      key: 'wordle',
+      icon: '🎯',
+      title: 'Daily Phrase Puzzle',
+      tag: 'Wordle · 5 min',
+      accent: 'teal',
+      desc: 'Pick the four phrases that build the perfect PREP response to today’s prompt. Six attempts. Color-coded feedback. New puzzle at midnight.',
+      status: null,
+      locked: false,
+      onclick: () => navigate('wordle')
+    },
+    {
+      key: 'deck',
+      icon: '🃏',
+      title: 'Deck Run',
+      tag: 'Roguelike · 30 min',
+      accent: 'gold',
+      desc: 'Build a deck of phrase cards. Spend Charisma to play them. Battle audiences across an escalating run.',
+      status: 'Coming session 2',
+      locked: true
+    },
+    {
+      key: 'composer',
+      icon: '🎼',
+      title: 'Composer',
+      tag: 'Sandbox · 10 min',
+      accent: 'orange',
+      desc: 'Drag phrase tiles onto a canvas. Build combos. Score on flow, framework, and rhetoric.',
+      status: 'Coming session 4',
+      locked: true
+    },
+    {
+      key: 'tower',
+      icon: '🛡️',
+      title: 'Argument Tower',
+      tag: 'Defense · 15 min',
+      accent: 'purple',
+      desc: 'Waves of objections incoming. Deploy rebuttal towers in three lanes. Defend your position.',
+      status: 'Coming session 5',
+      locked: true
+    }
+  ];
+
+  // Mark today's Wordle status
+  const today = todayKey();
+  const dailyDone = state.wordleDailyResult && state.wordleDailyResult.day === today;
+  const inProgress = state.wordleInProgress && state.wordleInProgress.day === today;
+
+  modes[0].status = dailyDone
+    ? `Today: ${state.wordleDailyResult.won ? '✓ Solved' : '✗ Used all attempts'}`
+    : inProgress
+      ? `In progress — attempt ${state.wordleInProgress.attempts.length + 1}/${WORDLE_MAX_ATTEMPTS}`
+      : 'Fresh puzzle ready';
+
+  const grid = document.getElementById('mode-grid');
+  grid.innerHTML = modes.map(m => `
+    <button class="mode-card ${m.locked ? 'locked' : ''}" data-accent="${m.accent}"
+            ${m.locked ? '' : `onclick="(${m.onclick.toString()})()"`}>
+      <div class="mode-card-head">
+        <div class="mode-card-icon">${m.icon}</div>
+        <div>
+          <div class="mode-card-tag">${m.tag}</div>
+          <h3>${m.title}</h3>
+        </div>
+      </div>
+      <p>${m.desc}</p>
+      <div class="mode-card-footer">
+        <span class="mode-card-status ${dailyDone && m.key === 'wordle' ? 'done' : (m.key === 'wordle' && !inProgress ? 'fresh' : '')}">
+          ${m.locked ? `<span class="locked-pill">${m.status}</span>` : m.status}
+        </span>
+        ${!m.locked ? '<span class="mode-card-cta">Play →</span>' : ''}
+      </div>
+    </button>
+  `).join('');
+}
+
+// ================================================================
+// WORDLE — gameplay
+// ================================================================
+let _wordle = null; // transient session state
+
+function startWordleSession() {
+  const today = todayKey();
+  const puzzle = todayPuzzle();
+
+  // Resume if mid-game
+  if (state.wordleInProgress && state.wordleInProgress.day === today) {
+    _wordle = {
+      day: today,
+      puzzleId: puzzle.id,
+      puzzle,
+      tilePool: buildTilePool(puzzle, today),
+      attempts: state.wordleInProgress.attempts.slice(),
+      slots: state.wordleInProgress.slots.slice(),
+      selectedSlot: 0,
+      finished: false
+    };
+  } else {
+    _wordle = {
+      day: today,
+      puzzleId: puzzle.id,
+      puzzle,
+      tilePool: buildTilePool(puzzle, today),
+      attempts: [],
+      slots: puzzle.slots.map(() => null),
+      selectedSlot: 0,
+      finished: false
+    };
+    state.wordleInProgress = { day: today, attempts: [], slots: _wordle.slots.slice(), puzzleId: puzzle.id };
+    saveState();
+  }
+
+  // If already finished today, present the endgame screen
+  if (state.wordleDailyResult && state.wordleDailyResult.day === today) {
+    _wordle.finished = true;
+  }
+}
+
+function persistWordleProgress() {
+  if (!_wordle || _wordle.finished) return;
+  state.wordleInProgress = {
+    day: _wordle.day,
+    attempts: _wordle.attempts.slice(),
+    slots: _wordle.slots.slice(),
+    puzzleId: _wordle.puzzleId
+  };
+  saveState();
+}
+
+function renderWordle() {
+  if (!_wordle || _wordle.day !== todayKey()) startWordleSession();
+  const container = document.getElementById('wordle-content');
+  const w = _wordle;
+  const usedTileIds = new Set(w.slots.filter(Boolean));
+  const attemptsLeft = WORDLE_MAX_ATTEMPTS - w.attempts.length;
+  const allSlotsFilled = w.slots.every(Boolean);
+  const todayResult = (state.wordleDailyResult && state.wordleDailyResult.day === w.day) ? state.wordleDailyResult : null;
+
+  container.innerHTML = `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+
+    <div class="wordle">
+
+      <div class="wordle-main">
+
+        ${todayResult ? renderEndgame(todayResult) : ''}
+
+        <div class="wordle-prompt-card">
+          <div class="wordle-meta">
+            <span>SpeakGame #${todayPuzzleNumber()}</span>
+            <span class="wordle-meta-divider">·</span>
+            <span>${w.puzzle.framework}</span>
+            <span class="wordle-meta-divider">·</span>
+            <span>${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} left</span>
+          </div>
+          <div class="wordle-prompt">${w.puzzle.prompt}</div>
+        </div>
+
+        <div class="wordle-slots">
+          ${w.slots.map((tileId, i) => {
+            const slot = w.puzzle.slots[i];
+            const filled = !!tileId;
+            const selected = !w.finished && !todayResult && i === w.selectedSlot && !filled;
+            return `
+              <div class="wordle-slot ${filled ? 'filled' : ''} ${selected ? 'selected' : ''}"
+                   onclick="onSlotClick(${i})">
+                <span class="wordle-slot-label">${slot.label}</span>
+                <div class="wordle-slot-content">
+                  ${filled
+                    ? `<span class="wordle-slot-text">${phraseById(tileId).text}</span>`
+                    : `<span class="wordle-slot-empty">Tap to fill from the pool below…</span>`}
+                </div>
+                ${filled ? `<button class="wordle-slot-clear" onclick="event.stopPropagation(); clearSlot(${i})" aria-label="Clear slot">✕</button>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        ${!todayResult ? `
+          <div class="tile-pool" id="tile-pool">
+            ${w.tilePool.map(tileId => {
+              const ph = phraseById(tileId);
+              const used = usedTileIds.has(tileId);
+              return `
+                <button class="tile ${used ? 'used' : ''}"
+                        ${used ? '' : `onclick="onTileClick('${tileId}')"`}
+                        title="${ph.role}">
+                  ${ph.text}
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="wordle-actions">
+            <button class="btn btn-ghost btn-sm" onclick="resetCurrentAttempt()">
+              Clear slots
+            </button>
+            <div class="spacer"></div>
+            <div class="wordle-attempts-left">${w.attempts.length} / ${WORDLE_MAX_ATTEMPTS} attempts used</div>
+            <button class="btn btn-primary btn-lg" ${allSlotsFilled ? '' : 'disabled'}
+                    onclick="submitWordleAttempt()">
+              Submit attempt
+            </button>
+          </div>
+        ` : ''}
+
+      </div>
+
+      <aside class="wordle-side">
+        <div class="side-card">
+          <h4>Attempts</h4>
+          ${w.attempts.length === 0 ? `
+            <p style="color:var(--text-mute);font-size:0.85rem">Your guesses will appear here, color-coded.</p>
+          ` : w.attempts.map(a => `
+            <div class="wordle-history-row">
+              ${a.feedback.map(f => `
+                <div class="wordle-history-cell ${f}">
+                  ${f === 'correct' ? '✓' : f === 'misplaced' ? '◐' : '·'}
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="side-card">
+          <h4>Streak</h4>
+          <div class="streak-big">${state.wordleStreak}🔥</div>
+          <div class="streak-sub">${state.wordleStreak === 0 ? 'Solve today to start' : 'consecutive day' + (state.wordleStreak === 1 ? '' : 's')}</div>
+          <div class="streak-sub">Best: ${state.wordleLongestStreak}</div>
+        </div>
+
+        <div class="side-card">
+          <h4>How it works</h4>
+          <p style="font-size:0.85rem;color:var(--text-dim);line-height:1.5">
+            🟩 <strong>Green</strong> — phrase is correct for that slot.<br>
+            🟨 <strong>Yellow</strong> — correct phrase, wrong slot.<br>
+            ⬜ <strong>Grey</strong> — not in today’s answer.<br><br>
+            Filler-buzzword tiles are never the answer. Avoid them.
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  `;
+}
+
+function onTileClick(tileId) {
+  if (!_wordle || _wordle.finished) return;
+  const w = _wordle;
+  // Already used?
+  if (w.slots.includes(tileId)) return;
+  // Find next empty slot starting at selectedSlot, wrapping
+  let targetSlot = w.selectedSlot;
+  if (w.slots[targetSlot] !== null) {
+    // Find first empty
+    const firstEmpty = w.slots.findIndex(s => s === null);
+    if (firstEmpty === -1) {
+      showToast('All slots are filled — submit or clear one.');
+      return;
+    }
+    targetSlot = firstEmpty;
+  }
+  w.slots[targetSlot] = tileId;
+  // Advance selectedSlot to next empty
+  const next = w.slots.findIndex((s, i) => i > targetSlot && s === null);
+  w.selectedSlot = next === -1 ? w.slots.findIndex(s => s === null) : next;
+  if (w.selectedSlot === -1) w.selectedSlot = targetSlot;
+  SFX.place();
+  persistWordleProgress();
+  renderWordle();
+}
+
+function onSlotClick(slotIdx) {
+  if (!_wordle || _wordle.finished) return;
+  _wordle.selectedSlot = slotIdx;
+  SFX.click();
+  renderWordle();
+}
+
+function clearSlot(slotIdx) {
+  if (!_wordle || _wordle.finished) return;
+  _wordle.slots[slotIdx] = null;
+  _wordle.selectedSlot = slotIdx;
+  SFX.unplace();
+  persistWordleProgress();
+  renderWordle();
+}
+
+function resetCurrentAttempt() {
+  if (!_wordle || _wordle.finished) return;
+  _wordle.slots = _wordle.puzzle.slots.map(() => null);
+  _wordle.selectedSlot = 0;
+  SFX.unplace();
+  persistWordleProgress();
+  renderWordle();
+}
+
+// Submit an attempt: compute per-slot feedback, check win, record.
+function submitWordleAttempt() {
+  const w = _wordle;
+  if (!w || w.finished) return;
+  if (!w.slots.every(Boolean)) {
+    showToast('Fill every slot first.', 'error');
+    return;
+  }
+  SFX.submit();
+
+  const correctIds = w.puzzle.slots.map(s => s.correctId);
+  const feedback = w.slots.map((tileId, i) => {
+    if (tileId === correctIds[i]) return 'correct';
+    if (correctIds.includes(tileId)) return 'misplaced';
+    return 'wrong';
+  });
+  w.attempts.push({ slots: w.slots.slice(), feedback });
+
+  const won = feedback.every(f => f === 'correct');
+  const lost = !won && w.attempts.length >= WORDLE_MAX_ATTEMPTS;
+
+  if (won) {
+    SFX.win();
+    finishWordleSession(true);
+  } else if (lost) {
+    SFX.lose();
+    finishWordleSession(false);
+  } else {
+    SFX.miss();
+    // Clear slots for next attempt, but keep selectedSlot at 0
+    w.slots = w.puzzle.slots.map(() => null);
+    w.selectedSlot = 0;
+    persistWordleProgress();
+    renderWordle();
+  }
+}
+
+function finishWordleSession(won) {
+  const w = _wordle;
+  const attemptsUsed = w.attempts.length;
+  // Rewards: sliding scale based on attempts. Lose = participation reward.
+  const rewardTable = [
+    { xp: 100, coins: 50 },
+    { xp: 80,  coins: 40 },
+    { xp: 65,  coins: 32 },
+    { xp: 50,  coins: 25 },
+    { xp: 40,  coins: 18 },
+    { xp: 30,  coins: 12 }
+  ];
+  const reward = won ? rewardTable[attemptsUsed - 1] : { xp: 10, coins: 0 };
+
+  // Streak bookkeeping
+  if (won) {
+    const today = w.day;
+    const last = state.wordleLastPlayedDay;
+    if (last) {
+      const yesterday = (() => {
+        const d = new Date(); d.setDate(d.getDate() - 1);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      })();
+      if (last === yesterday) state.wordleStreak += 1;
+      else if (last !== today) state.wordleStreak = 1;
+      // if last === today, no change (already counted)
+    } else {
+      state.wordleStreak = 1;
+    }
+    state.wordleLongestStreak = Math.max(state.wordleLongestStreak, state.wordleStreak);
+  } else {
+    state.wordleStreak = 0;
+  }
+  state.wordleLastPlayedDay = w.day;
+
+  // Apply reward
+  state.xp += reward.xp;
+  state.coins += reward.coins;
+  if (reward.coins > 0) setTimeout(() => SFX.coin(), 250);
+
+  // Build the share grid (3 emoji per attempt row)
+  const emojiFor = f => f === 'correct' ? '🟩' : f === 'misplaced' ? '🟨' : '⬛';
+  const gridText = w.attempts.map(a => a.feedback.map(emojiFor).join('')).join('\n');
+
+  state.wordleDailyResult = {
+    day: w.day,
+    won,
+    attempts: attemptsUsed,
+    rows: w.attempts.map(a => a.feedback),
+    xpEarned: reward.xp,
+    coinsEarned: reward.coins,
+    gridText
+  };
+  state.wordleInProgress = null;
+  saveState();
+  refreshHeaderStats();
+
+  w.finished = true;
+  renderWordle();
+}
+
+function renderEndgame(result) {
+  const headline = result.won
+    ? (result.attempts === 1 ? 'Perfect. First try.' : `Solved in ${result.attempts}.`)
+    : 'Streak broken — back tomorrow.';
+  const sub = result.won
+    ? 'New puzzle at local midnight. Streak holds if you come back tomorrow.'
+    : 'The solution is shown below in green. New puzzle at local midnight.';
+  return `
+    <div class="endgame ${result.won ? '' : 'lose'}">
+      <h2>${headline}</h2>
+      <p>${sub}</p>
+      <div class="endgame-rewards">
+        <span class="endgame-reward xp">+${result.xpEarned} XP</span>
+        ${result.coinsEarned > 0 ? `<span class="endgame-reward coins">+${result.coinsEarned} 🪙</span>` : ''}
+        ${result.won ? `<span class="endgame-reward">🔥 ${state.wordleStreak} streak</span>` : ''}
+      </div>
+      <div class="endgame-share-grid">SpeakGame #${todayPuzzleNumber()} ${result.won ? result.attempts : 'X'}/${WORDLE_MAX_ATTEMPTS}\n${result.gridText}</div>
+      <button class="btn btn-primary" onclick="copyShareGrid()">Copy share grid</button>
+      <button class="btn btn-ghost" onclick="navigate('home')">Back to modes</button>
+    </div>
+  `;
+}
+
+function copyShareGrid() {
+  const result = state.wordleDailyResult;
+  if (!result) return;
+  const text = `SpeakGame #${todayPuzzleNumber()} ${result.won ? result.attempts : 'X'}/${WORDLE_MAX_ATTEMPTS}\n${result.gridText}`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => showToast('Copied to clipboard.', 'success'),
+      () => showToast('Copy failed — long-press to select.', 'error')
+    );
+  } else {
+    showToast('Long-press to copy.', 'error');
+  }
+}
+
+// ================================================================
+// SETTINGS
+// ================================================================
+function renderSettings() {
+  const s = state.settings;
+  const container = document.getElementById('settings-content');
+  container.innerHTML = `
+    <div class="settings-card">
+      <h3>Display</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Dark mode</div>
+          <div class="setting-desc">Switch between dark (default) and light themes.</div>
+        </div>
+        <div class="setting-toggle ${s.theme === 'dark' ? 'on' : ''}" onclick="toggleSetting('theme')"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Animations</div>
+          <div class="setting-desc">Card flips, score bounces. Turn off for snappier (and less juicy) UI.</div>
+        </div>
+        <div class="setting-toggle ${s.animations ? 'on' : ''}" onclick="toggleSetting('animations')"></div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>Sound</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Sound effects</div>
+          <div class="setting-desc">Web-Audio tones for clicks, tile placement, wins, and misses.</div>
+        </div>
+        <div class="setting-toggle ${s.sound ? 'on' : ''}" onclick="toggleSetting('sound')"></div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>Data</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Reset SpeakGame progress</div>
+          <div class="setting-desc">Permanently delete XP, Coins, streak, and today’s puzzle progress. Cannot be undone.</div>
+        </div>
+        <button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="resetEverything()">Reset</button>
+      </div>
+    </div>
+
+    <p style="font-size:0.75rem;color:var(--text-mute);text-align:center;margin-top:1rem">
+      SpeakGame v0.1 — Daily Wordle live. Deckbuilder, Composer, Tower coming.
+    </p>
+  `;
+}
+
+function toggleSetting(key) {
+  SFX.click();
+  if (key === 'theme') {
+    state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+  } else {
+    state.settings[key] = !state.settings[key];
+  }
+  if (key === 'animations') applyAnimations();
+  saveState();
+  renderSettings();
+}
+function applyTheme() { document.body.setAttribute('data-theme', state.settings.theme); }
+function applyAnimations() {
+  document.body.style.setProperty('--anim-on', state.settings.animations ? '1' : '0');
+  // The reduced-motion rules cover this if needed; we leave individual animations to honor the OS pref.
+}
+
+function resetEverything() {
+  if (!confirm('Reset all SpeakGame progress? This deletes XP, Coins, streak, and today’s puzzle.')) return;
+  localStorage.removeItem(STATE_KEY);
+  location.reload();
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+let _toastTimer = null;
+function showToast(msg, kind) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'toast show' + (kind ? ' ' + kind : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.classList.remove('show'); }, 2200);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+function init() {
+  loadState();
+  applyTheme();
+  applyAnimations();
+  refreshHeaderStats();
+  renderHome();
+}
+document.addEventListener('DOMContentLoaded', init);
+
+// Expose handlers for inline onclick (since we don't use a bundler)
+window.navigate = navigate;
+window.onTileClick = onTileClick;
+window.onSlotClick = onSlotClick;
+window.clearSlot = clearSlot;
+window.resetCurrentAttempt = resetCurrentAttempt;
+window.submitWordleAttempt = submitWordleAttempt;
+window.copyShareGrid = copyShareGrid;
+window.toggleSetting = toggleSetting;
+window.resetEverything = resetEverything;
+</script>
+</body>
+</html>
