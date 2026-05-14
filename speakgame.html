@@ -1787,12 +1787,15 @@ main { flex: 1; }
 .cascade-lane[data-lane="2"] { top: 140px; }
 .cascade-lane[data-lane="3"] { top: 210px; }
 
+/* Phrase starts off-screen right and ends off-screen left.
+   Using viewport units guarantees the travel distance covers the lane on
+   any screen size; transform-% would only cover the element's own width. */
 @keyframes cascade-slide {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(-110%); }
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
 }
 .cascade-phrase {
-  position: absolute; left: 100%;
+  position: absolute; left: 0;
   padding: 0.45rem 0.75rem;
   background: var(--bg-card); border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
@@ -1803,6 +1806,8 @@ main { flex: 1; }
   white-space: normal;
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   transition: transform 0.08s ease, box-shadow 0.08s ease;
+  /* Anchor the transform-origin to the left so percentage translates feel consistent */
+  will-change: transform;
 }
 .cascade-phrase:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
 .cascade-phrase[data-role="hook"]     { border-left-color: var(--pink); }
@@ -2571,8 +2576,8 @@ function startCascade() {
   _pulse.targetRole = pickCascadeTarget();
   _pulse.targetTimer = 0;       // seconds since the current target appeared
   _pulse.activePhrases = [];    // { id, role, el, spawnAt }
-  _pulse.spawnInterval = 1200;  // ms between spawns; will decrease
-  _pulse.phraseDuration = 6500; // ms a phrase takes to cross
+  _pulse.spawnInterval = 1400;  // ms between spawns; will decrease
+  _pulse.phraseDuration = 8000; // ms a phrase takes to cross the viewport
   _pulse.spawnSince = 0;
   _pulse.tickAccum = 0;
 
@@ -2595,10 +2600,11 @@ function startCascade() {
       if (det) det.textContent = roleHint(_pulse.targetRole);
     }
 
-    // Escalate difficulty over time
-    if (_pulse.elapsed > 20 && _pulse.spawnInterval > 900)  _pulse.spawnInterval = 900;
-    if (_pulse.elapsed > 40 && _pulse.spawnInterval > 700)  _pulse.spawnInterval = 700;
-    if (_pulse.elapsed > 50 && _pulse.phraseDuration > 5000) _pulse.phraseDuration = 5000;
+    // Escalate difficulty over time — duration shrinks too so phrases read faster
+    if (_pulse.elapsed > 20 && _pulse.spawnInterval > 1100) _pulse.spawnInterval = 1100;
+    if (_pulse.elapsed > 35 && _pulse.spawnInterval > 850)  _pulse.spawnInterval = 850;
+    if (_pulse.elapsed > 35 && _pulse.phraseDuration > 6500) _pulse.phraseDuration = 6500;
+    if (_pulse.elapsed > 50 && _pulse.phraseDuration > 5500) _pulse.phraseDuration = 5500;
 
     // Update HUD timer bar
     const bar = document.querySelector('.pulse-hud-timer-fill');
@@ -2903,9 +2909,9 @@ function startHotSeat() {
   _pulse.arc = _pulse.scenario.suggested.slice(); // role array
   _pulse.arcFilled = _pulse.arc.map(() => null);  // phraseId per slot
   _pulse.arcIdx = 0;
-  _pulse.timeLeft = 35;     // a bit more generous than 30
-  _pulse.spawnInterval = 1000;
-  _pulse.phraseDuration = 5500;
+  _pulse.timeLeft = 40;     // a touch more generous so the new readable speed still fits an arc
+  _pulse.spawnInterval = 1100;
+  _pulse.phraseDuration = 7000;
   _pulse.activePhrases = [];
   _pulse.targetRole = _pulse.arc[0];
   _pulse.lives = 3;
@@ -2921,7 +2927,7 @@ function startHotSeat() {
     }
     const bar = document.querySelector('.pulse-hud-timer-fill');
     if (bar) {
-      const pct = Math.max(0, (_pulse.timeLeft / 35) * 100);
+      const pct = Math.max(0, (_pulse.timeLeft / 40) * 100);
       bar.style.width = pct + '%';
       bar.classList.toggle('warn', pct < 50 && pct >= 20);
       bar.classList.toggle('danger', pct < 20);
@@ -2962,7 +2968,7 @@ function onHotSeatTap(spawnId) {
     floatDelta(entry.el.parentNode, `+${20 + Math.floor(_pulse.streak * 2)}`, 'gain', true);
     SFX.correct();
     if (_pulse.arcIdx >= _pulse.arc.length) {
-      // Arc complete — WIN
+      // Arc complete — WIN. Time bonus scales with seconds remaining on the 40s clock.
       _pulse.timeBonusEarned = Math.max(0, Math.round(_pulse.timeLeft * 5));
       _pulse.score += _pulse.timeBonusEarned;
       finishPulse(true);
@@ -3000,7 +3006,7 @@ function finishPulse(won) {
   if (_pulse.tier === 'easy'   && _pulse.score > state.pulse.bestCascadeScore)   state.pulse.bestCascadeScore   = _pulse.score;
   if (_pulse.tier === 'medium' && _pulse.longestStreak > state.pulse.bestSurvivalStreak) state.pulse.bestSurvivalStreak = _pulse.longestStreak;
   if (_pulse.tier === 'hard' && won) {
-    const t = 35 - _pulse.timeLeft;
+    const t = 40 - _pulse.timeLeft;
     if (state.pulse.bestHotSeatTime == null || t < state.pulse.bestHotSeatTime) state.pulse.bestHotSeatTime = t;
   }
 
@@ -3013,8 +3019,8 @@ function finishPulse(won) {
     xpEarned    = Math.round(25 + _pulse.longestStreak * 4);
     coinsEarned = Math.round(8  + _pulse.longestStreak * 2);
   } else {
-    xpEarned    = won ? 80 + Math.round((35 - _pulse.timeLeft) * 2) : 20;
-    coinsEarned = won ? 40 + Math.round((35 - _pulse.timeLeft)) : 5;
+    xpEarned    = won ? 80 + Math.round((40 - _pulse.timeLeft) * 2) : 20;
+    coinsEarned = won ? 40 + Math.round((40 - _pulse.timeLeft)) : 5;
   }
   _pulse.xpEarned = xpEarned;
   _pulse.coinsEarned = coinsEarned;
@@ -3132,7 +3138,7 @@ function renderPulseHUD() {
   // Used by all 3 tiers; specific to current run
   const livesIcons = '❤️'.repeat(_pulse.lives) + '🤍'.repeat(3 - _pulse.lives);
   const timerPct = _pulse.timeLeft != null
-    ? Math.max(0, (_pulse.timeLeft / (_pulse.tier === 'hard' ? 35 : 60)) * 100)
+    ? Math.max(0, (_pulse.timeLeft / (_pulse.tier === 'hard' ? 40 : 60)) * 100)
     : 100;
   return `
     <div class="pulse-hud">
@@ -3249,7 +3255,7 @@ function renderPulseResult() {
   let headline;
   if (tier === 'easy') headline = won ? `Cascade survived — ${_pulse.score} points.` : `Knocked out at ${_pulse.score} points.`;
   else if (tier === 'medium') headline = `${_pulse.longestStreak} in a row.`;
-  else headline = won ? `Arc completed in ${(35 - _pulse.timeLeft).toFixed(1)}s.` : 'Time ran out.';
+  else headline = won ? `Arc completed in ${(40 - _pulse.timeLeft).toFixed(1)}s.` : 'Time ran out.';
 
   return `
     <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
