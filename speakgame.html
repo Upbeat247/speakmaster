@@ -1643,6 +1643,337 @@ main { flex: 1; }
 }
 .queue-chip .turn { color: var(--text-mute); font-weight: 700; font-size: 0.7rem; }
 
+/* ================================================================
+   SESSION 6 — Pulse (time-pressure / Mavis-Beacon-style drill)
+   ================================================================ */
+.pulse-screen { max-width: 1100px; margin: 0 auto; }
+
+.pulse-intro-banner {
+  padding: 1.25rem 1.4rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--red); border-radius: var(--radius-lg);
+  position: relative; overflow: hidden;
+}
+.pulse-intro-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at top right, rgba(239,83,80,0.18), transparent 60%);
+  pointer-events: none;
+}
+.pulse-intro-banner h2 {
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 900;
+  position: relative;
+}
+.pulse-intro-banner p { color: var(--text-dim); position: relative; }
+
+.tier-grid {
+  display: grid; gap: 0.85rem;
+  grid-template-columns: 1fr;
+  margin-bottom: 1rem;
+}
+@media (min-width: 700px) { .tier-grid { grid-template-columns: repeat(3, 1fr); } }
+.tier-card {
+  position: relative;
+  padding: 1.2rem 1rem; min-height: 200px;
+  background: var(--bg-card); border: 2px solid var(--border);
+  border-radius: var(--radius-lg); cursor: pointer;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  text-align: left;
+}
+.tier-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.tier-card[data-tier="easy"]:hover   { border-color: var(--accent); }
+.tier-card[data-tier="medium"]:hover { border-color: var(--gold); }
+.tier-card[data-tier="hard"]:hover   { border-color: var(--red); }
+.tier-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tier-card-tier {
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.15rem 0.5rem; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text-mute);
+}
+.tier-card[data-tier="easy"]   .tier-card-tier { color: var(--accent); border-color: var(--accent); }
+.tier-card[data-tier="medium"] .tier-card-tier { color: var(--gold);   border-color: var(--gold); }
+.tier-card[data-tier="hard"]   .tier-card-tier { color: var(--red);    border-color: var(--red); }
+.tier-card h3 {
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 800;
+}
+.tier-card p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.45; flex: 1; }
+.tier-card-best {
+  font-size: 0.75rem; color: var(--text-mute); font-weight: 600;
+  border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.25rem;
+}
+.tier-card-best strong { color: var(--text); }
+
+/* Warm-up callout */
+.warmup-callout {
+  display: flex; align-items: center; gap: 0.65rem;
+  padding: 0.75rem 1rem; margin-bottom: 1rem;
+  background: var(--gold-soft); border: 1px solid var(--gold); border-radius: var(--radius);
+  font-size: 0.88rem;
+}
+.warmup-callout .ico { font-size: 1.4rem; }
+.warmup-callout strong { color: var(--gold); }
+
+/* HUD strip used by all 3 tiers */
+.pulse-hud {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 0.75rem;
+  padding: 0.65rem 1rem; margin-bottom: 0.75rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); align-items: center;
+}
+.pulse-hud-left { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; }
+.pulse-stat {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-weight: 800; font-size: 0.92rem;
+}
+.pulse-stat-label {
+  font-size: 0.65rem; color: var(--text-mute); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.15rem;
+}
+.pulse-stat.lives { color: var(--red); }
+.pulse-stat.score { color: var(--accent); }
+.pulse-stat.streak { color: var(--gold); }
+.pulse-hud-timer {
+  height: 8px; background: var(--bg-elev-2); border-radius: 999px;
+  overflow: hidden; min-width: 80px;
+}
+.pulse-hud-timer-fill {
+  height: 100%; background: linear-gradient(90deg, var(--green), var(--accent));
+  transition: width 0.1s linear;
+}
+.pulse-hud-timer-fill.warn { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+.pulse-hud-timer-fill.danger { background: linear-gradient(90deg, var(--red), var(--orange)); }
+.pulse-hud-exit {
+  font-size: 0.78rem; color: var(--text-mute); cursor: pointer;
+  background: none; border: none; font-weight: 700;
+}
+.pulse-hud-exit:hover { color: var(--red); }
+
+/* Target slot indicator (which framework role you need to grab) */
+.pulse-target {
+  padding: 0.85rem 1.1rem; margin-bottom: 0.75rem;
+  background: linear-gradient(90deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 1px solid var(--accent); border-radius: var(--radius);
+  text-align: center;
+}
+.pulse-target-label {
+  font-size: 0.7rem; color: var(--text-mute); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.2rem;
+}
+.pulse-target-role {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 900;
+  color: var(--accent); text-transform: capitalize;
+}
+.pulse-target-detail { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+/* CASCADE — the scrolling stream */
+.cascade-stage {
+  position: relative;
+  height: 280px; overflow: hidden;
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); margin-bottom: 0.75rem;
+}
+@media (max-width: 520px) { .cascade-stage { height: 220px; } }
+.cascade-lane {
+  position: absolute; left: 0; right: 0; height: 60px;
+  display: flex; align-items: center;
+  border-bottom: 1px dashed var(--border);
+}
+.cascade-lane:last-child { border-bottom: none; }
+.cascade-lane[data-lane="0"] { top: 0; }
+.cascade-lane[data-lane="1"] { top: 70px; }
+.cascade-lane[data-lane="2"] { top: 140px; }
+.cascade-lane[data-lane="3"] { top: 210px; }
+
+@keyframes cascade-slide {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(-110%); }
+}
+.cascade-phrase {
+  position: absolute; left: 100%;
+  padding: 0.45rem 0.75rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem; line-height: 1.3;
+  max-width: 280px; cursor: pointer; user-select: none;
+  animation-name: cascade-slide; animation-timing-function: linear; animation-fill-mode: forwards;
+  white-space: normal;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.cascade-phrase:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
+.cascade-phrase[data-role="hook"]     { border-left-color: var(--pink); }
+.cascade-phrase[data-role="point"]    { border-left-color: var(--accent); }
+.cascade-phrase[data-role="reason"]   { border-left-color: var(--orange); }
+.cascade-phrase[data-role="example"]  { border-left-color: var(--gold); }
+.cascade-phrase[data-role="restated"] { border-left-color: var(--green); }
+.cascade-phrase[data-role="bridge"]   { border-left-color: var(--purple); }
+.cascade-phrase[data-role="closer"]   { border-left-color: var(--red); }
+.cascade-phrase[data-role="filler"]   { border-left-color: var(--text-mute); border-left-style: dashed; }
+@media (max-width: 520px) {
+  .cascade-phrase { font-size: 0.74rem; max-width: 220px; padding: 0.35rem 0.55rem; }
+}
+
+/* Feedback flashes */
+@keyframes flash-hit {
+  0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.7), 0 2px 6px rgba(0,0,0,0.25); transform: scale(1); }
+  50%  { box-shadow: 0 0 0 16px rgba(74,222,128,0), 0 2px 6px rgba(0,0,0,0.25); transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes flash-miss {
+  0%   { box-shadow: 0 0 0 0 rgba(239,83,80,0.7), 0 2px 6px rgba(0,0,0,0.25); transform: scale(1); }
+  50%  { box-shadow: 0 0 0 16px rgba(239,83,80,0), 0 2px 6px rgba(0,0,0,0.25); transform: scale(0.92); }
+  100% { transform: scale(1); opacity: 0; }
+}
+.cascade-phrase.hit  { animation: flash-hit 0.4s ease forwards; pointer-events: none; }
+.cascade-phrase.miss { animation: flash-miss 0.4s ease forwards; pointer-events: none; }
+
+/* Floating delta indicator */
+@keyframes float-delta {
+  0%   { transform: translate(-50%, 0) scale(0.7); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(-50%, -60px) scale(1.4); opacity: 0; }
+}
+.pulse-delta {
+  position: absolute; left: 50%; top: 50%;
+  font-family: var(--font-display); font-weight: 900; font-size: 1.6rem;
+  pointer-events: none; z-index: 5;
+  animation: float-delta 0.8s ease-out forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.pulse-delta.gain { color: var(--green); }
+.pulse-delta.loss { color: var(--red); }
+.pulse-delta.small { font-size: 1.1rem; }
+
+/* SURVIVAL — 4 options + timer bar */
+.survival-options {
+  display: grid; gap: 0.6rem; margin-bottom: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+}
+@media (min-width: 700px) { .survival-options { grid-template-columns: 1fr 1fr; } }
+.survival-option {
+  padding: 0.85rem 1rem; min-height: 80px;
+  background: var(--bg-card); border: 2px solid var(--border);
+  border-left-width: 4px;
+  border-radius: var(--radius); cursor: pointer;
+  font-size: 0.88rem; line-height: 1.4; text-align: left;
+  user-select: none;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.survival-option:hover { transform: translateY(-2px); border-color: var(--accent); }
+.survival-option[data-role="hook"]     { border-left-color: var(--pink); }
+.survival-option[data-role="point"]    { border-left-color: var(--accent); }
+.survival-option[data-role="reason"]   { border-left-color: var(--orange); }
+.survival-option[data-role="example"]  { border-left-color: var(--gold); }
+.survival-option[data-role="restated"] { border-left-color: var(--green); }
+.survival-option[data-role="bridge"]   { border-left-color: var(--purple); }
+.survival-option[data-role="closer"]   { border-left-color: var(--red); }
+.survival-option[data-role="filler"]   { border-left-color: var(--text-mute); border-left-style: dashed; }
+.survival-option.flash-correct { border-color: var(--green); background: var(--green-soft); }
+.survival-option.flash-wrong   { border-color: var(--red);   background: var(--red-soft); }
+.survival-big-timer {
+  height: 18px; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  overflow: hidden; margin-bottom: 0.75rem; position: relative;
+}
+.survival-big-timer-fill {
+  height: 100%; background: linear-gradient(90deg, var(--green), var(--accent));
+  transition: width 0.08s linear;
+}
+.survival-big-timer-fill.warn { background: linear-gradient(90deg, var(--orange), var(--gold)); }
+.survival-big-timer-fill.danger { background: linear-gradient(90deg, var(--red), var(--orange)); }
+
+/* HOT SEAT — arc-building progress bar at top */
+.hotseat-scenario {
+  padding: 0.85rem 1.1rem; margin-bottom: 0.75rem;
+  background: var(--bg-card); border: 1px solid var(--red); border-radius: var(--radius);
+  font-style: italic; font-size: 0.92rem; line-height: 1.5;
+}
+.hotseat-arc {
+  display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;
+}
+.arc-slot {
+  flex: 1; min-width: 0;
+  padding: 0.5rem 0.65rem;
+  background: var(--bg-card); border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center; font-size: 0.78rem;
+}
+.arc-slot.current { border-color: var(--accent); border-style: solid; background: var(--accent-soft); }
+.arc-slot.filled  { border-color: var(--green);  border-style: solid; background: var(--green-soft); }
+.arc-slot .arc-role {
+  font-size: 0.6rem; color: var(--text-mute); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.15rem;
+}
+.arc-slot.current .arc-role { color: var(--accent); }
+.arc-slot.filled .arc-role  { color: var(--green); }
+.arc-slot .arc-text {
+  color: var(--text); font-weight: 600;
+}
+
+/* Pulse result screen */
+.pulse-result {
+  max-width: 800px; margin: 0 auto;
+}
+.pulse-result-hero {
+  padding: 1.5rem 1.4rem; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
+  border: 2px solid var(--accent); border-radius: var(--radius-lg);
+  text-align: center;
+  animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.pulse-result-hero.lose { border-color: var(--orange); }
+.pulse-result-hero h2 {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 900;
+  margin-bottom: 0.4rem;
+}
+.pulse-result-stat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+  max-width: 500px; margin: 0.85rem auto;
+}
+.pulse-result-stat {
+  padding: 0.6rem 0.4rem; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.pulse-result-stat-label {
+  font-size: 0.6rem; color: var(--text-mute); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.pulse-result-stat-value {
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; margin-top: 0.1rem;
+}
+
+.mastery-summary {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.mastery-summary h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+}
+.mastery-row {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed var(--border); font-size: 0.85rem;
+}
+.mastery-row:last-child { border-bottom: none; }
+.mastery-row .phrase-text { flex: 1; min-width: 0; }
+.mastery-row .delta {
+  font-weight: 800; font-family: var(--font-display);
+  white-space: nowrap;
+}
+.mastery-row .delta.up   { color: var(--green); }
+.mastery-row .delta.down { color: var(--red); }
+.mastery-pip { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--border); margin: 0 1px; }
+.mastery-pip.filled { background: var(--accent); }
+.mastery-pip.full   { background: var(--gold); box-shadow: 0 0 6px var(--gold-soft); }
+
 /* End-of-wave / end-of-run screens */
 .tower-result {
   max-width: 700px; margin: 0 auto; padding: 1.5rem 1.4rem;
@@ -1765,6 +2096,11 @@ main { flex: 1; }
     <!-- TOWER DEFENSE -->
     <section id="view-tower" class="view">
       <div id="tower-content"></div>
+    </section>
+
+    <!-- PULSE (time-pressure drill) -->
+    <section id="view-pulse" class="view">
+      <div id="pulse-content"></div>
     </section>
 
     <!-- SETTINGS -->
@@ -2096,6 +2432,897 @@ function buildTilePool(puzzle, dayKey) {
   const shuffledOthers = shuffleWithRng(allOthers, rng);
   const decoys = shuffledOthers.slice(0, WORDLE_TILE_POOL_SIZE - correctIds.length);
   return shuffleWithRng([...correctIds, ...decoys], rng);
+}
+
+// ================================================================
+// SESSION 6 — PULSE (time-pressure drill, Mavis-Beacon-style)
+// Three difficulty tiers in one mode:
+//   - Cascade  (Easy)    : phrases scroll horizontally; tap correct before they scroll off
+//   - Survival (Medium)  : 5-second 4-option choice that chains, timer shrinks every 5 in a row
+//   - Hot Seat (Hard)    : build a full framework arc against a 30s clock from a scrolling stream
+//
+// Retention layer (runs under all tiers):
+//   - state.phraseMastery: { phraseId: level (0-5) } — correct under pressure ups, wrong downs
+//   - state.phraseMisses:  { phraseId: 'YYYY-MM-DD' } — phrases missed today
+//   - "Yesterday's misses" warm-up: first 60s of any session is weighted toward phrases you
+//     missed yesterday (or earlier, if you skipped a day)
+// ================================================================
+
+// --------- State ---------
+if (!state.pulse) {
+  state.pulse = {
+    phraseMastery: {},     // phraseId -> 0..5
+    phraseMisses:  {},     // phraseId -> 'YYYY-MM-DD' (last miss date)
+    bestCascadeScore: 0,
+    bestSurvivalStreak: 0,
+    bestHotSeatTime: null, // shortest completion time, seconds (lower = better)
+    totalRuns: 0
+  };
+}
+
+let _pulse = null;  // transient — current session
+
+// Tear down all timers/intervals on exit (called from multiple places)
+function tearDownPulse() {
+  if (!_pulse) return;
+  if (_pulse.intervals) _pulse.intervals.forEach(id => clearInterval(id));
+  if (_pulse.timeouts)  _pulse.timeouts.forEach(id => clearTimeout(id));
+  _pulse.intervals = [];
+  _pulse.timeouts = [];
+}
+
+// --------- Retention helpers ---------
+function recordHit(phraseId) {
+  const cur = state.pulse.phraseMastery[phraseId] || 0;
+  state.pulse.phraseMastery[phraseId] = Math.min(5, cur + 1);
+}
+function recordMiss(phraseId) {
+  const cur = state.pulse.phraseMastery[phraseId] || 0;
+  state.pulse.phraseMastery[phraseId] = Math.max(0, cur - 1);
+  state.pulse.phraseMisses[phraseId] = todayKey();
+}
+function masteryLevel(phraseId) {
+  return state.pulse.phraseMastery[phraseId] || 0;
+}
+
+// Returns "yesterday's" (and earlier-unmastered) miss IDs — phrases missed before today
+// that still have mastery < 4.
+function yesterdayMissIds() {
+  const today = todayKey();
+  const out = [];
+  for (const [id, date] of Object.entries(state.pulse.phraseMisses)) {
+    if (date === today) continue;       // already drilled today
+    if (masteryLevel(id) >= 4) continue; // already learned
+    out.push(id);
+  }
+  return out;
+}
+
+// Weighted pool selection: low-mastery phrases over-represented.
+// `roleFilter` (optional): only return phrases of that role.
+// `count`: how many distinct IDs to pull.
+// `boostIds`: array of phrase IDs to over-represent further (yesterday's misses).
+function weightedPhrasePool(count, roleFilter, boostIds) {
+  const candidates = PHRASES.filter(p => !roleFilter || p.role === roleFilter);
+  const boost = new Set(boostIds || []);
+  // Weight: base 1 + (5 - mastery) + (boosted ? 3 : 0)
+  const pool = [];
+  candidates.forEach(p => {
+    const w = 1 + (5 - masteryLevel(p.id)) + (boost.has(p.id) ? 3 : 0);
+    for (let i = 0; i < w; i++) pool.push(p.id);
+  });
+  // Sample without replacement
+  const out = [];
+  const seen = new Set();
+  while (out.length < count && pool.length > 0) {
+    const idx = Math.floor(Math.random() * pool.length);
+    const id = pool[idx];
+    if (!seen.has(id)) { seen.add(id); out.push(id); }
+    pool.splice(idx, 1);
+  }
+  return out;
+}
+
+// --------- Entry / start ---------
+function startPulse(tier) {
+  SFX.click();
+  tearDownPulse();
+  state.pulse.totalRuns++;
+  const warmupIds = yesterdayMissIds();
+  _pulse = {
+    tier,                  // 'easy' | 'medium' | 'hard'
+    score: 0,
+    lives: 3,
+    streak: 0,
+    longestStreak: 0,
+    correct: 0,
+    wrong: 0,
+    missed: 0,
+    elapsed: 0,
+    over: false,
+    masteryDelta: {},      // { phraseId: { before, after, hits, misses } }
+    intervals: [],
+    timeouts: [],
+    warmupIds            // for boosted spawning
+  };
+  if (tier === 'easy')    startCascade();
+  if (tier === 'medium')  startSurvival();
+  if (tier === 'hard')    startHotSeat();
+  renderPulse();
+}
+
+function noteMasteryDelta(phraseId, kind) {
+  const md = _pulse.masteryDelta[phraseId] || { before: masteryLevel(phraseId), after: null, hits: 0, misses: 0 };
+  if (kind === 'hit')  md.hits++;
+  if (kind === 'miss') md.misses++;
+  md.after = masteryLevel(phraseId);
+  _pulse.masteryDelta[phraseId] = md;
+}
+
+// ================================================================
+// TIER 1: CASCADE (Easy)
+// Round = 60 seconds. A target framework role rotates every 8 seconds.
+// Phrases of all roles scroll right-to-left. Tap a phrase matching
+// the current target = +score + mastery; wrong role = -1 life;
+// filler = -1 life; off-screen correct phrase = +missed counter.
+// ================================================================
+function startCascade() {
+  _pulse.timeLeft = 60;
+  _pulse.targetRole = pickCascadeTarget();
+  _pulse.targetTimer = 0;       // seconds since the current target appeared
+  _pulse.activePhrases = [];    // { id, role, el, spawnAt }
+  _pulse.spawnInterval = 1200;  // ms between spawns; will decrease
+  _pulse.phraseDuration = 6500; // ms a phrase takes to cross
+  _pulse.spawnSince = 0;
+  _pulse.tickAccum = 0;
+
+  // Master tick (100ms): countdown, target rotation, spawn cadence escalation
+  const tickId = setInterval(() => {
+    if (!_pulse || _pulse.over) return;
+    _pulse.timeLeft -= 0.1;
+    _pulse.targetTimer += 0.1;
+    _pulse.elapsed += 0.1;
+    _pulse.tickAccum += 100;
+
+    // Rotate target every 8 seconds
+    if (_pulse.targetTimer >= 8) {
+      _pulse.targetRole = pickCascadeTarget(_pulse.targetRole);
+      _pulse.targetTimer = 0;
+      // Update the target indicator without full re-render
+      const el = document.querySelector('.pulse-target-role');
+      if (el) el.textContent = _pulse.targetRole;
+      const det = document.querySelector('.pulse-target-detail');
+      if (det) det.textContent = roleHint(_pulse.targetRole);
+    }
+
+    // Escalate difficulty over time
+    if (_pulse.elapsed > 20 && _pulse.spawnInterval > 900)  _pulse.spawnInterval = 900;
+    if (_pulse.elapsed > 40 && _pulse.spawnInterval > 700)  _pulse.spawnInterval = 700;
+    if (_pulse.elapsed > 50 && _pulse.phraseDuration > 5000) _pulse.phraseDuration = 5000;
+
+    // Update HUD timer bar
+    const bar = document.querySelector('.pulse-hud-timer-fill');
+    if (bar) {
+      const pct = Math.max(0, (_pulse.timeLeft / 60) * 100);
+      bar.style.width = pct + '%';
+      bar.classList.toggle('warn', pct < 50 && pct >= 20);
+      bar.classList.toggle('danger', pct < 20);
+    }
+
+    // Time up?
+    if (_pulse.timeLeft <= 0) {
+      finishPulse(true);
+      return;
+    }
+  }, 100);
+  _pulse.intervals.push(tickId);
+
+  // Spawn loop — recursive with dynamic interval
+  function scheduleNextSpawn() {
+    if (!_pulse || _pulse.over || _pulse.tier !== 'easy') return;
+    const t = setTimeout(() => {
+      spawnCascadePhrase();
+      scheduleNextSpawn();
+    }, _pulse.spawnInterval);
+    _pulse.timeouts.push(t);
+  }
+  scheduleNextSpawn();
+}
+
+function pickCascadeTarget(exclude) {
+  const pool = ['point','reason','example','restated','hook','bridge','closer'].filter(r => r !== exclude);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function roleHint(role) {
+  const hints = {
+    point: 'A declarative position',
+    reason: 'A "because" statement',
+    example: 'A concrete instance, ideally with numbers',
+    restated: 'Restates the point with conviction',
+    hook: 'An opening grabber',
+    bridge: 'A transitional connector',
+    closer: 'A call to action or summary'
+  };
+  return hints[role] || '';
+}
+
+let _cascadeSpawnId = 0;
+function spawnCascadePhrase() {
+  if (!_pulse || _pulse.over) return;
+  const stage = document.querySelector('.cascade-stage');
+  if (!stage) return;
+
+  // 70% chance to spawn a phrase that COULD match the current target (any role from a weighted pool);
+  // 30% chance to throw in a filler trap.
+  const useFiller = Math.random() < 0.30;
+  let phraseId;
+  if (useFiller) {
+    const fillers = weightedPhrasePool(1, 'filler', _pulse.warmupIds);
+    phraseId = fillers[0];
+  } else {
+    // Pick from any non-filler role, weighted by mastery
+    const all = weightedPhrasePool(3, null, _pulse.warmupIds).filter(id => phraseById(id).role !== 'filler');
+    phraseId = all[Math.floor(Math.random() * all.length)] || PHRASES[0].id;
+  }
+  if (!phraseId) return;
+  const phrase = phraseById(phraseId);
+  if (!phrase) return;
+
+  const lane = Math.floor(Math.random() * 4);
+  const spawnId = ++_cascadeSpawnId;
+  const el = document.createElement('button');
+  el.className = 'cascade-phrase';
+  el.dataset.role = phrase.role;
+  el.dataset.phraseId = phraseId;
+  el.dataset.spawnId = String(spawnId);
+  el.textContent = phrase.text;
+  el.style.animationDuration = _pulse.phraseDuration + 'ms';
+  // Slight random vertical jitter within the lane
+  el.style.top = (Math.random() * 16) + 'px';
+  el.onclick = () => onCascadeTap(spawnId);
+
+  const laneEl = stage.querySelector(`.cascade-lane[data-lane="${lane}"]`);
+  if (!laneEl) return;
+  laneEl.appendChild(el);
+
+  // Track active
+  _pulse.activePhrases.push({ id: phraseId, role: phrase.role, spawnId, el, handled: false });
+
+  // Remove on animation end (off-screen)
+  el.addEventListener('animationend', () => {
+    if (!el.parentNode) return;
+    const entry = _pulse.activePhrases.find(p => p.spawnId === spawnId);
+    if (entry && !entry.handled) {
+      // Off-screen: if this was a CORRECT target role, that's a miss (lose life + record miss)
+      if (entry.role === _pulse.targetRole) {
+        _pulse.missed++;
+        _pulse.lives = Math.max(0, _pulse.lives - 1);
+        recordMiss(entry.id);
+        noteMasteryDelta(entry.id, 'miss');
+        _pulse.streak = 0;
+        floatDelta(_pulse.targetEl(), '-1 ❤', 'loss');
+        SFX.miss();
+        if (_pulse.lives <= 0) { finishPulse(false); return; }
+        refreshPulseHUD();
+      }
+      entry.handled = true;
+    }
+    try { el.remove(); } catch (e) {}
+    _pulse.activePhrases = _pulse.activePhrases.filter(p => p.spawnId !== spawnId);
+  });
+}
+
+function onCascadeTap(spawnId) {
+  if (!_pulse || _pulse.over) return;
+  // Hot Seat tier uses its own tap logic (arc-aware)
+  if (_pulse.tier === 'hard') { return onHotSeatTap(spawnId); }
+  const entry = _pulse.activePhrases.find(p => p.spawnId === spawnId);
+  if (!entry || entry.handled) return;
+  entry.handled = true;
+  const isCorrect = entry.role === _pulse.targetRole;
+  const isFiller  = entry.role === 'filler';
+
+  if (isCorrect) {
+    _pulse.score += 10 + Math.floor(_pulse.streak * 1.5);
+    _pulse.streak++;
+    _pulse.longestStreak = Math.max(_pulse.longestStreak, _pulse.streak);
+    _pulse.correct++;
+    recordHit(entry.id);
+    noteMasteryDelta(entry.id, 'hit');
+    entry.el.classList.add('hit');
+    floatDelta(entry.el.parentNode, `+${10 + Math.floor(_pulse.streak * 1.5)}`, 'gain', true);
+    SFX.correct();
+  } else {
+    _pulse.wrong++;
+    _pulse.lives = Math.max(0, _pulse.lives - 1);
+    _pulse.streak = 0;
+    if (!isFiller) {
+      // Tapped a wrong-role real phrase: penalize THAT phrase's mastery a bit
+      recordMiss(entry.id);
+      noteMasteryDelta(entry.id, 'miss');
+    }
+    entry.el.classList.add('miss');
+    floatDelta(entry.el.parentNode, isFiller ? '−1 ❤  buzzword!' : '−1 ❤', 'loss', true);
+    SFX.miss();
+    if (_pulse.lives <= 0) { finishPulse(false); return; }
+  }
+  refreshPulseHUD();
+}
+
+// Get the target indicator element to anchor float-delta animations (fallback to stage)
+function pulseTargetEl() {
+  return document.querySelector('.pulse-target') || document.querySelector('.cascade-stage');
+}
+// Add helper to _pulse so it's available
+function attachPulseHelpers() {
+  if (!_pulse) return;
+  _pulse.targetEl = pulseTargetEl;
+}
+
+function floatDelta(parent, text, kind, small) {
+  if (!parent) return;
+  if (state.settings && state.settings.animations === false) return;
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+  const el = document.createElement('div');
+  el.className = 'pulse-delta ' + (kind || '') + (small ? ' small' : '');
+  el.textContent = text;
+  parent.appendChild(el);
+  setTimeout(() => { try { el.remove(); } catch (e) {} }, 800);
+}
+
+function refreshPulseHUD() {
+  const sEl = document.getElementById('pulse-score');
+  if (sEl) sEl.textContent = _pulse.score;
+  const lEl = document.getElementById('pulse-lives');
+  if (lEl) lEl.textContent = '❤️'.repeat(_pulse.lives) + '🤍'.repeat(3 - _pulse.lives);
+  const stEl = document.getElementById('pulse-streak');
+  if (stEl) stEl.textContent = _pulse.streak;
+}
+
+// ================================================================
+// TIER 2: SURVIVAL (Medium)
+// 5-second slot with 4 phrase options. Pick correct → next slot.
+// Wrong or timeout = run over. Every 5 correct, timer shrinks by 0.4s.
+// ================================================================
+function startSurvival() {
+  _pulse.timePerSlot = 5;     // seconds
+  _pulse.minTimePerSlot = 1.6;
+  _pulse.slotTimeLeft = _pulse.timePerSlot;
+  _pulse.lives = 1;            // survival is one-strike
+  rollSurvivalSlot();
+
+  const tickId = setInterval(() => {
+    if (!_pulse || _pulse.over) return;
+    _pulse.slotTimeLeft -= 0.05;
+    _pulse.elapsed += 0.05;
+    if (_pulse.slotTimeLeft <= 0) {
+      // Timeout — game over
+      _pulse.wrong++;
+      _pulse.lives = 0;
+      // Record the correct phrase as a miss
+      if (_pulse.currentSurvivalCorrect) {
+        recordMiss(_pulse.currentSurvivalCorrect);
+        noteMasteryDelta(_pulse.currentSurvivalCorrect, 'miss');
+      }
+      SFX.miss();
+      finishPulse(false);
+      return;
+    }
+    const bar = document.querySelector('.survival-big-timer-fill');
+    if (bar) {
+      const pct = Math.max(0, (_pulse.slotTimeLeft / _pulse.timePerSlot) * 100);
+      bar.style.width = pct + '%';
+      bar.classList.toggle('warn', pct < 50 && pct >= 25);
+      bar.classList.toggle('danger', pct < 25);
+    }
+  }, 50);
+  _pulse.intervals.push(tickId);
+}
+
+function rollSurvivalSlot() {
+  // Pick a target role and a pool of 4 phrases (1 correct + 3 distractors)
+  const targetRole = pickCascadeTarget(_pulse.targetRole);
+  _pulse.targetRole = targetRole;
+  const correctPool = weightedPhrasePool(1, targetRole, _pulse.warmupIds);
+  const correct = correctPool[0];
+  // 3 distractors from other roles (mix of filler + wrong-role)
+  const distractors = [];
+  while (distractors.length < 3) {
+    const useFiller = Math.random() < 0.30;
+    const pool = useFiller
+      ? weightedPhrasePool(2, 'filler', _pulse.warmupIds)
+      : PHRASES.filter(p => p.role !== targetRole && p.role !== 'filler').map(p => p.id);
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pick && !distractors.includes(pick) && pick !== correct) distractors.push(pick);
+  }
+  const options = shuffleArr([correct, ...distractors]);
+  _pulse.currentSurvivalOptions = options;
+  _pulse.currentSurvivalCorrect = correct;
+  _pulse.slotTimeLeft = _pulse.timePerSlot;
+  renderPulse();
+}
+
+function survivalPick(phraseId) {
+  if (!_pulse || _pulse.over) return;
+  const correct = _pulse.currentSurvivalCorrect;
+  if (phraseId === correct) {
+    _pulse.score += 15 + Math.floor(_pulse.streak * 2);
+    _pulse.streak++;
+    _pulse.longestStreak = Math.max(_pulse.longestStreak, _pulse.streak);
+    _pulse.correct++;
+    recordHit(phraseId);
+    noteMasteryDelta(phraseId, 'hit');
+    SFX.correct();
+    // Every 5 correct, shrink timer
+    if (_pulse.streak > 0 && _pulse.streak % 5 === 0 && _pulse.timePerSlot > _pulse.minTimePerSlot) {
+      _pulse.timePerSlot = Math.max(_pulse.minTimePerSlot, _pulse.timePerSlot - 0.4);
+      showToast(`Speed up! ${_pulse.timePerSlot.toFixed(1)}s per slot.`, 'success');
+    }
+    // Visual flash
+    const el = document.querySelector(`.survival-option[data-id="${phraseId}"]`);
+    if (el) {
+      el.classList.add('flash-correct');
+      setTimeout(() => { rollSurvivalSlot(); }, 200);
+    } else {
+      rollSurvivalSlot();
+    }
+  } else {
+    _pulse.wrong++;
+    _pulse.lives = 0;
+    recordMiss(phraseId);
+    noteMasteryDelta(phraseId, 'miss');
+    // Also note the user MISSED the correct one (penalty soft)
+    if (correct) {
+      recordMiss(correct);
+      noteMasteryDelta(correct, 'miss');
+    }
+    SFX.lose();
+    const el = document.querySelector(`.survival-option[data-id="${phraseId}"]`);
+    if (el) el.classList.add('flash-wrong');
+    finishPulse(false);
+  }
+}
+
+// ================================================================
+// TIER 3: HOT SEAT (Hard)
+// Pick a random scenario (from COMPOSER_PROMPTS). Build the full
+// suggested arc by tapping scrolling phrases. 30s global timer.
+// Out of time OR arc complete = end.
+// ================================================================
+function startHotSeat() {
+  // Pick a prompt (scenario)
+  const promptPool = (typeof COMPOSER_PROMPTS !== 'undefined') ? COMPOSER_PROMPTS : null;
+  if (!promptPool || promptPool.length === 0) {
+    showToast('No scenarios available.', 'error');
+    _pulse = null;
+    navigate('pulse');
+    return;
+  }
+  _pulse.scenario = promptPool[Math.floor(Math.random() * promptPool.length)];
+  _pulse.arc = _pulse.scenario.suggested.slice(); // role array
+  _pulse.arcFilled = _pulse.arc.map(() => null);  // phraseId per slot
+  _pulse.arcIdx = 0;
+  _pulse.timeLeft = 35;     // a bit more generous than 30
+  _pulse.spawnInterval = 1000;
+  _pulse.phraseDuration = 5500;
+  _pulse.activePhrases = [];
+  _pulse.targetRole = _pulse.arc[0];
+  _pulse.lives = 3;
+
+  // Tick
+  const tickId = setInterval(() => {
+    if (!_pulse || _pulse.over) return;
+    _pulse.timeLeft -= 0.1;
+    _pulse.elapsed += 0.1;
+    if (_pulse.timeLeft <= 0) {
+      finishPulse(_pulse.arcIdx === _pulse.arc.length);
+      return;
+    }
+    const bar = document.querySelector('.pulse-hud-timer-fill');
+    if (bar) {
+      const pct = Math.max(0, (_pulse.timeLeft / 35) * 100);
+      bar.style.width = pct + '%';
+      bar.classList.toggle('warn', pct < 50 && pct >= 20);
+      bar.classList.toggle('danger', pct < 20);
+    }
+  }, 100);
+  _pulse.intervals.push(tickId);
+
+  // Spawn cadence
+  function nextSpawn() {
+    if (!_pulse || _pulse.over || _pulse.tier !== 'hard') return;
+    const t = setTimeout(() => {
+      spawnCascadePhrase(); // reuse cascade spawner — same scrolling mechanic
+      nextSpawn();
+    }, _pulse.spawnInterval);
+    _pulse.timeouts.push(t);
+  }
+  nextSpawn();
+}
+
+// Hot Seat tap: phrase must match the CURRENT arc slot's role (not a global target).
+// Reached via the tier-check at the top of onCascadeTap.
+function onHotSeatTap(spawnId) {
+  if (!_pulse || _pulse.over) return;
+  const entry = _pulse.activePhrases.find(p => p.spawnId === spawnId);
+  if (!entry || entry.handled) return;
+  entry.handled = true;
+  const needRole = _pulse.arc[_pulse.arcIdx];
+  if (entry.role === needRole) {
+    _pulse.arcFilled[_pulse.arcIdx] = entry.id;
+    _pulse.arcIdx++;
+    _pulse.score += 20 + Math.floor(_pulse.streak * 2);
+    _pulse.streak++;
+    _pulse.longestStreak = Math.max(_pulse.longestStreak, _pulse.streak);
+    _pulse.correct++;
+    recordHit(entry.id);
+    noteMasteryDelta(entry.id, 'hit');
+    entry.el.classList.add('hit');
+    floatDelta(entry.el.parentNode, `+${20 + Math.floor(_pulse.streak * 2)}`, 'gain', true);
+    SFX.correct();
+    if (_pulse.arcIdx >= _pulse.arc.length) {
+      // Arc complete — WIN
+      _pulse.timeBonusEarned = Math.max(0, Math.round(_pulse.timeLeft * 5));
+      _pulse.score += _pulse.timeBonusEarned;
+      finishPulse(true);
+      return;
+    }
+    _pulse.targetRole = _pulse.arc[_pulse.arcIdx];
+    // Re-render the arc tracker via partial update — we can just trigger renderPulse for simplicity
+    renderPulse();
+  } else {
+    _pulse.wrong++;
+    _pulse.lives = Math.max(0, _pulse.lives - 1);
+    _pulse.streak = 0;
+    if (entry.role !== 'filler') {
+      recordMiss(entry.id);
+      noteMasteryDelta(entry.id, 'miss');
+    }
+    entry.el.classList.add('miss');
+    floatDelta(entry.el.parentNode, entry.role === 'filler' ? '−1 ❤  buzzword!' : '−1 ❤  wrong role', 'loss', true);
+    SFX.miss();
+    if (_pulse.lives <= 0) finishPulse(false);
+  }
+  refreshPulseHUD();
+}
+
+// ================================================================
+// FINISH + RESULT
+// ================================================================
+function finishPulse(won) {
+  if (!_pulse || _pulse.over) return;
+  _pulse.over = true;
+  _pulse.won = won;
+  tearDownPulse();
+
+  // Update bests
+  if (_pulse.tier === 'easy'   && _pulse.score > state.pulse.bestCascadeScore)   state.pulse.bestCascadeScore   = _pulse.score;
+  if (_pulse.tier === 'medium' && _pulse.longestStreak > state.pulse.bestSurvivalStreak) state.pulse.bestSurvivalStreak = _pulse.longestStreak;
+  if (_pulse.tier === 'hard' && won) {
+    const t = 35 - _pulse.timeLeft;
+    if (state.pulse.bestHotSeatTime == null || t < state.pulse.bestHotSeatTime) state.pulse.bestHotSeatTime = t;
+  }
+
+  // Rewards — generous to keep pulse appealing as a daily warm-up
+  let xpEarned, coinsEarned;
+  if (_pulse.tier === 'easy') {
+    xpEarned    = Math.round(20 + _pulse.score / 8);
+    coinsEarned = Math.round(5  + _pulse.score / 12);
+  } else if (_pulse.tier === 'medium') {
+    xpEarned    = Math.round(25 + _pulse.longestStreak * 4);
+    coinsEarned = Math.round(8  + _pulse.longestStreak * 2);
+  } else {
+    xpEarned    = won ? 80 + Math.round((35 - _pulse.timeLeft) * 2) : 20;
+    coinsEarned = won ? 40 + Math.round((35 - _pulse.timeLeft)) : 5;
+  }
+  _pulse.xpEarned = xpEarned;
+  _pulse.coinsEarned = coinsEarned;
+  state.xp += xpEarned;
+  state.coins += coinsEarned;
+  refreshHeaderStats();
+  saveState();
+
+  if (won && _pulse.tier === 'hard') SFX.win();
+  else if (_pulse.score > 0) SFX.correct();
+  else SFX.lose();
+
+  renderPulse();
+}
+
+// ================================================================
+// RENDERING
+// ================================================================
+function renderPulse() {
+  const container = document.getElementById('pulse-content');
+  if (!container) return;
+  if (!_pulse) {
+    container.innerHTML = renderPulseIntro();
+    return;
+  }
+  if (_pulse.over) {
+    container.innerHTML = renderPulseResult();
+    return;
+  }
+  if (_pulse.tier === 'easy')   { container.innerHTML = renderCascade(); attachPulseHelpers(); return; }
+  if (_pulse.tier === 'medium') { container.innerHTML = renderSurvival(); return; }
+  if (_pulse.tier === 'hard')   { container.innerHTML = renderHotSeat(); attachPulseHelpers(); return; }
+}
+
+function renderPulseIntro() {
+  const warmup = yesterdayMissIds();
+  const sp = state.pulse;
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+    <div class="pulse-screen">
+      <div class="pulse-intro-banner">
+        <h2>⚡ Pulse</h2>
+        <p>Time pressure builds the reflex. Three tiers train the same thing: spotting the right framework piece <strong>fast</strong>. Phrases you miss come back tomorrow at higher priority.</p>
+      </div>
+
+      ${warmup.length > 0 ? `
+        <div class="warmup-callout">
+          <span class="ico">🎯</span>
+          <div>
+            <strong>${warmup.length} phrase${warmup.length === 1 ? '' : 's'} from earlier sessions</strong> will be over-represented in your next round. Drill them to bank the win.
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="tier-grid">
+        <button class="tier-card" data-tier="easy" onclick="startPulse('easy')">
+          <div class="tier-card-head">
+            <span style="font-size:1.6rem">🌊</span>
+            <span class="tier-card-tier">Easy</span>
+          </div>
+          <h3>Cascade</h3>
+          <p>60 seconds. A framework role rotates every 8 seconds. Phrases scroll across — tap the ones matching the current role before they exit. Filler tiles cost a life.</p>
+          <div class="tier-card-best">Best score: <strong>${sp.bestCascadeScore}</strong></div>
+        </button>
+
+        <button class="tier-card" data-tier="medium" onclick="startPulse('medium')">
+          <div class="tier-card-head">
+            <span style="font-size:1.6rem">🔥</span>
+            <span class="tier-card-tier">Medium</span>
+          </div>
+          <h3>Survival</h3>
+          <p>One slot at a time. 5 seconds to pick the right phrase from 4. Every 5 in a row, the timer shrinks. One wrong pick or timeout = run over. How far can you go?</p>
+          <div class="tier-card-best">Best streak: <strong>${sp.bestSurvivalStreak}</strong></div>
+        </button>
+
+        <button class="tier-card" data-tier="hard" onclick="startPulse('hard')">
+          <div class="tier-card-head">
+            <span style="font-size:1.6rem">🎯</span>
+            <span class="tier-card-tier">Hard</span>
+          </div>
+          <h3>Hot Seat</h3>
+          <p>A real scenario flashes. You have ~35 seconds to build a full framework arc by tapping scrolling phrases — one per slot, in order. Closest analog to a real workplace moment.</p>
+          <div class="tier-card-best">Best completion: <strong>${sp.bestHotSeatTime == null ? '—' : sp.bestHotSeatTime.toFixed(1) + 's'}</strong></div>
+        </button>
+      </div>
+
+      <div class="side-card">
+        <h4>Your mastery</h4>
+        <p style="font-size:0.85rem;color:var(--text-dim);line-height:1.55">
+          Each phrase has a mastery level <strong>0–5</strong>. Correct grabs under pressure raise it; misses lower it. Low-mastery phrases appear more often. Hit 5 on a phrase and it stays sticky.
+        </p>
+        ${renderMasterySummaryRow()}
+      </div>
+    </div>
+  `;
+}
+
+function renderMasterySummaryRow() {
+  const total = PHRASES.length;
+  const levels = [0,0,0,0,0,0]; // counts at each level
+  PHRASES.forEach(p => { levels[masteryLevel(p.id)]++; });
+  return `
+    <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-top:0.6rem;font-size:0.78rem;color:var(--text-dim)">
+      ${levels.map((cnt, lvl) => `
+        <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:var(--bg-elev-2);border:1px solid var(--border)">
+          <strong style="color:${lvl === 5 ? 'var(--gold)' : lvl >= 3 ? 'var(--accent)' : 'var(--text)'}">L${lvl}</strong>: ${cnt}
+        </span>
+      `).join('')}
+      <span style="color:var(--text-mute);font-size:0.72rem;align-self:center">(${total} phrases total)</span>
+    </div>
+  `;
+}
+
+function renderPulseHUD() {
+  // Used by all 3 tiers; specific to current run
+  const livesIcons = '❤️'.repeat(_pulse.lives) + '🤍'.repeat(3 - _pulse.lives);
+  const timerPct = _pulse.timeLeft != null
+    ? Math.max(0, (_pulse.timeLeft / (_pulse.tier === 'hard' ? 35 : 60)) * 100)
+    : 100;
+  return `
+    <div class="pulse-hud">
+      <div class="pulse-hud-left">
+        <span class="pulse-stat score"><span class="pulse-stat-label">Score</span><span id="pulse-score">${_pulse.score}</span></span>
+        ${_pulse.tier !== 'medium' ? `<span class="pulse-stat lives"><span class="pulse-stat-label">Lives</span><span id="pulse-lives">${livesIcons}</span></span>` : ''}
+        <span class="pulse-stat streak"><span class="pulse-stat-label">Streak</span><span id="pulse-streak">${_pulse.streak}</span></span>
+      </div>
+      <div class="pulse-hud-timer"><div class="pulse-hud-timer-fill" style="width:${timerPct}%"></div></div>
+      <button class="pulse-hud-exit" onclick="exitPulse()">Exit ×</button>
+    </div>
+  `;
+}
+
+function renderCascade() {
+  return `
+    ${renderPulseHUD()}
+    <div class="pulse-target">
+      <div class="pulse-target-label">Tap phrases matching</div>
+      <div class="pulse-target-role">${_pulse.targetRole}</div>
+      <div class="pulse-target-detail">${roleHint(_pulse.targetRole)}</div>
+    </div>
+    <div class="cascade-stage">
+      <div class="cascade-lane" data-lane="0"></div>
+      <div class="cascade-lane" data-lane="1"></div>
+      <div class="cascade-lane" data-lane="2"></div>
+      <div class="cascade-lane" data-lane="3"></div>
+    </div>
+    <p style="font-size:0.78rem;color:var(--text-mute);text-align:center">
+      The target role rotates every 8 seconds. Filler-buzzword phrases cost a life.
+    </p>
+  `;
+}
+
+function renderSurvival() {
+  const options = (_pulse.currentSurvivalOptions || []).map(id => phraseById(id)).filter(Boolean);
+  return `
+    ${renderPulseHUD()}
+    <div class="pulse-target">
+      <div class="pulse-target-label">Pick the phrase that’s a</div>
+      <div class="pulse-target-role">${_pulse.targetRole}</div>
+      <div class="pulse-target-detail">${roleHint(_pulse.targetRole)}</div>
+    </div>
+    <div class="survival-big-timer"><div class="survival-big-timer-fill" style="width:100%"></div></div>
+    <div class="survival-options">
+      ${options.map(p => `
+        <button class="survival-option" data-role="${p.role}" data-id="${p.id}"
+                onclick="survivalPick('${p.id}')">
+          ${p.text}
+        </button>
+      `).join('')}
+    </div>
+    <p style="font-size:0.78rem;color:var(--text-mute);text-align:center">
+      Every 5 correct, the timer shrinks. One miss or timeout = run over.
+    </p>
+  `;
+}
+
+function renderHotSeat() {
+  const arc = _pulse.arc;
+  return `
+    ${renderPulseHUD()}
+    <div class="hotseat-scenario">
+      <strong style="color:var(--red);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Scenario · ${_pulse.scenario.framework}</strong>
+      <div style="margin-top:0.2rem">${_pulse.scenario.prompt}</div>
+    </div>
+    <div class="hotseat-arc">
+      ${arc.map((role, i) => {
+        const filled = _pulse.arcFilled[i];
+        const isCur  = i === _pulse.arcIdx;
+        const cls = filled ? 'filled' : (isCur ? 'current' : '');
+        const text = filled ? phraseById(filled).text.slice(0, 28) + '…' : (isCur ? '⬅ next' : '…');
+        return `
+          <div class="arc-slot ${cls}">
+            <div class="arc-role">${role}</div>
+            <div class="arc-text">${text}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div class="pulse-target">
+      <div class="pulse-target-label">Grab a</div>
+      <div class="pulse-target-role">${_pulse.targetRole}</div>
+      <div class="pulse-target-detail">${roleHint(_pulse.targetRole)}</div>
+    </div>
+    <div class="cascade-stage">
+      <div class="cascade-lane" data-lane="0"></div>
+      <div class="cascade-lane" data-lane="1"></div>
+      <div class="cascade-lane" data-lane="2"></div>
+      <div class="cascade-lane" data-lane="3"></div>
+    </div>
+    <p style="font-size:0.78rem;color:var(--text-mute);text-align:center">
+      Complete the arc before the timer hits 0. Wrong-role taps cost a life.
+    </p>
+  `;
+}
+
+function renderPulseResult() {
+  const won = _pulse.won;
+  const tier = _pulse.tier;
+  const tierName = tier === 'easy' ? 'Cascade' : tier === 'medium' ? 'Survival' : 'Hot Seat';
+  const heroCls = won ? '' : 'lose';
+
+  // Mastery delta summary — show top 5 changes by abs(delta), and which went up vs down
+  const deltas = Object.entries(_pulse.masteryDelta || {}).map(([id, d]) => {
+    const ph = phraseById(id);
+    if (!ph) return null;
+    const change = d.after - d.before;
+    return { id, ph, before: d.before, after: d.after, change, hits: d.hits, misses: d.misses };
+  }).filter(Boolean);
+  deltas.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+  const topDeltas = deltas.slice(0, 8);
+
+  let headline;
+  if (tier === 'easy') headline = won ? `Cascade survived — ${_pulse.score} points.` : `Knocked out at ${_pulse.score} points.`;
+  else if (tier === 'medium') headline = `${_pulse.longestStreak} in a row.`;
+  else headline = won ? `Arc completed in ${(35 - _pulse.timeLeft).toFixed(1)}s.` : 'Time ran out.';
+
+  return `
+    <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
+    <div class="pulse-result">
+
+      <div class="pulse-result-hero ${heroCls}">
+        <div style="font-size:2.4rem;line-height:1">${tier === 'easy' ? '🌊' : tier === 'medium' ? '🔥' : '🎯'}</div>
+        <h2>${headline}</h2>
+        <div style="color:var(--text-dim);font-size:0.9rem">Pulse · ${tierName}</div>
+        <div class="pulse-result-stat-grid">
+          <div class="pulse-result-stat">
+            <div class="pulse-result-stat-label">Correct</div>
+            <div class="pulse-result-stat-value" style="color:var(--green)">${_pulse.correct}</div>
+          </div>
+          <div class="pulse-result-stat">
+            <div class="pulse-result-stat-label">Wrong / Missed</div>
+            <div class="pulse-result-stat-value" style="color:var(--red)">${_pulse.wrong + _pulse.missed}</div>
+          </div>
+          <div class="pulse-result-stat">
+            <div class="pulse-result-stat-label">Best streak</div>
+            <div class="pulse-result-stat-value" style="color:var(--gold)">${_pulse.longestStreak}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:0.85rem">
+          <span class="reward-pill xp">+${_pulse.xpEarned} XP</span>
+          <span class="reward-pill coins">+${_pulse.coinsEarned} 🪙</span>
+          ${tier === 'hard' && won && _pulse.timeBonusEarned > 0 ? `<span class="reward-pill heal">⏱ +${_pulse.timeBonusEarned} time bonus</span>` : ''}
+        </div>
+      </div>
+
+      ${topDeltas.length > 0 ? `
+        <div class="mastery-summary">
+          <h3>Mastery changes</h3>
+          ${topDeltas.map(d => {
+            const pips = Array.from({length: 5}, (_, i) => {
+              if (i < d.after) {
+                return `<span class="mastery-pip ${d.after === 5 ? 'full' : 'filled'}"></span>`;
+              }
+              return '<span class="mastery-pip"></span>';
+            }).join('');
+            const deltaClass = d.change > 0 ? 'up' : d.change < 0 ? 'down' : '';
+            const deltaText = d.change > 0 ? `+${d.change}` : d.change < 0 ? `${d.change}` : '±0';
+            return `
+              <div class="mastery-row">
+                <span style="display:inline-block;width:50px">${pips}</span>
+                <span class="phrase-text" title="${d.ph.text}">${d.ph.text.slice(0, 70)}${d.ph.text.length > 70 ? '…' : ''}</span>
+                <span class="delta ${deltaClass}">${deltaText}</span>
+              </div>
+            `;
+          }).join('')}
+          <p style="font-size:0.75rem;color:var(--text-mute);margin-top:0.5rem">
+            Low-level phrases come up more often. Phrases at L5 stay sticky.
+          </p>
+        </div>
+      ` : ''}
+
+      <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">
+        <button class="btn btn-ghost" onclick="_pulse=null;navigate('home')">Home</button>
+        <button class="btn btn-secondary" onclick="startPulse('${tier}')">Run it back</button>
+        <button class="btn btn-primary" onclick="_pulse=null;renderPulse()">Pick another tier</button>
+      </div>
+
+    </div>
+  `;
+}
+
+function exitPulse() {
+  if (_pulse && !_pulse.over) {
+    if (!confirm('Exit this run? Progress and rewards will be lost.')) return;
+  }
+  tearDownPulse();
+  _pulse = null;
+  navigate('home');
 }
 
 // ================================================================
@@ -4758,6 +5985,7 @@ function navigate(view) {
   if (view === 'deck')  renderDeck();
   if (view === 'composer') renderComposer();
   if (view === 'tower') renderTower();
+  if (view === 'pulse') renderPulse();
   if (view === 'settings') renderSettings();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -4818,6 +6046,17 @@ function renderHome() {
       status: null,
       locked: false,
       onclick: () => navigate('tower')
+    },
+    {
+      key: 'pulse',
+      icon: '⚡',
+      title: 'Pulse',
+      tag: 'Reflex · 1–3 min',
+      accent: 'orange',
+      desc: 'Mavis-Beacon-style speed drill. Three tiers (Cascade / Survival / Hot Seat). Phrases scroll, the clock ticks, your weak phrases come back tomorrow.',
+      status: null,
+      locked: false,
+      onclick: () => navigate('pulse')
     }
   ];
 
@@ -4856,6 +6095,16 @@ function renderHome() {
     modes[3].status = `${td.runsCompleted} won · ${td.runsLost} lost · furthest wave ${td.bestWaveReached}/${TD_WAVES.length}`;
   } else {
     modes[3].status = `${TD_WAVES.length} waves · 3 towers · 2 spells`;
+  }
+
+  // Pulse status
+  const pl = state.pulse;
+  if (pl && pl.totalRuns > 0) {
+    const warmup = yesterdayMissIds();
+    const tail = warmup.length > 0 ? ` · 🎯 ${warmup.length} to drill` : '';
+    modes[4].status = `Best score ${pl.bestCascadeScore} · streak ${pl.bestSurvivalStreak}${tail}`;
+  } else {
+    modes[4].status = `Speed drill · 3 tiers · retention layer`;
   }
 
   const grid = document.getElementById('mode-grid');
@@ -5383,6 +6632,11 @@ window.onCellClick = onCellClick;
 window.nextTurn = nextTurn;
 window.nextWave = nextWave;
 window.exitTD = exitTD;
+// Session 6: pulse handlers
+window.startPulse = startPulse;
+window.exitPulse = exitPulse;
+window.survivalPick = survivalPick;
+window.renderPulse = renderPulse;
 </script>
 </body>
 </html>
