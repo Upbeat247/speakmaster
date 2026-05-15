@@ -1208,6 +1208,20 @@ main { flex: 1; }
 .role-pill[data-role="restated"] { color: var(--green);  border-color: var(--green); }
 .role-pill[data-role="closer"]   { color: var(--red);    border-color: var(--red); }
 .role-pill[data-role="filler"]   { color: var(--text-mute); border-style: dashed; }
+/* STAR */
+.role-pill[data-role="situation"] { color: var(--purple); border-color: var(--purple); }
+.role-pill[data-role="task"]      { color: var(--orange); border-color: var(--orange); }
+.role-pill[data-role="action"]    { color: var(--accent); border-color: var(--accent); }
+.role-pill[data-role="result"]    { color: var(--green);  border-color: var(--green); }
+/* AIDA */
+.role-pill[data-role="attention"] { color: var(--pink);   border-color: var(--pink); }
+.role-pill[data-role="interest"]  { color: var(--accent); border-color: var(--accent); }
+.role-pill[data-role="desire"]    { color: var(--gold);   border-color: var(--gold); }
+.role-pill[data-role="cta"]       { color: var(--red);    border-color: var(--red); }
+/* PSI */
+.role-pill[data-role="problem"]   { color: var(--red);    border-color: var(--red); }
+.role-pill[data-role="solution"]  { color: var(--accent); border-color: var(--accent); }
+.role-pill[data-role="impact"]    { color: var(--green);  border-color: var(--green); }
 .role-arrow { color: var(--text-mute); font-weight: 700; }
 
 /* Canvas */
@@ -1818,6 +1832,18 @@ main { flex: 1; }
 .cascade-phrase[data-role="bridge"]   { border-left-color: var(--purple); }
 .cascade-phrase[data-role="closer"]   { border-left-color: var(--red); }
 .cascade-phrase[data-role="filler"]   { border-left-color: var(--text-mute); border-left-style: dashed; }
+/* STAR / AIDA / PSI */
+.cascade-phrase[data-role="situation"] { border-left-color: var(--purple); }
+.cascade-phrase[data-role="task"]      { border-left-color: var(--orange); }
+.cascade-phrase[data-role="action"]    { border-left-color: var(--accent); }
+.cascade-phrase[data-role="result"]    { border-left-color: var(--green); }
+.cascade-phrase[data-role="attention"] { border-left-color: var(--pink); }
+.cascade-phrase[data-role="interest"]  { border-left-color: var(--accent); }
+.cascade-phrase[data-role="desire"]    { border-left-color: var(--gold); }
+.cascade-phrase[data-role="cta"]       { border-left-color: var(--red); }
+.cascade-phrase[data-role="problem"]   { border-left-color: var(--red); }
+.cascade-phrase[data-role="solution"]  { border-left-color: var(--accent); }
+.cascade-phrase[data-role="impact"]    { border-left-color: var(--green); }
 @media (max-width: 520px) {
   .cascade-phrase { font-size: 0.74rem; max-width: 220px; padding: 0.35rem 0.55rem; }
 }
@@ -1877,6 +1903,17 @@ main { flex: 1; }
 .survival-option[data-role="bridge"]   { border-left-color: var(--purple); }
 .survival-option[data-role="closer"]   { border-left-color: var(--red); }
 .survival-option[data-role="filler"]   { border-left-color: var(--text-mute); border-left-style: dashed; }
+.survival-option[data-role="situation"] { border-left-color: var(--purple); }
+.survival-option[data-role="task"]      { border-left-color: var(--orange); }
+.survival-option[data-role="action"]    { border-left-color: var(--accent); }
+.survival-option[data-role="result"]    { border-left-color: var(--green); }
+.survival-option[data-role="attention"] { border-left-color: var(--pink); }
+.survival-option[data-role="interest"]  { border-left-color: var(--accent); }
+.survival-option[data-role="desire"]    { border-left-color: var(--gold); }
+.survival-option[data-role="cta"]       { border-left-color: var(--red); }
+.survival-option[data-role="problem"]   { border-left-color: var(--red); }
+.survival-option[data-role="solution"]  { border-left-color: var(--accent); }
+.survival-option[data-role="impact"]    { border-left-color: var(--green); }
 .survival-option.flash-correct { border-color: var(--green); background: var(--green-soft); }
 .survival-option.flash-wrong   { border-color: var(--red);   background: var(--red-soft); }
 .survival-big-timer {
@@ -1978,6 +2015,56 @@ main { flex: 1; }
 .mastery-pip { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--border); margin: 0 1px; }
 .mastery-pip.filled { background: var(--accent); }
 .mastery-pip.full   { background: var(--gold); box-shadow: 0 0 6px var(--gold-soft); }
+
+/* Framework picker (pre-round) */
+.framework-picker {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.framework-picker h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+}
+.framework-picker .helper {
+  font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.6rem;
+}
+.framework-cards {
+  display: grid; gap: 0.5rem;
+  grid-template-columns: 1fr 1fr;
+}
+@media (min-width: 700px) { .framework-cards { grid-template-columns: repeat(4, 1fr); } }
+.framework-card {
+  padding: 0.75rem 0.85rem; min-height: 90px;
+  background: var(--bg-elev); border: 2px solid var(--border);
+  border-radius: var(--radius); cursor: pointer; text-align: left;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  display: flex; flex-direction: column; gap: 0.25rem;
+}
+.framework-card:hover { transform: translateY(-2px); }
+.framework-card.selected {
+  background: var(--accent-soft); box-shadow: var(--shadow-glow);
+}
+.framework-card[data-color="accent"].selected { border-color: var(--accent); }
+.framework-card[data-color="gold"].selected   { border-color: var(--gold); background: rgba(255,209,102,0.10); box-shadow: 0 0 18px var(--gold-soft); }
+.framework-card[data-color="pink"].selected   { border-color: var(--pink); background: rgba(255,93,143,0.10); box-shadow: 0 0 18px rgba(255,93,143,0.25); }
+.framework-card[data-color="orange"].selected { border-color: var(--orange); background: rgba(255,138,76,0.10); box-shadow: 0 0 18px rgba(255,138,76,0.25); }
+.framework-card .name {
+  font-family: var(--font-display); font-weight: 800; font-size: 0.92rem;
+  line-height: 1.1;
+}
+.framework-card .short {
+  font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-mute);
+}
+.framework-card[data-color="accent"].selected .short { color: var(--accent); }
+.framework-card[data-color="gold"].selected   .short { color: var(--gold); }
+.framework-card[data-color="pink"].selected   .short { color: var(--pink); }
+.framework-card[data-color="orange"].selected .short { color: var(--orange); }
+.framework-card .arc {
+  font-size: 0.72rem; color: var(--text-dim); margin-top: auto; line-height: 1.4;
+}
 
 /* Speed picker (pre-round) */
 .speed-card {
@@ -2396,7 +2483,68 @@ const PHRASES = [
   { id: 'f03', text: 'At the end of the day, it’s all about the customer.',               role: 'filler' },
   { id: 'f04', text: 'It is what it is, and we need to think outside the box.',                role: 'filler' },
   { id: 'f05', text: 'Let’s take this offline and align on the strategy.',                role: 'filler' },
-  { id: 'f06', text: 'Basically, we’re going to do a deep dive on the low-hanging fruit.', role: 'filler' }
+  { id: 'f06', text: 'Basically, we’re going to do a deep dive on the low-hanging fruit.', role: 'filler' },
+
+  // ===== STAR phrases (behavioral storytelling) =====
+  // -- Situation --
+  { id: 'st01', text: 'Last year, our enterprise team was handling 80% of incoming leads but closing only 15%.',                          role: 'situation', framework: 'star' },
+  { id: 'st02', text: 'Three weeks before launch, we discovered the onboarding flow was breaking in production.',                        role: 'situation', framework: 'star' },
+  { id: 'st03', text: 'I was new to the team and inherited a roadmap everyone privately knew was failing.',                              role: 'situation', framework: 'star' },
+  { id: 'st04', text: 'Our customer satisfaction score had been dropping for two quarters in a row.',                                    role: 'situation', framework: 'star' },
+  // -- Task --
+  { id: 'st05', text: 'I needed to redesign the qualification rubric without slowing the pipeline.',                                     role: 'task',      framework: 'star' },
+  { id: 'st06', text: 'My job was to either ship the fix in 72 hours or recommend delaying launch.',                                     role: 'task',      framework: 'star' },
+  { id: 'st07', text: 'I had to convince three skeptical leads to consolidate around a single roadmap.',                                 role: 'task',      framework: 'star' },
+  { id: 'st08', text: 'I was asked to find the root cause and present a recovery plan to leadership inside a week.',                     role: 'task',      framework: 'star' },
+  // -- Action --
+  { id: 'st09', text: 'I interviewed every closing rep individually and rebuilt the qualification criteria with their input.',           role: 'action',    framework: 'star' },
+  { id: 'st10', text: 'I ran a war-room with engineering, pushed a hotfix, and verified rollback paths within 36 hours.',                role: 'action',    framework: 'star' },
+  { id: 'st11', text: 'I drafted a focused 3-pillar roadmap and walked it through with each lead before the next planning meeting.',     role: 'action',    framework: 'star' },
+  { id: 'st12', text: 'I mapped the drop-off across cohorts and proposed a hypothesis test on the renewal flow.',                        role: 'action',    framework: 'star' },
+  // -- Result --
+  { id: 'st13', text: 'Close rate jumped from 15% to 28% within two quarters.',                                                          role: 'result',    framework: 'star' },
+  { id: 'st14', text: 'We shipped on time with zero P0 bugs and improved release confidence across the team.',                           role: 'result',    framework: 'star' },
+  { id: 'st15', text: 'All three leads bought in; we delivered the consolidated roadmap a sprint ahead of schedule.',                    role: 'result',    framework: 'star' },
+  { id: 'st16', text: 'CSAT recovered in one quarter and the hypothesis test ran successfully on the renewal flow.',                     role: 'result',    framework: 'star' },
+
+  // ===== AIDA phrases (persuasive pitches) =====
+  // -- Attention --
+  { id: 'ai01', text: 'Imagine knowing your CFO’s biggest fear before walking into the meeting.',                                    role: 'attention', framework: 'aida' },
+  { id: 'ai02', text: 'What if 80% of your team is checked out — and you can fix it in a week?',                                     role: 'attention', framework: 'aida' },
+  { id: 'ai03', text: 'There’s a metric your competitors are ignoring. It predicts churn 6 months out.',                             role: 'attention', framework: 'aida' },
+  { id: 'ai04', text: 'Most companies are doing this wrong. The cost of being wrong: their next funding round.',                         role: 'attention', framework: 'aida' },
+  // -- Interest --
+  { id: 'ai05', text: 'We’ve worked with 40+ teams at your stage. The pattern is consistent — and counterintuitive.',                role: 'interest',  framework: 'aida' },
+  { id: 'ai06', text: 'Here’s the part nobody tells you: it’s not a tooling problem, it’s a measurement problem.',                role: 'interest',  framework: 'aida' },
+  { id: 'ai07', text: 'Our platform plugs into the workflows your team already uses, not the ones you wish they did.',                   role: 'interest',  framework: 'aida' },
+  { id: 'ai08', text: 'The data shows a 3× outcome gap between teams that act on this and teams that don’t.',                        role: 'interest',  framework: 'aida' },
+  // -- Desire --
+  { id: 'ai09', text: 'Picture your next QBR — you walk in with the metric everyone else is guessing about.',                            role: 'desire',    framework: 'aida' },
+  { id: 'ai10', text: 'Six months from now, you’re either the team that called this early or the team that didn’t.',             role: 'desire',    framework: 'aida' },
+  { id: 'ai11', text: 'Your competitors will eventually figure this out. The advantage window is now.',                                  role: 'desire',    framework: 'aida' },
+  { id: 'ai12', text: 'This is the difference between a team that runs the meeting and a team that gets run by it.',                     role: 'desire',    framework: 'aida' },
+  // -- CTA --
+  { id: 'ai13', text: 'Give us 30 minutes next week. I’ll show you the metric on your own data.',                                    role: 'cta',       framework: 'aida' },
+  { id: 'ai14', text: 'Approve the pilot. Two weeks. One squad. I’ll own the outcome.',                                              role: 'cta',       framework: 'aida' },
+  { id: 'ai15', text: 'Sign today and we ship the integration before the end of the quarter.',                                           role: 'cta',       framework: 'aida' },
+  { id: 'ai16', text: 'Pick a champion on your side. I’ll match them with a CSM tomorrow.',                                          role: 'cta',       framework: 'aida' },
+
+  // ===== PSI phrases (Problem → Solution → Impact) =====
+  // -- Problem --
+  { id: 'ps01', text: 'Our deploy pipeline takes 45 minutes per release — three times the industry standard.',                           role: 'problem',   framework: 'psi' },
+  { id: 'ps02', text: 'We’re losing one senior engineer per quarter to burnout in the platform team.',                               role: 'problem',   framework: 'psi' },
+  { id: 'ps03', text: 'The on-call rotation generates 12 hours of after-hours work per engineer per month.',                             role: 'problem',   framework: 'psi' },
+  { id: 'ps04', text: 'Customer-reported bugs are up 40% year over year while team size has doubled.',                                   role: 'problem',   framework: 'psi' },
+  // -- Solution --
+  { id: 'ps05', text: 'Migrate to a containerized build with parallel test sharding.',                                                   role: 'solution',  framework: 'psi' },
+  { id: 'ps06', text: 'Cap on-call to 2 weeks per quarter and hire a dedicated platform reliability role.',                              role: 'solution',  framework: 'psi' },
+  { id: 'ps07', text: 'Adopt an SRE-style rotation with a paid “no-pager” day after each shift.',                                    role: 'solution',  framework: 'psi' },
+  { id: 'ps08', text: 'Add a pre-merge bug-bash review and quarterly architecture audits.',                                              role: 'solution',  framework: 'psi' },
+  // -- Impact --
+  { id: 'ps09', text: 'Cut deploy time to 12 minutes — engineering hours saved equate to 1.5 FTE per quarter.',                          role: 'impact',    framework: 'psi' },
+  { id: 'ps10', text: 'Improve platform team retention from 70% to 90%; save ~$300K/year in re-hiring costs.',                           role: 'impact',    framework: 'psi' },
+  { id: 'ps11', text: 'Eliminate weekend support hours; team satisfaction scores rise 20+ points within a quarter.',                     role: 'impact',    framework: 'psi' },
+  { id: 'ps12', text: 'Cut customer-reported bugs by 60% within two quarters and reduce support overhead.',                              role: 'impact',    framework: 'psi' }
 ];
 function phrasesByRole(role) {
   return PHRASES.filter(p => p.role === role);
@@ -2576,11 +2724,12 @@ if (!state.pulse) {
     bestSurvivalStreak: 0,
     bestHotSeatTime: null, // shortest completion time, seconds (lower = better)
     totalRuns: 0,
-    settings: { phraseSpeed: 8 }  // seconds per phrase; user-adjustable on the intro screen
+    settings: { phraseSpeed: 8, framework: 'universal' }  // user-adjustable on the intro screen
   };
 }
 // Back-compat for pre-settings save states
-if (!state.pulse.settings) state.pulse.settings = { phraseSpeed: 8 };
+if (!state.pulse.settings) state.pulse.settings = { phraseSpeed: 8, framework: 'universal' };
+if (!state.pulse.settings.framework) state.pulse.settings.framework = 'universal';
 
 let _pulse = null;  // transient — current session
 
@@ -2624,16 +2773,26 @@ function yesterdayMissIds() {
 // `roleFilter` (optional): only return phrases of that role.
 // `count`: how many distinct IDs to pull.
 // `boostIds`: array of phrase IDs to over-represent further (yesterday's misses).
-function weightedPhrasePool(count, roleFilter, boostIds) {
-  const candidates = PHRASES.filter(p => !roleFilter || p.role === roleFilter);
+// `fwId` (optional): restrict to phrases in this framework. Default = current framework.
+//                    Filler is always universal across frameworks.
+function weightedPhrasePool(count, roleFilter, boostIds, fwId) {
+  fwId = fwId || currentFrameworkId();
+  let candidates;
+  if (roleFilter === 'filler') {
+    // Filler trap pool is universal — buzzwords work as decoys in any framework
+    candidates = PHRASES.filter(p => p.role === 'filler');
+  } else if (roleFilter) {
+    candidates = phrasesByFrameworkAndRole(fwId, roleFilter);
+  } else {
+    // No role filter — return any phrase in this framework (plus universal fillers)
+    candidates = phrasesByFramework(fwId);
+  }
   const boost = new Set(boostIds || []);
-  // Weight: base 1 + (5 - mastery) + (boosted ? 3 : 0)
   const pool = [];
   candidates.forEach(p => {
     const w = 1 + (5 - masteryLevel(p.id)) + (boost.has(p.id) ? 3 : 0);
     for (let i = 0; i < w; i++) pool.push(p.id);
   });
-  // Sample without replacement
   const out = [];
   const seen = new Set();
   while (out.length < count && pool.length > 0) {
@@ -2756,13 +2915,38 @@ function startCascade() {
 }
 
 function pickCascadeTarget(exclude) {
-  const pool = ['point','reason','example','restated','hook','bridge','closer'].filter(r => r !== exclude);
+  // Use the currently-selected framework's role list.
+  const fw = currentFramework();
+  const pool = fw.roles.filter(r => r !== exclude);
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function roleHint(role) {
   return (ROLE_INFO[role] && ROLE_INFO[role].purpose) || '';
 }
+
+// Hot Seat scenarios — tagged by framework. The framework's canonical `arc`
+// determines the slot sequence; the scenario text is the flavor / setup.
+const HOTSEAT_SCENARIOS = [
+  // Universal / PREP+
+  { framework: 'universal', prompt: 'You\'re pitching a new product to a skeptical investor in 60 seconds. Make them lean forward.' },
+  { framework: 'universal', prompt: 'Open the all-hands as CEO during a tough quarter. Acknowledge, set direction, rally.' },
+  { framework: 'universal', prompt: 'Convince your team to commit to a 6-week sprint that will be painful but necessary.' },
+  { framework: 'universal', prompt: 'Tell the board the company needs to pivot the product. Two minutes.' },
+  { framework: 'universal', prompt: 'A long-time customer is wavering on renewal. Turn them around in one short call.' },
+  // STAR
+  { framework: 'star', prompt: 'An interviewer asks: tell me about a time you led a team through a tough deadline.' },
+  { framework: 'star', prompt: 'A hiring manager asks: describe a time you turned around an underperforming team member.' },
+  { framework: 'star', prompt: 'Tell me about a time you disagreed with a senior leader and had to push back. What happened?' },
+  // AIDA
+  { framework: 'aida', prompt: '60 seconds with a tier-1 VC at a conference. Pitch your seed-stage startup so they ask for the deck.' },
+  { framework: 'aida', prompt: 'You\'re at a customer happy hour. The CTO asks "so what does your product actually do?" Pitch it.' },
+  { framework: 'aida', prompt: 'Open a discovery call with a CFO who only took the meeting because their EA double-booked them.' },
+  // PSI
+  { framework: 'psi', prompt: 'Convince engineering leadership to invest in platform reliability. Three minutes at the next staff meeting.' },
+  { framework: 'psi', prompt: 'Pitch a 3-month tech-debt sprint to a product VP who hates pauses on roadmap delivery.' },
+  { framework: 'psi', prompt: 'Make the case for hiring 2 SRE engineers to a CFO who thinks the team is already too big.' }
+];
 
 // Full framework reference — used in the intro guide AND the in-game target panel.
 // These 8 roles span the universal framework (PREP + standard openers, transitions, and closers).
@@ -2822,8 +3006,144 @@ const ROLE_INFO = {
     desc: 'Vague, overused corporate language that signals you have nothing to say. Synergy, leverage, circle back, deep dive.',
     when: 'NEVER. These are the traps that cost credibility — and a life in Pulse.',
     example: '"We need to leverage synergies across the organization."'
+  },
+
+  // ===== STAR (behavioral stories) =====
+  situation: {
+    name: 'Situation',
+    purpose: 'The setup — context the listener needs',
+    desc: 'Where, when, what was the state of things. Just enough so the rest of the story makes sense.',
+    when: 'First sentence of a behavioral story. 1–2 lines, no more.',
+    example: '"Last year, our enterprise team was handling 80% of incoming leads but closing only 15%."'
+  },
+  task: {
+    name: 'Task',
+    purpose: 'What you were responsible for',
+    desc: 'The specific challenge or goal that was on your plate. Makes the stakes personal.',
+    when: 'Right after the situation. Defines what success looked like for YOU.',
+    example: '"I needed to redesign the qualification rubric without slowing the pipeline."'
+  },
+  action: {
+    name: 'Action',
+    purpose: 'What you actually did — verbs, not nouns',
+    desc: 'The specific moves you made. Use "I" not "we" where it was you. Showing your judgment matters.',
+    when: 'Heart of the story. The longest section. Concrete actions, not abstractions.',
+    example: '"I interviewed every closing rep individually and rebuilt the qualification criteria with their input."'
+  },
+  result: {
+    name: 'Result',
+    purpose: 'The outcome — with numbers',
+    desc: 'What changed. Quantify it. If you don\'t have the number, you don\'t have the result.',
+    when: 'Close the story. The punch line. Should make the action feel earned.',
+    example: '"Close rate jumped from 15% to 28% within two quarters."'
+  },
+
+  // ===== AIDA (persuasive pitches) =====
+  attention: {
+    name: 'Attention',
+    purpose: 'A grabber that earns the next 30 seconds',
+    desc: 'Sharper than a hook — designed to flip the listener\'s posture from polite to leaning-in.',
+    when: 'Opening of a pitch. Especially when the audience didn\'t ask to hear from you.',
+    example: '"Imagine knowing your CFO\'s biggest fear before walking into the meeting."'
+  },
+  interest: {
+    name: 'Interest',
+    purpose: 'Build curiosity — why this matters',
+    desc: 'A line that converts attention into "tell me more". Often a pattern, contrast, or counterintuitive fact.',
+    when: 'Right after Attention. The bridge into substance.',
+    example: '"Here\'s the part nobody tells you: it\'s not a tooling problem, it\'s a measurement problem."'
+  },
+  desire: {
+    name: 'Desire',
+    purpose: 'Make them want the thing',
+    desc: 'Paint the after-picture. What does the world look like once they have what you\'re offering?',
+    when: 'Before the ask. Get them emotionally invested in the outcome, not just the logic.',
+    example: '"Picture your next QBR — you walk in with the metric that everyone else is guessing about."'
+  },
+  cta: {
+    name: 'Call to Action',
+    purpose: 'The specific ask — make it concrete',
+    desc: 'A clear, easy next step. Not "let me know what you think" — a specific decision you want.',
+    when: 'Close the pitch. The last thing you say.',
+    example: '"Give us 30 minutes next week. I\'ll show you the metric on your own data."'
+  },
+
+  // ===== PSI (Problem → Solution → Impact, change proposals) =====
+  problem: {
+    name: 'Problem',
+    purpose: 'The pain — quantified',
+    desc: 'What\'s broken, and what it\'s costing the team or company. Concrete, not theoretical.',
+    when: 'Opening of a change proposal. Earn the right to propose by naming the cost of doing nothing.',
+    example: '"Our deploy pipeline takes 45 minutes per release — three times the industry standard."'
+  },
+  solution: {
+    name: 'Solution',
+    purpose: 'Your specific fix',
+    desc: 'The concrete change you\'re proposing. Specific enough that a leader could greenlight it today.',
+    when: 'Right after the problem. The "here\'s what to do" beat.',
+    example: '"Migrate to a containerized build with parallel test sharding."'
+  },
+  impact: {
+    name: 'Impact',
+    purpose: 'The so-what — quantified',
+    desc: 'What gets better and by how much. Time, money, retention, satisfaction. Tie back to a number.',
+    when: 'Close the proposal. The reason to say yes.',
+    example: '"Cut deploy time to 12 minutes — engineering hours saved equate to 1.5 FTE per quarter."'
   }
 };
+
+// ===== FRAMEWORK DEFINITIONS =====
+// Each framework has its own set of roles and a canonical arc (used by Hot Seat).
+// Filler is always universal — buzzwords are buzzwords in any framework.
+const FRAMEWORKS = [
+  { id: 'universal',
+    name: 'Universal PREP+',
+    short: 'PREP',
+    color: 'accent',
+    desc: 'The everyday framework. Hook → Point → Reason → Example → Restated, with bridges and closers as connectors.',
+    roles: ['hook','point','reason','example','restated','bridge','closer'],
+    arc:   ['hook','point','reason','example','restated'] },
+  { id: 'star',
+    name: 'STAR',
+    short: 'STAR',
+    color: 'gold',
+    desc: 'Behavioral stories. For "tell me about a time..." questions. Situation → Task → Action → Result.',
+    roles: ['situation','task','action','result'],
+    arc:   ['situation','task','action','result'] },
+  { id: 'aida',
+    name: 'AIDA',
+    short: 'AIDA',
+    color: 'pink',
+    desc: 'Persuasive pitches. Attention → Interest → Desire → Call-to-Action.',
+    roles: ['attention','interest','desire','cta'],
+    arc:   ['attention','interest','desire','cta'] },
+  { id: 'psi',
+    name: 'Problem → Solution → Impact',
+    short: 'PSI',
+    color: 'orange',
+    desc: 'Change proposals. Lead with the pain, present the fix, show why it matters.',
+    roles: ['problem','solution','impact'],
+    arc:   ['problem','solution','impact'] }
+];
+function frameworkById(id) { return FRAMEWORKS.find(f => f.id === id) || FRAMEWORKS[0]; }
+function currentFrameworkId() {
+  return (state.pulse && state.pulse.settings && state.pulse.settings.framework) || 'universal';
+}
+function currentFramework() { return frameworkById(currentFrameworkId()); }
+
+// Framework-aware phrase pool helpers.
+// "Universal" includes any phrase without an explicit framework tag (back-compat).
+function phrasesByFramework(fwId) {
+  if (fwId === 'universal') {
+    return PHRASES.filter(p => !p.framework || p.framework === 'universal');
+  }
+  return PHRASES.filter(p => p.framework === fwId);
+}
+function phrasesByFrameworkAndRole(fwId, role) {
+  // Filler always pulls from the universal trap pool — buzzwords are framework-agnostic
+  if (role === 'filler') return PHRASES.filter(p => p.role === 'filler');
+  return phrasesByFramework(fwId).filter(p => p.role === role);
+}
 
 // Read the user-selected baseline phrase duration (seconds → ms).
 function pulsePhraseMs() {
@@ -2851,23 +3171,33 @@ function toggleFrameworkGuide() {
   SFX.click();
 }
 
+function setPulseFramework(fwId) {
+  if (!frameworkById(fwId)) return;
+  if (!state.pulse.settings) state.pulse.settings = {};
+  state.pulse.settings.framework = fwId;
+  SFX.click();
+  saveState();
+  // Re-render the intro so the picker + guide + tier cards update
+  renderPulse();
+}
+
 let _cascadeSpawnId = 0;
 function spawnCascadePhrase() {
   if (!_pulse || _pulse.over) return;
   const stage = document.querySelector('.cascade-stage');
   if (!stage) return;
 
-  // 70% chance to spawn a phrase that COULD match the current target (any role from a weighted pool);
-  // 30% chance to throw in a filler trap.
+  // 70% chance to spawn a phrase from the current framework (any role);
+  // 30% chance to throw in a filler trap (universal).
   const useFiller = Math.random() < 0.30;
   let phraseId;
   if (useFiller) {
     const fillers = weightedPhrasePool(1, 'filler', _pulse.warmupIds);
     phraseId = fillers[0];
   } else {
-    // Pick from any non-filler role, weighted by mastery
+    // Pick from any non-filler role in the current framework, weighted by mastery
     const all = weightedPhrasePool(3, null, _pulse.warmupIds).filter(id => phraseById(id).role !== 'filler');
-    phraseId = all[Math.floor(Math.random() * all.length)] || PHRASES[0].id;
+    phraseId = all[Math.floor(Math.random() * all.length)] || phrasesByFramework(currentFrameworkId())[0].id;
   }
   if (!phraseId) return;
   const phrase = phraseById(phraseId);
@@ -3025,19 +3355,27 @@ function startSurvival() {
 }
 
 function rollSurvivalSlot() {
-  // Pick a target role and a pool of 4 phrases (1 correct + 3 distractors)
+  // Pick a target role from the current framework + 3 distractors.
+  // Distractors come from OTHER roles in the SAME framework, with a chance to
+  // include a universal filler trap — keeps choices coherent inside the framework.
   const targetRole = pickCascadeTarget(_pulse.targetRole);
   _pulse.targetRole = targetRole;
   const correctPool = weightedPhrasePool(1, targetRole, _pulse.warmupIds);
   const correct = correctPool[0];
-  // 3 distractors from other roles (mix of filler + wrong-role)
+  const fwId = currentFrameworkId();
   const distractors = [];
   while (distractors.length < 3) {
     const useFiller = Math.random() < 0.30;
-    const pool = useFiller
-      ? weightedPhrasePool(2, 'filler', _pulse.warmupIds)
-      : PHRASES.filter(p => p.role !== targetRole && p.role !== 'filler').map(p => p.id);
-    const pick = pool[Math.floor(Math.random() * pool.length)];
+    let candidateIds;
+    if (useFiller) {
+      candidateIds = PHRASES.filter(p => p.role === 'filler').map(p => p.id);
+    } else {
+      candidateIds = phrasesByFramework(fwId)
+        .filter(p => p.role !== targetRole && p.role !== 'filler')
+        .map(p => p.id);
+    }
+    if (candidateIds.length === 0) continue;
+    const pick = candidateIds[Math.floor(Math.random() * candidateIds.length)];
     if (pick && !distractors.includes(pick) && pick !== correct) distractors.push(pick);
   }
   const options = shuffleArr([correct, ...distractors]);
@@ -3095,17 +3433,21 @@ function survivalPick(phraseId) {
 // Out of time OR arc complete = end.
 // ================================================================
 function startHotSeat() {
-  // Pick a prompt (scenario)
-  const promptPool = (typeof COMPOSER_PROMPTS !== 'undefined') ? COMPOSER_PROMPTS : null;
-  if (!promptPool || promptPool.length === 0) {
-    showToast('No scenarios available.', 'error');
+  // Pick a scenario tagged for the currently-selected framework.
+  // The framework's canonical arc determines the slot sequence, regardless of which
+  // specific scenario the player draws — so a STAR Hot Seat always asks for situation→task→action→result.
+  const fwId = currentFrameworkId();
+  const fw = currentFramework();
+  const pool = HOTSEAT_SCENARIOS.filter(s => s.framework === fwId);
+  if (pool.length === 0) {
+    showToast('No scenarios for this framework yet.', 'error');
     _pulse = null;
     navigate('pulse');
     return;
   }
-  _pulse.scenario = promptPool[Math.floor(Math.random() * promptPool.length)];
-  _pulse.arc = _pulse.scenario.suggested.slice(); // role array
-  _pulse.arcFilled = _pulse.arc.map(() => null);  // phraseId per slot
+  _pulse.scenario = pool[Math.floor(Math.random() * pool.length)];
+  _pulse.arc = fw.arc.slice();                       // role sequence comes from the FRAMEWORK
+  _pulse.arcFilled = _pulse.arc.map(() => null);     // phraseId per slot
   _pulse.arcIdx = 0;
   _pulse.timeLeft = 40;     // a touch more generous so the new readable speed still fits an arc
   // Pull the baseline phrase duration + spawn cadence from the user-selected speed,
@@ -3261,6 +3603,7 @@ function renderPulseIntro() {
   const warmup = yesterdayMissIds();
   const sp = state.pulse;
   const curSpeed = (sp.settings && sp.settings.phraseSpeed) || 8;
+  const curFw = currentFramework();
   return `
     <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
     <div class="pulse-screen">
@@ -3277,6 +3620,24 @@ function renderPulseIntro() {
           </div>
         </div>
       ` : ''}
+
+      <div class="framework-picker">
+        <h3>Drill which framework?</h3>
+        <div class="helper">Each framework has its own roles, its own phrase pool, and its own scenarios. Pick the one you want to sharpen today.</div>
+        <div class="framework-cards">
+          ${FRAMEWORKS.map(fw => {
+            const sel = fw.id === curFw.id ? 'selected' : '';
+            return `
+              <button class="framework-card ${sel}" data-color="${fw.color}"
+                      onclick="setPulseFramework('${fw.id}')">
+                <span class="short">${fw.short}</span>
+                <span class="name">${fw.name}</span>
+                <span class="arc">${fw.arc.join(' → ')}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
 
       <div class="speed-card">
         <h3>
@@ -3302,19 +3663,20 @@ function renderPulseIntro() {
 
       <div class="framework-guide" id="framework-guide">
         <div class="framework-guide-header" onclick="toggleFrameworkGuide()">
-          <h3>📚 The Framework — what each role does</h3>
+          <h3>📚 ${curFw.name} — what each role does</h3>
           <span class="chev">▶</span>
         </div>
         <div class="framework-guide-flow">
-          ${['hook','point','reason','example','restated','bridge','closer'].map((r, i, arr) => `
+          ${curFw.roles.map((r, i, arr) => `
             <span class="role-pill" data-role="${r}">${r}</span>
             ${i < arr.length - 1 ? '<span class="role-arrow">→</span>' : ''}
           `).join('')}
           <span style="margin-left:0.6rem;color:var(--text-mute)">+ <span class="role-pill" data-role="filler">filler</span> traps</span>
         </div>
         <div class="framework-guide-body">
-          ${['hook','point','reason','example','restated','bridge','closer','filler'].map(r => {
+          ${[...curFw.roles, 'filler'].map(r => {
             const info = ROLE_INFO[r];
+            if (!info) return '';
             return `
               <div class="role-row">
                 <span class="role-pill" data-role="${r}">${r}</span>
@@ -3466,7 +3828,7 @@ function renderHotSeat() {
   return `
     ${renderPulseHUD()}
     <div class="hotseat-scenario">
-      <strong style="color:var(--red);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Scenario · ${_pulse.scenario.framework}</strong>
+      <strong style="color:var(--red);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Scenario · ${frameworkById(_pulse.scenario.framework).name}</strong>
       <div style="margin-top:0.2rem">${_pulse.scenario.prompt}</div>
     </div>
     <div class="hotseat-arc">
@@ -6913,6 +7275,7 @@ window.survivalPick = survivalPick;
 window.renderPulse = renderPulse;
 window.setPulseSpeed = setPulseSpeed;
 window.toggleFrameworkGuide = toggleFrameworkGuide;
+window.setPulseFramework = setPulseFramework;
 </script>
 </body>
 </html>
