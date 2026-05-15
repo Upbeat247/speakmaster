@@ -1979,6 +1979,120 @@ main { flex: 1; }
 .mastery-pip.filled { background: var(--accent); }
 .mastery-pip.full   { background: var(--gold); box-shadow: 0 0 6px var(--gold-soft); }
 
+/* Speed picker (pre-round) */
+.speed-card {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.speed-card h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.speed-card h3 .live-value {
+  color: var(--accent); font-family: var(--font-body); font-size: 0.95rem;
+  text-transform: none; letter-spacing: 0; font-weight: 800;
+}
+.speed-card .helper {
+  font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.5rem;
+}
+.speed-row {
+  display: flex; align-items: center; gap: 0.65rem;
+  margin-bottom: 0.4rem;
+}
+.speed-row .end-label {
+  font-size: 0.7rem; color: var(--text-mute); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.speed-row .end-label.fast { color: var(--red); }
+.speed-row .end-label.slow { color: var(--green); }
+.speed-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 6px; background: var(--bg-elev-2); border-radius: 999px;
+  outline: none; cursor: pointer;
+}
+.speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); cursor: pointer;
+  box-shadow: var(--shadow-glow);
+}
+.speed-slider::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%; border: none;
+  background: var(--accent); cursor: pointer; box-shadow: var(--shadow-glow);
+}
+.speed-presets {
+  display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem;
+}
+.speed-preset {
+  padding: 0.35rem 0.7rem; border-radius: 999px;
+  background: var(--bg-elev-2); border: 1px solid var(--border);
+  font-size: 0.75rem; font-weight: 700; color: var(--text-dim);
+  cursor: pointer; transition: all 0.12s ease;
+}
+.speed-preset:hover { color: var(--text); border-color: var(--accent); }
+
+/* Framework guide */
+.framework-guide {
+  padding: 1rem 1.2rem; margin-bottom: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.framework-guide-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; cursor: pointer;
+}
+.framework-guide-header h3 {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.framework-guide-header .chev {
+  font-size: 0.9rem; color: var(--text-mute);
+  transition: transform 0.15s ease;
+}
+.framework-guide.open .framework-guide-header .chev { transform: rotate(90deg); }
+.framework-guide-flow {
+  display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center;
+  margin: 0.5rem 0 0.85rem;
+  font-size: 0.78rem; color: var(--text-dim);
+}
+.framework-guide-body { display: none; }
+.framework-guide.open .framework-guide-body { display: block; }
+.role-row {
+  display: flex; gap: 0.85rem; align-items: flex-start;
+  padding: 0.7rem 0; border-bottom: 1px solid var(--border);
+}
+.role-row:last-child { border-bottom: none; }
+.role-row .role-pill { flex-shrink: 0; align-self: flex-start; }
+.role-row-body { flex: 1; min-width: 0; }
+.role-row-name {
+  font-family: var(--font-display); font-weight: 800; font-size: 0.95rem;
+  margin-bottom: 0.1rem;
+}
+.role-row-purpose { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.4rem; }
+.role-row-desc { font-size: 0.82rem; line-height: 1.5; margin-bottom: 0.35rem; }
+.role-row-when { font-size: 0.78rem; color: var(--text-mute); margin-bottom: 0.25rem; }
+.role-row-when strong { color: var(--accent); }
+.role-row-example {
+  font-style: italic; color: var(--text-dim); font-size: 0.78rem;
+  padding: 0.3rem 0.6rem; background: var(--bg-elev); border-radius: var(--radius-sm);
+  border-left: 2px solid var(--accent);
+}
+
+/* In-game target panel — expanded info */
+.pulse-target-body {
+  margin-top: 0.4rem;
+  font-size: 0.78rem; color: var(--text-dim); line-height: 1.4;
+}
+.pulse-target-example {
+  font-style: italic; color: var(--text-mute); font-size: 0.74rem;
+  margin-top: 0.3rem; padding-top: 0.3rem;
+  border-top: 1px dashed var(--border);
+}
+
 /* End-of-wave / end-of-run screens */
 .tower-result {
   max-width: 700px; margin: 0 auto; padding: 1.5rem 1.4rem;
@@ -2461,9 +2575,12 @@ if (!state.pulse) {
     bestCascadeScore: 0,
     bestSurvivalStreak: 0,
     bestHotSeatTime: null, // shortest completion time, seconds (lower = better)
-    totalRuns: 0
+    totalRuns: 0,
+    settings: { phraseSpeed: 8 }  // seconds per phrase; user-adjustable on the intro screen
   };
 }
+// Back-compat for pre-settings save states
+if (!state.pulse.settings) state.pulse.settings = { phraseSpeed: 8 };
 
 let _pulse = null;  // transient — current session
 
@@ -2576,8 +2693,11 @@ function startCascade() {
   _pulse.targetRole = pickCascadeTarget();
   _pulse.targetTimer = 0;       // seconds since the current target appeared
   _pulse.activePhrases = [];    // { id, role, el, spawnAt }
-  _pulse.spawnInterval = 1400;  // ms between spawns; will decrease
-  _pulse.phraseDuration = 8000; // ms a phrase takes to cross the viewport
+  // Baseline from user-selected speed. Spawn cadence scales with it.
+  _pulse.baseDuration  = pulsePhraseMs();
+  _pulse.baseSpawn     = pulseSpawnMs();
+  _pulse.phraseDuration = _pulse.baseDuration;
+  _pulse.spawnInterval  = _pulse.baseSpawn;
   _pulse.spawnSince = 0;
   _pulse.tickAccum = 0;
 
@@ -2600,11 +2720,11 @@ function startCascade() {
       if (det) det.textContent = roleHint(_pulse.targetRole);
     }
 
-    // Escalate difficulty over time — duration shrinks too so phrases read faster
-    if (_pulse.elapsed > 20 && _pulse.spawnInterval > 1100) _pulse.spawnInterval = 1100;
-    if (_pulse.elapsed > 35 && _pulse.spawnInterval > 850)  _pulse.spawnInterval = 850;
-    if (_pulse.elapsed > 35 && _pulse.phraseDuration > 6500) _pulse.phraseDuration = 6500;
-    if (_pulse.elapsed > 50 && _pulse.phraseDuration > 5500) _pulse.phraseDuration = 5500;
+    // Escalate difficulty over time — both rates scale with the user's chosen baseline.
+    if (_pulse.elapsed > 20) _pulse.spawnInterval  = Math.round(_pulse.baseSpawn    * 0.85);
+    if (_pulse.elapsed > 35) _pulse.spawnInterval  = Math.round(_pulse.baseSpawn    * 0.70);
+    if (_pulse.elapsed > 35) _pulse.phraseDuration = Math.round(_pulse.baseDuration * 0.85);
+    if (_pulse.elapsed > 50) _pulse.phraseDuration = Math.round(_pulse.baseDuration * 0.70);
 
     // Update HUD timer bar
     const bar = document.querySelector('.pulse-hud-timer-fill');
@@ -2641,16 +2761,94 @@ function pickCascadeTarget(exclude) {
 }
 
 function roleHint(role) {
-  const hints = {
-    point: 'A declarative position',
-    reason: 'A "because" statement',
-    example: 'A concrete instance, ideally with numbers',
-    restated: 'Restates the point with conviction',
-    hook: 'An opening grabber',
-    bridge: 'A transitional connector',
-    closer: 'A call to action or summary'
-  };
-  return hints[role] || '';
+  return (ROLE_INFO[role] && ROLE_INFO[role].purpose) || '';
+}
+
+// Full framework reference — used in the intro guide AND the in-game target panel.
+// These 8 roles span the universal framework (PREP + standard openers, transitions, and closers).
+const ROLE_INFO = {
+  hook: {
+    name: 'Hook',
+    purpose: 'An opener that grabs attention',
+    desc: 'A line that earns you the next 30 seconds. Usually surprising, vivid, or stakes-laden — never throat-clearing.',
+    when: 'First sentence of any speech, pitch, or high-stakes update.',
+    example: '"Here\'s a number that should be making us nervous: 11%."'
+  },
+  point: {
+    name: 'Point',
+    purpose: 'Your position, stated clearly',
+    desc: 'A declarative claim — no hedging, no qualifiers. The headline of what you believe or recommend.',
+    when: 'Right after the hook. Tell them exactly where you stand.',
+    example: '"Customer churn is our single most important metric this year."'
+  },
+  reason: {
+    name: 'Reason',
+    purpose: 'The "because" that backs the point',
+    desc: 'Justifies the claim. Should sound inevitable — the only sane conclusion given the facts.',
+    when: 'Immediately after the point. Earn the right to be believed.',
+    example: '"Because acquisition cost only matters if retention holds."'
+  },
+  example: {
+    name: 'Example',
+    purpose: 'Concrete evidence — names, numbers, dates',
+    desc: 'A specific instance that makes the abstract real. Specificity beats abstraction every time.',
+    when: 'Right after the reason. Ground the argument in a real thing.',
+    example: '"Last quarter we converted 11% of trials — down from 17% a year ago."'
+  },
+  restated: {
+    name: 'Restated Point',
+    purpose: 'Re-land the punch line with conviction',
+    desc: 'The second "P" in PREP. Echo the point with the weight earned by your reason + example.',
+    when: 'Closing your argument. Same point, more force.',
+    example: '"So shipping the new pricing model this quarter is the call."'
+  },
+  bridge: {
+    name: 'Bridge',
+    purpose: 'A transition between thoughts',
+    desc: 'Carries the listener from one idea to the next. Signals "I\'m about to say something important."',
+    when: 'Between segments of a long answer, or redirecting from a question you got asked.',
+    example: '"Which brings me to the harder question:"'
+  },
+  closer: {
+    name: 'Closer',
+    purpose: 'A call to action or summary',
+    desc: 'The final note. Either asks for the decision or summarizes what should be remembered.',
+    when: 'End of your turn. Make the next move obvious.',
+    example: '"Greenlight the pilot. I\'ll own the outcome."'
+  },
+  filler: {
+    name: 'Filler',
+    purpose: 'A buzzword trap — NEVER pick this',
+    desc: 'Vague, overused corporate language that signals you have nothing to say. Synergy, leverage, circle back, deep dive.',
+    when: 'NEVER. These are the traps that cost credibility — and a life in Pulse.',
+    example: '"We need to leverage synergies across the organization."'
+  }
+};
+
+// Read the user-selected baseline phrase duration (seconds → ms).
+function pulsePhraseMs() {
+  const sec = (state.pulse && state.pulse.settings && state.pulse.settings.phraseSpeed) || 8;
+  return Math.round(sec * 1000);
+}
+// Spawn interval scales with phrase duration so density stays sane at any speed.
+function pulseSpawnMs() {
+  return Math.max(700, Math.round(pulsePhraseMs() * 0.175));
+}
+
+function setPulseSpeed(value) {
+  const v = parseFloat(value);
+  if (isNaN(v)) return;
+  if (!state.pulse.settings) state.pulse.settings = {};
+  state.pulse.settings.phraseSpeed = Math.max(3, Math.min(12, v));
+  // Update the visible value without a full re-render
+  const lbl = document.getElementById('pulse-speed-value');
+  if (lbl) lbl.textContent = state.pulse.settings.phraseSpeed.toFixed(1) + 's per phrase';
+  saveState();
+}
+function toggleFrameworkGuide() {
+  const el = document.getElementById('framework-guide');
+  if (el) el.classList.toggle('open');
+  SFX.click();
 }
 
 let _cascadeSpawnId = 0;
@@ -2910,8 +3108,12 @@ function startHotSeat() {
   _pulse.arcFilled = _pulse.arc.map(() => null);  // phraseId per slot
   _pulse.arcIdx = 0;
   _pulse.timeLeft = 40;     // a touch more generous so the new readable speed still fits an arc
-  _pulse.spawnInterval = 1100;
-  _pulse.phraseDuration = 7000;
+  // Pull the baseline phrase duration + spawn cadence from the user-selected speed,
+  // with a slight tightening (Hot Seat should feel a bit punchier than Cascade).
+  _pulse.baseDuration  = Math.round(pulsePhraseMs() * 0.9);
+  _pulse.baseSpawn     = Math.round(pulseSpawnMs() * 0.9);
+  _pulse.phraseDuration = _pulse.baseDuration;
+  _pulse.spawnInterval  = _pulse.baseSpawn;
   _pulse.activePhrases = [];
   _pulse.targetRole = _pulse.arc[0];
   _pulse.lives = 3;
@@ -3058,6 +3260,7 @@ function renderPulse() {
 function renderPulseIntro() {
   const warmup = yesterdayMissIds();
   const sp = state.pulse;
+  const curSpeed = (sp.settings && sp.settings.phraseSpeed) || 8;
   return `
     <div class="wordle-back" onclick="navigate('home')">← Back to modes</div>
     <div class="pulse-screen">
@@ -3074,6 +3277,59 @@ function renderPulseIntro() {
           </div>
         </div>
       ` : ''}
+
+      <div class="speed-card">
+        <h3>
+          Scroll speed
+          <span class="live-value"><span id="pulse-speed-value">${curSpeed.toFixed(1)}s per phrase</span></span>
+        </h3>
+        <div class="helper">How long each phrase takes to cross the screen at the start of a round. Difficulty escalates from there.</div>
+        <div class="speed-row">
+          <span class="end-label fast">Faster</span>
+          <input type="range" min="3" max="12" step="0.5" value="${curSpeed}"
+                 class="speed-slider"
+                 oninput="setPulseSpeed(this.value)"
+                 aria-label="Phrase scroll speed in seconds">
+          <span class="end-label slow">Slower</span>
+        </div>
+        <div class="speed-presets">
+          <button class="speed-preset" onclick="setPulseSpeed(3.5); document.querySelector('.speed-slider').value=3.5">Expert (3.5s)</button>
+          <button class="speed-preset" onclick="setPulseSpeed(5); document.querySelector('.speed-slider').value=5">Fast (5s)</button>
+          <button class="speed-preset" onclick="setPulseSpeed(8); document.querySelector('.speed-slider').value=8">Normal (8s)</button>
+          <button class="speed-preset" onclick="setPulseSpeed(11); document.querySelector('.speed-slider').value=11">Slow (11s)</button>
+        </div>
+      </div>
+
+      <div class="framework-guide" id="framework-guide">
+        <div class="framework-guide-header" onclick="toggleFrameworkGuide()">
+          <h3>📚 The Framework — what each role does</h3>
+          <span class="chev">▶</span>
+        </div>
+        <div class="framework-guide-flow">
+          ${['hook','point','reason','example','restated','bridge','closer'].map((r, i, arr) => `
+            <span class="role-pill" data-role="${r}">${r}</span>
+            ${i < arr.length - 1 ? '<span class="role-arrow">→</span>' : ''}
+          `).join('')}
+          <span style="margin-left:0.6rem;color:var(--text-mute)">+ <span class="role-pill" data-role="filler">filler</span> traps</span>
+        </div>
+        <div class="framework-guide-body">
+          ${['hook','point','reason','example','restated','bridge','closer','filler'].map(r => {
+            const info = ROLE_INFO[r];
+            return `
+              <div class="role-row">
+                <span class="role-pill" data-role="${r}">${r}</span>
+                <div class="role-row-body">
+                  <div class="role-row-name">${info.name}</div>
+                  <div class="role-row-purpose">${info.purpose}</div>
+                  <div class="role-row-desc">${info.desc}</div>
+                  <div class="role-row-when"><strong>When:</strong> ${info.when}</div>
+                  <div class="role-row-example">${info.example}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
 
       <div class="tier-grid">
         <button class="tier-card" data-tier="easy" onclick="startPulse('easy')">
@@ -3160,6 +3416,10 @@ function renderCascade() {
       <div class="pulse-target-label">Tap phrases matching</div>
       <div class="pulse-target-role">${_pulse.targetRole}</div>
       <div class="pulse-target-detail">${roleHint(_pulse.targetRole)}</div>
+      ${ROLE_INFO[_pulse.targetRole] ? `
+        <div class="pulse-target-body">${ROLE_INFO[_pulse.targetRole].desc}</div>
+        <div class="pulse-target-example">${ROLE_INFO[_pulse.targetRole].example}</div>
+      ` : ''}
     </div>
     <div class="cascade-stage">
       <div class="cascade-lane" data-lane="0"></div>
@@ -3181,6 +3441,10 @@ function renderSurvival() {
       <div class="pulse-target-label">Pick the phrase that’s a</div>
       <div class="pulse-target-role">${_pulse.targetRole}</div>
       <div class="pulse-target-detail">${roleHint(_pulse.targetRole)}</div>
+      ${ROLE_INFO[_pulse.targetRole] ? `
+        <div class="pulse-target-body">${ROLE_INFO[_pulse.targetRole].desc}</div>
+        <div class="pulse-target-example">${ROLE_INFO[_pulse.targetRole].example}</div>
+      ` : ''}
     </div>
     <div class="survival-big-timer"><div class="survival-big-timer-fill" style="width:100%"></div></div>
     <div class="survival-options">
@@ -3223,6 +3487,10 @@ function renderHotSeat() {
       <div class="pulse-target-label">Grab a</div>
       <div class="pulse-target-role">${_pulse.targetRole}</div>
       <div class="pulse-target-detail">${roleHint(_pulse.targetRole)}</div>
+      ${ROLE_INFO[_pulse.targetRole] ? `
+        <div class="pulse-target-body">${ROLE_INFO[_pulse.targetRole].desc}</div>
+        <div class="pulse-target-example">${ROLE_INFO[_pulse.targetRole].example}</div>
+      ` : ''}
     </div>
     <div class="cascade-stage">
       <div class="cascade-lane" data-lane="0"></div>
@@ -6643,6 +6911,8 @@ window.startPulse = startPulse;
 window.exitPulse = exitPulse;
 window.survivalPick = survivalPick;
 window.renderPulse = renderPulse;
+window.setPulseSpeed = setPulseSpeed;
+window.toggleFrameworkGuide = toggleFrameworkGuide;
 </script>
 </body>
 </html>
