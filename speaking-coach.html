@@ -4661,7 +4661,8 @@ const state = {
     saveAudio: true,           // Stage 5B: auto-save recorded audio to IndexedDB for later playback
     audioStorageCapMB: 500,    // Stage 5B: soft cap before oldest recordings are auto-evicted
     timedSessionsEnabled: true,// when false, hide timers and skip WPM/time-adherence scoring (still applies to lesson/drill/focus/fusion/debate; Speed Tier remains timed)
-    typingExplorationMode: false // when true AND timed sessions are off AND user typed (not spoke), the attempt is treated as exploration: scored on screen but NOT saved (no XP, no streak, no lesson unlock, no history entry, no fluency progress, no audio save)
+    typingExplorationMode: false, // when true AND timed sessions are off AND user typed (not spoke), the attempt is treated as exploration: scored on screen but NOT saved (no XP, no streak, no lesson unlock, no history entry, no fluency progress, no audio save)
+    unlockAll: false           // when true, every track + lesson is accessible without completing prior ones. Does NOT alter the real unlock data — turning it off restores normal progression.
   }
 };
 
@@ -8493,6 +8494,9 @@ function getLessonData(trackId, lessonIndex) {
 }
 
 function isLessonUnlocked(lessonId) {
+  // "Unlock everything" override — when on, every lesson is accessible WITHOUT
+  // touching the real unlock data, so turning it off restores normal gating.
+  if (state.settings && state.settings.unlockAll) return true;
   return !!state.unlockedLessons[lessonId];
 }
 
@@ -8501,6 +8505,7 @@ function isLessonCompleted(lessonId) {
 }
 
 function isTrackUnlocked(trackId) {
+  if (state.settings && state.settings.unlockAll) return true;
   return !!state.unlockedTracks[trackId];
 }
 
@@ -9214,6 +9219,17 @@ function renderSettings() {
           </div>
           <div class="setting-toggle ${s.typingExplorationMode ? 'on' : ''}"
             onclick="toggleSetting('typingExplorationMode')"></div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label-line">
+          <div>
+            <div class="setting-label">Unlock all tracks &amp; lessons</div>
+            <div class="setting-desc">Skip the "complete the previous lesson first" gate so you can jump straight to any track or lesson. Your real progress isn't changed — completing lessons still advances your normal unlocks underneath, and turning this <strong>off</strong> restores standard gating exactly as before. Great for drilling a specific track without working through everything first.</div>
+          </div>
+          <div class="setting-toggle ${s.unlockAll ? 'on' : ''}"
+            onclick="toggleSetting('unlockAll')"></div>
         </div>
       </div>
 
