@@ -1,9 +1,11 @@
 // Netlify Function: /.netlify/functions/ai-chat
-// Unified AI endpoint that handles all of Stage 3's interactive modes:
+// Unified AI endpoint that handles AI-powered interactive modes:
 //   - generate-model-answer : produce a model answer for any prompt + framework
 //   - conversation-turn     : AI asks follow-up questions, adaptive persona
 //   - devils-advocate-turn  : AI pushes back with counter-arguments, adjustable intensity
 //   - audience-round        : AI plays a specific audience + evaluates adaptation
+//   - debate-turn           : AI takes opposing side in a structured 3-round debate (Stage 4A)
+//   - debate-verdict        : AI judges a completed debate and names strongest/weakest (Stage 4A)
 //
 // The OpenRouter API key lives ONLY as the Netlify env var OPENROUTER_API_KEY.
 
@@ -48,6 +50,8 @@ exports.handler = async (event) => {
       case 'conversation-turn':     request = buildConversationRequest(payload); break;
       case 'devils-advocate-turn':  request = buildDevilsAdvocateRequest(payload); break;
       case 'audience-round':        request = buildAudienceRoundRequest(payload); break;
+      case 'debate-turn':           request = buildDebateTurnRequest(payload); break;
+      case 'debate-verdict':        request = buildDebateVerdictRequest(payload); break;
       default:
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Unknown mode: ${mode}` }) };
     }
@@ -314,6 +318,118 @@ Evaluate audience-fit. Return the JSON.`;
     jsonMode: true,
     temperature: 0.5,
     maxTokens: 800
+  };
+}
+
+function buildDebateTurnRequest(p) {
+  const { topic, userSide, aiSide, round, totalRounds, userLastArgument, history } = p;
+  if (!topic || !aiSide || !userLastArgument) {
+    throw new Error('Missing topic, aiSide, or userLastArgument');
+  }
+
+  const totalR = totalRounds || 3;
+  const currentR = round || 1;
+  const isFinalRound = currentR >= totalR;
+  const turnType = currentR === 1 ? 'opening' : (isFinalRound ? 'closing' : 'rebuttal');
+
+  const turnGuidance = {
+    opening: 'Open with your strongest single argument for your side. Be confident but not hostile. State your thesis and back it with reasoning in 60-80 words.',
+    rebuttal: 'Directly engage with what the user just argued. Point out the weakest link and counter it with your own evidence or reasoning. Stay in character on YOUR side. 60-80 words.',
+    closing: 'This is the final round. Deliver a closing statement: restate why your side wins, summarize why the user\'s argument falls short, and end with a memorable line. 70-100 words.'
+  };
+
+  const systemPrompt = `You are debating a structured formal debate. You have been assigned the "${aiSide.toUpperCase()}" side of this topic and must commit to it fully, even if you personally disagree.
+
+TOPIC: "${topic}"
+YOUR SIDE: ${aiSide.toUpperCase()}
+USER'S SIDE: ${userSide.toUpperCase()} (you must argue the opposite)
+ROUND: ${currentR} of ${totalR} (${turnType})
+
+TURN GUIDANCE: ${turnGuidance[turnType]}
+
+RULES:
+- Never concede or switch sides mid-debate.
+- Do NOT break character to give feedback on speaking technique.
+- Do NOT say "good point" or validate the user excessively — this is adversarial.
+- Stay on-topic. Attack the user's reasoning, not the user personally.
+- Do not invent fake statistics. Use logic, common knowledge, and rhetorical technique.
+- Keep it punchy — a real debater's turn, not an essay.
+
+OUTPUT FORMAT — return ONLY this JSON:
+{
+  "rebuttal": "<your full debate turn, in character, 60-100 words>",
+  "strongestPoint": "<one short phrase naming YOUR strongest point this round>",
+  "targetedWeakness": "<one short phrase naming what you attacked in the user's argument, or 'n/a' for round 1>",
+  "turnType": "${turnType}"
+}`;
+
+  const historyBlock = (history && history.length)
+    ? '\n\nDEBATE SO FAR:\n' + history.map(t => `[${t.speaker.toUpperCase()}]: ${t.text}`).join('\n\n')
+    : '';
+
+  const userPrompt = `The debate is in progress.${historyBlock}
+
+USER'S MOST RECENT ARGUMENT (Round ${currentR}):
+"${userLastArgument}"
+
+Deliver your ${turnType} for the ${aiSide.toUpperCase()} side. Return the JSON.`;
+
+  return {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    jsonMode: true,
+    temperature: 0.8,
+    maxTokens: 500
+  };
+}
+
+function buildDebateVerdictRequest(p) {
+  const { topic, userSide, aiSide, history } = p;
+  if (!topic || !userSide || !Array.isArray(history) || history.length === 0) {
+    throw new Error('Missing topic, userSide, or history');
+  }
+
+  const systemPrompt = `You are an impartial debate judge. You will review a completed debate and render a fair, objective verdict focused on helping the user improve.
+
+JUDGING CRITERIA:
+- Argument strength: was each claim backed with evidence or reasoning?
+- Engagement: did they directly address the opponent's points?
+- Structure: was the argument organized and easy to follow?
+- Rhetoric: were specific examples, analogies, or framing devices used effectively?
+
+You are NOT picking a winner or loser. You are naming the user's strongest and weakest turns, and giving one concrete tip for next time.
+
+OUTPUT FORMAT — return ONLY this JSON:
+{
+  "overallScore": <integer 0-100>,
+  "summary": "<two sentences describing how the user performed overall>",
+  "strongestTurn": { "round": <1|2|3>, "why": "<one sentence explaining what made it strong>" },
+  "weakestTurn": { "round": <1|2|3>, "why": "<one sentence explaining what was weak>" },
+  "keyInsight": "<one sentence of actionable coaching for next debate>"
+}`;
+
+  const historyBlock = history.map((t, i) => `[${t.speaker.toUpperCase()}] Round ${Math.ceil((i + 1) / 2)}:\n"${t.text}"`).join('\n\n');
+
+  const userPrompt = `TOPIC: "${topic}"
+USER DEBATED THE: ${userSide.toUpperCase()} side
+OPPONENT DEBATED THE: ${aiSide.toUpperCase()} side
+
+FULL DEBATE TRANSCRIPT:
+
+${historyBlock}
+
+Render your verdict focused ONLY on the user's performance. Return the JSON.`;
+
+  return {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    jsonMode: true,
+    temperature: 0.4,
+    maxTokens: 700
   };
 }
 

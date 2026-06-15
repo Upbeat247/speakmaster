@@ -9393,12 +9393,86 @@ function renderSettings() {
       </div>
     </div>
 
-    <!-- CLOUD SYNC -->
+    <!-- DEVICE SYNC (recommended) -->
+    <div class="settings-group">
+      <div class="settings-group-title">
+        <i data-lucide="refresh-cw" style="width:16px;height:16px"></i>
+        Back Up &amp; Sync
+      </div>
+      ${(() => {
+        const code = getSyncCode();
+        const meta = getSyncMeta();
+        const auto = isAutoBackupOn();
+        const when = meta && meta.updatedAt ? new Date(meta.updatedAt).toLocaleString() : null;
+        return `
+          <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem">
+            Back up your progress to the cloud and restore it on any device with a short code.
+            No account, no email — just the code. Works the same in any browser, on any phone or computer.
+          </p>
+          ${code ? `
+            <div class="cloud-status cloud-status-in">
+              <i data-lucide="check-circle" style="width:16px;height:16px;color:var(--green)"></i>
+              <div>
+                <strong>Backed up · <span style="font-family:monospace;letter-spacing:0.04em">${code}</span></strong>
+                <p style="margin:0.15rem 0 0">${when ? 'Last backup: ' + when : 'Tap “Back up now” to save the latest.'}${auto ? ' · Auto-backup is on' : ''}</p>
+              </div>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+              <button class="btn btn-primary" onclick="doCloudBackup(this)">
+                <i data-lucide="cloud-upload" style="width:14px;height:14px"></i> Back up now
+              </button>
+              <button class="btn btn-secondary" onclick="copySyncCode()">
+                <i data-lucide="copy" style="width:14px;height:14px"></i> Copy code
+              </button>
+            </div>
+          ` : `
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+              <button class="btn btn-primary" onclick="doCloudBackup(this)">
+                <i data-lucide="cloud-upload" style="width:14px;height:14px"></i> Back up now
+              </button>
+            </div>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.75rem">
+              <i data-lucide="info" style="width:10px;height:10px;display:inline;vertical-align:middle"></i>
+              Your first backup creates a sync code. Save it — you'll enter it on your other devices.
+            </p>
+          `}
+          <div class="setting-row">
+            <div class="setting-label-line">
+              <div>
+                <div class="setting-label">Auto-backup</div>
+                <div class="setting-desc">After your first backup, keep the cloud copy current automatically whenever your progress changes.</div>
+              </div>
+              <div class="setting-toggle ${auto ? 'on' : ''}" onclick="toggleAutoBackup()"></div>
+            </div>
+          </div>
+          <div style="margin-top:0.85rem">
+            <label style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);display:block;margin-bottom:0.35rem">Restore from a sync code</label>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+              <input id="sync-restore-code" placeholder="SPK-XXXX-XXXX"
+                     value="${code ? escapeHtmlSafe(code) : ''}"
+                     autocapitalize="characters" autocomplete="off" spellcheck="false"
+                     style="flex:1;min-width:160px;padding:0.6rem 0.75rem;border:2px solid var(--border);border-radius:var(--radius-sm);font-family:monospace;font-size:0.9rem;background:var(--bg-primary);color:var(--text-primary);text-transform:uppercase">
+              <button class="btn btn-secondary" onclick="doCloudRestore()">
+                <i data-lucide="cloud-download" style="width:14px;height:14px"></i> Restore
+              </button>
+            </div>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;line-height:1.5">
+              On your other device, open Settings → Back Up &amp; Sync → tap <strong>Back up now</strong>, then type the code it gives you here and tap Restore.
+            </p>
+          </div>
+        `;
+      })()}
+    </div>
+
+    <!-- CLOUD SYNC (advanced — self-hosted Supabase) -->
     <div class="settings-group">
       <div class="settings-group-title">
         <i data-lucide="cloud" style="width:16px;height:16px"></i>
-        Cloud Sync
+        Cloud Sync (Advanced · Supabase)
       </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.75rem">
+        Optional account-based sync via your own Supabase project. Most people should use <strong>Back Up &amp; Sync</strong> above instead — it needs no account and can't pause.
+      </p>
       ${(() => {
         const cfg = loadSupabaseConfig();
         const configured = !!(cfg.url && cfg.anonKey);
@@ -11124,6 +11198,107 @@ function openAudioDB() {
 async function requestPersistentStorage() {
   if (navigator.storage && navigator.storage.persist) {
     try { await navigator.storage.persist(); } catch (e) {}
+  }
+}
+
+// ---------- iOS storage-eviction warning ----------
+// iOS Safari deletes a site's localStorage after 7 days of no interaction UNLESS
+// the site is installed to the Home Screen. This is the #1 cause of "I lost my
+// progress" reports. We detect Safari-tab use on iOS and warn the user.
+function isIOSDevice() {
+  const ua = navigator.userAgent || '';
+  const iOSClassic = /iPad|iPhone|iPod/.test(ua);
+  // iPadOS 13+ reports as Mac but has touch — detect that case too
+  const iPadOS = navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1;
+  return iOSClassic || iPadOS;
+}
+function isStandalonePWA() {
+  return (window.navigator.standalone === true) ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+// Which iOS browser are we in? All iOS browsers are WebKit underneath and share
+// the 7-day eviction policy, but only Safari can install a Home-Screen PWA.
+function iosBrowserKind() {
+  const ua = navigator.userAgent || '';
+  if (/CriOS/.test(ua)) return 'chrome';
+  if (/FxiOS/.test(ua)) return 'firefox';
+  if (/EdgiOS/.test(ua)) return 'edge';
+  return 'safari';
+}
+function maybeShowStorageWarning() {
+  // Only relevant on iOS, only when NOT installed to the Home Screen.
+  if (!isIOSDevice() || isStandalonePWA()) return;
+  // Honor a previous dismissal (note: if iOS later evicts storage, the dismissal
+  // is forgotten too — which is fine, the user gets reminded again).
+  try { if (localStorage.getItem('speakmaster-install-dismissed') === '1') return; } catch (e) {}
+
+  const existing = document.getElementById('storage-warning-banner');
+  if (existing) return;
+
+  const browser = iosBrowserKind();
+  const inSafari = browser === 'safari';
+  const browserName = { chrome: 'Chrome', firefox: 'Firefox', edge: 'Edge', safari: 'Safari' }[browser];
+
+  // Safari can install a Home-Screen PWA directly. Other iOS browsers cannot —
+  // they must open the page in Safari first, so we lead with Cloud Sync for them.
+  const stepsHTML = inSafari ? `
+    <ol class="sw-steps">
+      <li>Tap the <strong>Share</strong> button (the square with an arrow) at the bottom of Safari.</li>
+      <li>Scroll down and tap <strong>“Add to Home Screen.”</strong></li>
+      <li>Open SpeakMaster from that new icon from now on — installed apps are exempt from the 7-day wipe.</li>
+    </ol>
+    <div class="sw-body" style="margin-bottom:0.6rem">
+      Even better: open <strong>Settings → Cloud Sync</strong> and sign in (or use <strong>Settings → Export My Progress</strong>) for an off-device backup that survives anything.
+    </div>
+  ` : `
+    <div class="sw-body" style="margin:0.5rem 0">
+      <strong>Important:</strong> ${browserName} on iPhone can't install web apps to your Home Screen — only Safari can. You have two ways to keep your progress safe:
+    </div>
+    <ol class="sw-steps">
+      <li><strong>Easiest — turn on Cloud Sync:</strong> open <strong>Settings → Cloud Sync</strong> and sign in. Your progress backs up to the cloud and works from any browser or device.</li>
+      <li><strong>Or install via Safari:</strong> open this same page in <strong>Safari</strong>, then Share → <strong>“Add to Home Screen.”</strong> (Note: that's a separate storage from ${browserName}, so do this before you build up more progress here.)</li>
+    </ol>
+  `;
+
+  const banner = document.createElement('div');
+  banner.id = 'storage-warning-banner';
+  banner.style.cssText = [
+    'position:fixed', 'left:0', 'right:0', 'bottom:0', 'z-index:10000',
+    'background:var(--bg-card,#fff)', 'border-top:3px solid var(--orange,#e8762b)',
+    'box-shadow:0 -6px 24px rgba(0,0,0,0.25)', 'padding:1rem 1.1rem',
+    'padding-bottom:calc(1rem + env(safe-area-inset-bottom))',
+    'font-family:var(--font-body,system-ui)', 'color:var(--text-primary,#1a1a1a)',
+    'animation:sw-slide-up 0.3s ease', 'max-height:80vh', 'overflow-y:auto'
+  ].join(';');
+  banner.innerHTML = `
+    <style>
+      @keyframes sw-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      #storage-warning-banner .sw-title { font-weight: 800; font-size: 0.95rem; display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem; }
+      #storage-warning-banner .sw-body { font-size: 0.85rem; line-height: 1.45; color: var(--text-secondary, #555); }
+      #storage-warning-banner .sw-steps { font-size: 0.85rem; line-height: 1.5; margin: 0.5rem 0 0.6rem; padding-left: 1.1rem; }
+      #storage-warning-banner .sw-steps li { margin-bottom: 0.35rem; }
+      #storage-warning-banner .sw-actions { display:flex; gap:0.5rem; flex-wrap:wrap; }
+      #storage-warning-banner button { font: inherit; cursor: pointer; border-radius: 10px; padding: 0.5rem 0.9rem; font-weight: 700; font-size: 0.85rem; border: 1px solid var(--border, #ddd); }
+      #storage-warning-banner .sw-primary { background: var(--orange, #e8762b); color: #fff; border-color: var(--orange, #e8762b); }
+      #storage-warning-banner .sw-ghost { background: transparent; color: var(--text-secondary, #555); }
+    </style>
+    <div class="sw-title">⚠️ Keep your progress safe</div>
+    <div class="sw-body">
+      You're using SpeakMaster in ${browserName} on iPhone. <strong>iOS deletes web-app data after 7 days</strong> of not opening it — and every iPhone browser (including ${browserName}) is Safari underneath, so they all do this. This is almost certainly why your earlier progress disappeared.
+    </div>
+    ${stepsHTML}
+    <div class="sw-actions">
+      <button class="sw-primary" onclick="dismissStorageWarning(true)">Got it</button>
+      <button class="sw-ghost" onclick="dismissStorageWarning(false)">Remind me later</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+function dismissStorageWarning(permanent) {
+  const b = document.getElementById('storage-warning-banner');
+  if (b) b.remove();
+  if (permanent) {
+    try { localStorage.setItem('speakmaster-install-dismissed', '1'); } catch (e) {}
   }
 }
 
@@ -13160,6 +13335,15 @@ function openImportDialog() {
       <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">
         Paste the JSON you exported from another device below. This will <strong>replace</strong> the progress on this device.
       </p>
+      <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.6rem;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
+          <i data-lucide="file-up" style="width:14px;height:14px"></i>
+          Choose a backup file
+        </button>
+        <span style="font-size:0.78rem;color:var(--text-muted)">or paste the JSON below</span>
+        <input type="file" id="import-file-input" accept=".json,application/json"
+               style="display:none" onchange="importFromFile(this)">
+      </div>
       <textarea id="import-textarea"
         placeholder='Paste your exported JSON here (starts with { "_app": "SpeakMaster", ... })'
         style="width:100%;min-height:140px;padding:0.75rem;border:2px solid var(--border);border-radius:var(--radius-sm);font-family:monospace;font-size:0.8rem;background:var(--bg-primary);color:var(--text-primary);resize:vertical"></textarea>
@@ -13176,9 +13360,14 @@ function openImportDialog() {
       <details style="margin-top:1rem;font-size:0.78rem;color:var(--text-muted)">
         <summary style="cursor:pointer">How does this work?</summary>
         <p style="margin-top:0.5rem;line-height:1.5">
-          On your other device, go to Settings → Export My Progress. That copies a JSON string to your clipboard.
-          Share it with this device (AirDrop, email to yourself, messaging, etc.), then paste it above and tap Import.
-          Your full progress — XP, streaks, scores, reflections, achievements, everything — will be restored.
+          On the other browser/device, go to Settings → Export My Progress. That copies a JSON string to your clipboard
+          <em>and</em> saves a <code>.json</code> backup file. Then either <strong>paste</strong> that JSON above, or tap
+          <strong>“Choose a backup file”</strong> and pick the saved <code>.json</code> file. Tap Import and your full
+          progress — XP, streaks, scores, reflections, achievements, everything — is restored.
+        </p>
+        <p style="margin-top:0.5rem;line-height:1.5">
+          <strong>Moving a Safari tab → Home-Screen app on the same iPhone?</strong> Export in the Safari tab, then open the
+          Home-Screen app and import here. The file route is the most reliable on iOS.
         </p>
       </details>
     </div>
@@ -13267,6 +13456,27 @@ function validateAndImportProgress() {
   } catch (e) {
     validation.innerHTML = `<span style="color:var(--red)">Import failed: ${e.message}</span>`;
   }
+}
+
+// Read a chosen .json backup file into the import textarea, then validate it.
+function importFromFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const validation = document.getElementById('import-validation');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const ta = document.getElementById('import-textarea');
+    if (ta) ta.value = String(e.target.result || '').trim();
+    if (validation) {
+      validation.innerHTML = '<span style="color:var(--green,#2f855a)">File loaded — tap “Import &amp; Replace” to restore.</span>';
+    }
+    // Reset the input so re-choosing the same file fires onchange again
+    input.value = '';
+  };
+  reader.onerror = () => {
+    if (validation) validation.innerHTML = '<span style="color:var(--red)">Could not read that file.</span>';
+  };
+  reader.readAsText(file);
 }
 
 function exportPracticeLog(btn) {
@@ -13378,6 +13588,154 @@ document.addEventListener('keydown', (e) => {
 // Optional cloud sync using Supabase for cross-device progress sync.
 // Credentials are stored per-device in localStorage — users paste them once.
 // When signed in, state is pushed on every save and pulled on app load.
+
+// ============================================================
+// DEVICE SYNC — turnkey backup/restore via Netlify Blobs.
+// No account: a short "sync code" (SPK-XXXX-XXXX) identifies a backup.
+// Back up on one device, enter the code on another to restore.
+// ============================================================
+const SYNC_ENDPOINT = '/.netlify/functions/sync';
+const SYNC_CODE_KEY = 'speakmaster-sync-code';
+const SYNC_AUTO_KEY = 'speakmaster-sync-auto';
+const SYNC_META_KEY = 'speakmaster-sync-meta';
+const SYNC_CODE_RE  = /^SPK-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+
+function getSyncCode() { try { return localStorage.getItem(SYNC_CODE_KEY) || ''; } catch (e) { return ''; } }
+function setSyncCode(c) { try { if (c) localStorage.setItem(SYNC_CODE_KEY, c); } catch (e) {} }
+function isAutoBackupOn() { try { return localStorage.getItem(SYNC_AUTO_KEY) === '1'; } catch (e) { return false; } }
+function setAutoBackup(on) { try { localStorage.setItem(SYNC_AUTO_KEY, on ? '1' : '0'); } catch (e) {} }
+function getSyncMeta() { try { return JSON.parse(localStorage.getItem(SYNC_META_KEY) || 'null'); } catch (e) { return null; } }
+function setSyncMeta(m) { try { localStorage.setItem(SYNC_META_KEY, JSON.stringify(m)); } catch (e) {} }
+
+function buildSyncData() {
+  const data = {};
+  PERSISTED_KEYS.forEach(k => { if (state[k] !== undefined) data[k] = state[k]; });
+  return data;
+}
+
+// Push current progress to the cloud. Reuses the saved code (overwrite) or
+// gets a freshly generated one. Returns { code, updatedAt }.
+async function cloudBackup(opts) {
+  opts = opts || {};
+  const existingCode = getSyncCode();
+  const res = await fetch(SYNC_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code: existingCode || undefined,
+      data: buildSyncData(),
+      updatedAt: state.lastModified || new Date().toISOString()
+    })
+  });
+  if (!res.ok) {
+    let msg = 'Backup failed';
+    try { const j = await res.json(); msg = j.error || msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  const out = await res.json();
+  setSyncCode(out.code);
+  setSyncMeta({ updatedAt: out.updatedAt });
+  if (!existingCode && !opts.silent) setAutoBackup(true); // first backup → keep it current
+  return out;
+}
+
+// Fetch a backup by code. Returns { data, updatedAt }.
+async function cloudRestore(code) {
+  code = (code || '').toUpperCase().trim();
+  if (!SYNC_CODE_RE.test(code)) throw new Error('That code is not valid — it should look like SPK-XXXX-XXXX.');
+  const res = await fetch(SYNC_ENDPOINT + '?code=' + encodeURIComponent(code));
+  if (!res.ok) {
+    let msg = 'Restore failed';
+    try { const j = await res.json(); msg = j.error || msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  const rec = await res.json();
+  if (!rec || !rec.data) throw new Error('That backup is empty.');
+  return rec;
+}
+
+// Debounced auto-backup, hooked into saveState. Only runs once a code exists
+// and the toggle is on. Silent — failures retry on the next save.
+let _autoBackupTimer = null;
+function maybeAutoBackup() {
+  if (!isAutoBackupOn() || !getSyncCode()) return;
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  clearTimeout(_autoBackupTimer);
+  _autoBackupTimer = setTimeout(() => {
+    cloudBackup({ silent: true })
+      .then(() => { if (state.currentView === 'settings') renderSettings(); })
+      .catch(() => {});
+  }, 4000);
+}
+
+// ---------- UI handlers ----------
+async function doCloudBackup(btn) {
+  let original;
+  if (btn) { original = btn.innerHTML; btn.disabled = true; btn.innerHTML = 'Backing up…'; }
+  try {
+    const out = await cloudBackup();
+    showToast('Backed up! Your sync code is ' + out.code);
+    renderSettings();
+  } catch (e) {
+    showToast('Backup failed: ' + e.message);
+    if (btn) { btn.disabled = false; btn.innerHTML = original; }
+  }
+}
+
+async function doCloudRestore() {
+  const input = document.getElementById('sync-restore-code');
+  const code = input ? input.value : '';
+  let rec;
+  try { rec = await cloudRestore(code); }
+  catch (e) { showToast(e.message); return; }
+
+  const d = rec.data;
+  const xp = d.xp || 0;
+  const completed = d.completedLessons ? Object.keys(d.completedLessons).length : 0;
+  const reflections = Array.isArray(d.reflections) ? d.reflections.length : 0;
+  const when = rec.updatedAt ? new Date(rec.updatedAt).toLocaleString() : 'unknown';
+  const ok = confirm(
+    `Restore this backup?\n\n` +
+    `• ${xp} XP\n• ${completed} lessons completed\n• ${reflections} reflections\n• Backed up: ${when}\n\n` +
+    `This REPLACES the progress currently on this device.`
+  );
+  if (!ok) return;
+
+  try {
+    PERSISTED_KEYS.forEach(k => {
+      if (d[k] !== undefined) {
+        if (k === 'settings' && typeof d[k] === 'object') state.settings = Object.assign({}, state.settings, d[k]);
+        else state[k] = d[k];
+      }
+    });
+    setSyncCode((code || '').toUpperCase().trim());
+    setAutoBackup(true);
+    saveState();
+    if (typeof playMastery === 'function') playMastery();
+    showToast('Progress restored from cloud!');
+    setTimeout(() => { applyTheme(); handleRoute(); }, 400);
+  } catch (e) {
+    showToast('Restore failed: ' + e.message);
+  }
+}
+
+function toggleAutoBackup() {
+  const now = !isAutoBackupOn();
+  setAutoBackup(now);
+  playClick();
+  if (now && getSyncCode()) maybeAutoBackup();
+  renderSettings();
+}
+
+function copySyncCode() {
+  const c = getSyncCode();
+  if (!c) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(c).then(() => showToast('Sync code copied: ' + c), () => showToast('Your code: ' + c));
+  } else {
+    showToast('Your code: ' + c);
+  }
+}
 
 const SUPABASE_URL_KEY = 'speakmaster-supabase-url';
 const SUPABASE_ANON_KEY_KEY = 'speakmaster-supabase-anon-key';
@@ -13994,9 +14352,13 @@ function saveState() {
     } catch (e) {
       console.warn('Failed to save state:', e);
     }
-    // Also push to cloud if signed in (fire and forget)
+    // Also push to cloud if signed in (Supabase — fire and forget)
     if (typeof syncPushToCloud === 'function') {
       syncPushToCloud();
+    }
+    // Device Sync (Netlify Blobs) — debounced auto-backup if enabled
+    if (typeof maybeAutoBackup === 'function') {
+      maybeAutoBackup();
     }
   }, 250);
 }
@@ -14223,6 +14585,12 @@ document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
   // Touch gestures for swipe-to-dismiss and pull-to-refresh
   initTouchGestures();
+  // Ask the browser to treat our storage as persistent so iOS/Safari is far less
+  // likely to evict progress. Best-effort; granted reliably on installed PWAs.
+  if (typeof requestPersistentStorage === 'function') requestPersistentStorage();
+  // Warn Safari-tab users on iOS that their data will be wiped after 7 days
+  // unless they install to the Home Screen.
+  if (typeof maybeShowStorageWarning === 'function') maybeShowStorageWarning();
 });
 
 // ========== STAGE 5A: 30-DAY FLUENCY PROGRAM ==========

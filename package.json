@@ -1,0 +1,9 @@
+{
+  "name": "speakmaster",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SpeakMaster — public speaking practice PWA. Netlify Functions deps.",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

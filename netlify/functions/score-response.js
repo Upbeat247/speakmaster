@@ -73,7 +73,10 @@ exports.handler = async (event) => {
     timeSpent,         // Actual time spent
     inputMode = 'typing', // 'typing' or 'speaking'
     wordCount,
-    wpm
+    wpm,
+    heuristicScore     // Optional: { structure, clarity, depth, completion, total, signals }
+                       // The scores the heuristic engine already awarded. AI acts as a
+                       // complementary second opinion, not an independent rescorer.
   } = payload;
 
   // Basic validation
@@ -95,33 +98,47 @@ exports.handler = async (event) => {
   }
 
   // ----- Build the evaluator prompt -----
-  // We ask the model for a strict JSON object so the frontend can display it cleanly.
-  const systemPrompt = `You are an expert communication coach scoring a user's practice response against a specific framework. You must be rigorous but fair, evidence-based, and genuinely helpful.
+  // The AI is a COMPLEMENTARY reviewer, not an independent re-scorer. It sees the
+  // heuristic's results and either confirms them (default) or adjusts with specific
+  // evidence. This prevents the frustrating "app said structure was great, AI said it
+  // was weak" contradiction.
+  const systemPrompt = `You are an expert communication coach providing a deeper second opinion on a response that has ALREADY been scored by an automated heuristic engine. You are NOT an independent rescorer. Your job is to confirm, nuance, and enrich — not to contradict without cause.
 
-SCORING RULES:
-- Structure (0-40 pts): how well the response follows the framework elements.
-- Clarity (0-30 pts): pacing, coherence, filler words, time adherence.
-- Depth (0-20 pts): specificity — numbers, names, concrete examples, stakes.
-- Completion (10 pts): always awarded for submitting a response.
+ROLE AND CONSTRAINTS:
+1. The heuristic scores are the baseline. You may CONFIRM them, ADD nuance the heuristic can't detect, or CATCH specific things the heuristic missed.
+2. You may only score LOWER than the heuristic when you can point to a specific problem the heuristic was blind to (e.g. the response hit framework keywords but the logic was incoherent, or a claim was misleading).
+3. When the heuristic awarded full or near-full credit for a category, default to agreeing unless you have concrete reason to disagree. Do NOT deduct points just to appear rigorous.
+4. When the heuristic missed something (e.g. a point was weak even though the word patterns matched), you may score lower AND must explain WHY in your signals.
+5. Where you agree with the heuristic, use your signals to ENRICH (add depth) rather than repeat what the heuristic already said.
+6. Your total score should be within 10 points of the heuristic total unless there is a clear substantive issue.
 
-IMPORTANT:
-- For speech-mode responses, do NOT penalize missing punctuation — transcripts lack it by design. Judge sentence structure by the flow of ideas, not punctuation.
-- For typing-mode responses, normal sentence/punctuation standards apply.
-- Always ground feedback in actual QUOTES from the user's response. Don't invent.
-- Be specific and actionable. "Make it stronger" is useless; "Replace 'stuff' with '3 specific examples' at line 2" is useful.
+CATEGORIES:
+- Structure (0-40): does the response follow the framework? Does each element do its job?
+- Clarity (0-30): pacing, coherence, filler words, time adherence.
+- Depth (0-20): specificity — numbers, names, concrete examples, stakes, consequences.
+- Completion (10): always 10.
 
-OUTPUT FORMAT:
-Return ONLY a JSON object (no prose, no markdown) with this exact shape:
+SPEECH MODE:
+- For speech-mode responses, do NOT penalize missing punctuation — transcripts lack it by design. Judge sentence structure by the flow of ideas.
+
+EVIDENCE RULES:
+- Every signal must include a direct quote from the user (or empty if truly not applicable).
+- Every "miss" or "partial" must include a concrete, actionable suggestion.
+- Never invent quotes.
+
+OUTPUT FORMAT — return ONLY this JSON (no prose, no markdown):
 {
   "structure": <integer 0-40>,
   "clarity": <integer 0-30>,
   "depth": <integer 0-20>,
   "completion": 10,
   "total": <integer 0-100>,
-  "verdict": "<one short sentence overall>",
+  "verdict": "<one sentence overall — frame as 'Building on the heuristic review...' or similar when you agree>",
+  "agreement": "<confirm|enrich|adjust>",
+  "agreementNote": "<one short sentence describing how your review relates to the heuristic's: confirming, adding depth, or specific adjustment>",
   "signals": [
     { "category": "structure"|"clarity"|"depth", "type": "hit"|"partial"|"miss",
-      "msg": "<short specific observation>",
+      "msg": "<short specific observation that ADDS to the heuristic (not duplicates it)>",
       "quote": "<direct quote from user or empty>",
       "suggestion": "<concrete rewrite/fix or empty>" }
   ],
@@ -142,6 +159,32 @@ Return ONLY a JSON object (no prose, no markdown) with this exact shape:
     : '';
   const paceInfo = (wpm && wordCount) ? `Pace: ${wpm} wpm, ${wordCount} words.` : '';
 
+  // Serialize the heuristic engine's findings so the AI can see what's already been assessed.
+  // This is what makes the AI COMPLEMENTARY instead of contradictory.
+  let heuristicBlock = '';
+  if (heuristicScore && typeof heuristicScore === 'object') {
+    const h = heuristicScore;
+    const sigLines = Array.isArray(h.signals)
+      ? h.signals.slice(0, 10).map(s => {
+          const tag = s.type === 'hit' ? '✓' : s.type === 'partial' ? '~' : '✗';
+          return `  ${tag} [${s.category || 'general'}] ${s.msg || ''}${s.quote ? ` (quoted: "${s.quote}")` : ''}`;
+        }).join('\n')
+      : '  (no signals recorded)';
+    heuristicBlock = `\n\nHEURISTIC ENGINE ALREADY SCORED THIS RESPONSE:
+- Structure: ${h.structure ?? '?'}/40
+- Clarity: ${h.clarity ?? '?'}/30
+- Depth: ${h.depth ?? '?'}/20
+- Completion: ${h.completion ?? 10}/10
+- TOTAL: ${h.total ?? '?'}/100
+
+Heuristic signals (what it found):
+${sigLines}
+
+YOUR JOB: confirm/enrich/adjust these findings. Do NOT score meaningfully lower unless you can point to a specific thing the heuristic missed. When you agree, use your signals to add DEPTH the heuristic can't detect (coherence, logical flow, persuasive impact, missing context).`;
+  } else {
+    heuristicBlock = '\n\n(No heuristic baseline provided — score independently.)';
+  }
+
   const userPrompt = `LESSON: ${lessonTitle || 'Unknown'}
 FRAMEWORK (in order):
 ${elementsLines}
@@ -158,9 +201,9 @@ THE USER'S RESPONSE (${inputMode} mode):
 EVALUATION CONTEXT:
 ${timeAdherence}
 ${paceInfo}
-User's pass mark: ${passMark}/100
+User's pass mark: ${passMark}/100${heuristicBlock}
 
-Now evaluate. Return the JSON object described in the system prompt. No surrounding prose.`;
+Now evaluate as a complementary reviewer. Return the JSON described in the system prompt. No surrounding prose.`;
 
   // ----- Call OpenRouter -----
   try {
@@ -236,9 +279,13 @@ Now evaluate. Return the JSON object described in the system prompt. No surround
     const normalized = {
       ...scored,
       verdict: typeof parsed.verdict === 'string' ? parsed.verdict : '',
+      // Agreement relationship with the heuristic score: 'confirm' | 'enrich' | 'adjust'
+      agreement: typeof parsed.agreement === 'string' ? parsed.agreement : 'enrich',
+      agreementNote: typeof parsed.agreementNote === 'string' ? parsed.agreementNote : '',
       signals: Array.isArray(parsed.signals) ? parsed.signals.slice(0, 12) : [],
       rewrite: typeof parsed.rewrite === 'string' ? parsed.rewrite : '',
       frameworkCoverage: Array.isArray(parsed.frameworkCoverage) ? parsed.frameworkCoverage : [],
+      heuristicTotal: heuristicScore && typeof heuristicScore.total === 'number' ? heuristicScore.total : null,
       model: model,
       usage: data.usage || null
     };
