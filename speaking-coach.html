@@ -13629,7 +13629,7 @@ async function cloudBackup(opts) {
   });
   if (!res.ok) {
     let msg = 'Backup failed';
-    try { const j = await res.json(); msg = j.error || msg; } catch (e) {}
+    try { const j = await res.json(); msg = j.error || msg; if (j.detail) msg += ' — ' + j.detail; } catch (e) {}
     throw new Error(msg);
   }
   const out = await res.json();
@@ -13646,7 +13646,7 @@ async function cloudRestore(code) {
   const res = await fetch(SYNC_ENDPOINT + '?code=' + encodeURIComponent(code));
   if (!res.ok) {
     let msg = 'Restore failed';
-    try { const j = await res.json(); msg = j.error || msg; } catch (e) {}
+    try { const j = await res.json(); msg = j.error || msg; if (j.detail) msg += ' — ' + j.detail; } catch (e) {}
     throw new Error(msg);
   }
   const rec = await res.json();
