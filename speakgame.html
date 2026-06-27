@@ -11,8 +11,13 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="description" content="A game of rhetoric: build winning arguments from phrase cards. Wordle, Deckbuilder, Composer, Tower Defense modes." />
 
+<!-- Home-screen icon. iOS ignores SVG manifest icons for the home-screen tile,
+     so a real PNG apple-touch-icon is required to avoid a blurry screenshot. -->
+<link rel="apple-touch-icon" href="speakgame-icon-180.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="speakgame-icon-512.png" />
+
 <!-- PWA manifest inlined so single-file deploy keeps working -->
-<link rel="manifest" href='data:application/manifest+json,{"name":"SpeakGame","short_name":"SpeakGame","description":"A game of rhetoric: build winning arguments.","start_url":"./speakgame.html","scope":"./","display":"standalone","background_color":"#0a1726","theme_color":"#0a1726","orientation":"any","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230a1726%22/><text x=%2250%22 y=%2270%22 font-family=%22system-ui%22 font-weight=%22900%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22%23a3f7e9%22>S</text></svg>","sizes":"any","type":"image/svg+xml"}]}' />
+<link rel="manifest" href='data:application/manifest+json,{"name":"SpeakGame","short_name":"SpeakGame","description":"A game of rhetoric: build winning arguments.","start_url":"./speakgame.html","scope":"./","display":"standalone","background_color":"#0a1726","theme_color":"#0a1726","orientation":"any","icons":[{"src":"speakgame-icon-180.png","sizes":"180x180","type":"image/png"},{"src":"speakgame-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}' />
 
 <title>SpeakGame — A game of rhetoric</title>
 
