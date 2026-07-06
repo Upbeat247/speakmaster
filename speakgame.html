@@ -339,17 +339,91 @@ body[data-theme="light"] .seg button.on { color:#fff; }
 .playback { background: var(--card2); border:1px solid color-mix(in srgb, var(--teal) 26%, var(--line)); border-radius: 14px; padding: 12px; margin: 4px 0 14px; }
 .pbhdr { font-weight:800; font-size:.95rem; margin-bottom:8px; }
 .pbnote { color: var(--mut); font-size:.76rem; line-height:1.4; margin-top:8px; }
+
+/* ================================================================
+   PROGRESS VIEW
+   ================================================================ */
+.viewhead { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.viewhead .iconbtn { font-size:1.5rem; line-height:1; font-weight:800; }
+.vh-title { font-size:1.25rem; font-weight:900; }
+
+/* Hero */
+.prog-hero {
+  position:relative; overflow:hidden;
+  border-radius: 20px; padding: 20px; margin-bottom:14px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--teal) 26%, transparent), transparent 60%),
+    linear-gradient(150deg, var(--card2), var(--card));
+  border:1px solid color-mix(in srgb, var(--teal) 26%, var(--line));
+  box-shadow: var(--shadow);
+}
+.ph-glow { position:absolute; width:180px; height:180px; right:-50px; top:-70px; border-radius:50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--teal2) 45%, transparent), transparent 70%); filter: blur(10px); pointer-events:none; }
+.ph-row { display:flex; align-items:center; gap:16px; position:relative; z-index:1; }
+.ph-lv { flex:0 0 auto; text-align:center; }
+.ph-lvnum { font-size: 3.2rem; font-weight: 900; line-height:1; background: linear-gradient(180deg, var(--teal), var(--teal2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.ph-lvcap { font-size:.66rem; font-weight:900; letter-spacing:.22em; color: var(--mut); margin-top:2px; }
+.ph-stats { flex:1; display:flex; gap:8px; }
+.ph-stat { flex:1; background: color-mix(in srgb, var(--bg) 30%, transparent); border:1px solid var(--line); border-radius:12px; padding:10px 6px; text-align:center; }
+.ph-stat b { display:block; font-size:1.3rem; font-weight:900; font-variant-numeric:tabular-nums; }
+.ph-stat span { font-size:.66rem; color: var(--mut); font-weight:700; }
+.ph-xpbar { position:relative; z-index:1; height:10px; border-radius:999px; background: color-mix(in srgb, var(--bg) 40%, transparent); border:1px solid var(--line); overflow:hidden; margin-top:16px; }
+.ph-xpbar > div { height:100%; width:0%; border-radius:999px; background: linear-gradient(90deg, var(--teal2), var(--teal)); transition: width 1s cubic-bezier(.2,.8,.2,1); }
+.ph-xptxt { position:relative; z-index:1; display:flex; justify-content:space-between; margin-top:7px; font-size:.76rem; font-weight:700; color: var(--mut); }
+
+/* Chart card */
+.chartcard { padding-bottom: 10px; }
+.cc-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px; }
+.cc-title { font-size:1rem; font-weight:800; }
+.cc-sub { font-size:.76rem; color: var(--mut); margin-top:1px; }
+.cc-delta { flex:0 0 auto; font-weight:900; font-size:.9rem; padding:4px 10px; border-radius:999px; background: var(--card2); border:1px solid var(--line); }
+.cc-delta.up { color: var(--teal); border-color: color-mix(in srgb, var(--teal) 40%, transparent); }
+.cc-delta.down { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+.chartwrap { width:100%; }
+.chartwrap svg { width:100%; height:auto; display:block; overflow:visible; }
+.chart-empty { text-align:center; color: var(--mut); font-size:.85rem; padding: 26px 10px; line-height:1.5; }
+.chart-line { fill:none; stroke: var(--teal); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.chart-dot { fill: var(--teal); stroke: var(--card); stroke-width:2; }
+.chart-dot-last { fill: var(--gold); }
+.chart-grid { stroke: var(--line); stroke-width:1; }
+.chart-glabel { fill: var(--mut); font-size:9px; font-weight:700; }
+@keyframes drawline { to { stroke-dashoffset:0; } }
+
+/* This week */
+.wkdots { display:flex; justify-content:space-between; gap:6px; margin:12px 0; }
+.wkday { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; }
+.wkday .dot { width:100%; max-width:34px; aspect-ratio:1; border-radius:11px; background: var(--card2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+.wkday.on .dot { background: linear-gradient(140deg, var(--teal2), var(--teal)); border-color:transparent; }
+.wkday.today .dot { box-shadow: 0 0 0 2px var(--gold); }
+.wkday .lbl { font-size:.62rem; font-weight:800; color: var(--mut); }
+.wkstats { display:flex; gap:8px; }
+.wkstats > div { flex:1; text-align:center; background: var(--card2); border:1px solid var(--line); border-radius:12px; padding:10px 4px; }
+.wkstats b { display:block; font-size:1.25rem; font-weight:900; font-variant-numeric:tabular-nums; }
+.wkstats span { font-size:.68rem; color: var(--mut); font-weight:700; }
+
+/* Mode bests */
+.msgrid { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+.mscard { display:flex; align-items:center; gap:12px; background: var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; box-shadow: var(--shadow); }
+.mscard .ms-ic { font-size:1.5rem; width:44px; height:44px; flex:0 0 44px; border-radius:12px; background: var(--card2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; }
+.mscard b { font-size:1.15rem; font-weight:900; margin-left:auto; color: var(--teal); font-variant-numeric:tabular-nums; }
+.mscard .ms-txt { display:flex; flex-direction:column; }
+.mscard .ms-txt span { font-size:.82rem; font-weight:700; }
+.mscard .ms-txt small { color: var(--mut); font-size:.72rem; font-weight:600; margin-top:1px; }
+
+/* tappable stat chips */
+.statchips { cursor:pointer; }
+.logo { cursor:pointer; }
 </style>
 </head>
 <body>
 
 <!-- ================= TOP BAR ================= -->
 <div class="topbar">
-  <div class="logo">Speak<span>Game</span></div>
-  <div class="statchips">
-    <div class="chip" id="hdrStreak" title="Daily streak">🔥 0</div>
-    <div class="chip" id="hdrLevel" title="Level">Lv 1</div>
-    <div class="chip" id="hdrCoins" title="Charisma Coins">🪙 0</div>
+  <div class="logo" id="siteLogo">Speak<span>Game</span></div>
+  <div class="statchips" id="siteChips" title="View your progress">
+    <div class="chip" id="hdrStreak">🔥 0</div>
+    <div class="chip" id="hdrLevel">Lv 1</div>
+    <div class="chip" id="hdrCoins">🪙 0</div>
   </div>
   <button class="iconbtn" id="btnSettings" aria-label="Settings">⚙️</button>
 </div>
@@ -475,6 +549,65 @@ body[data-theme="light"] .seg button.on { color:#fff; }
       <div class="pickrow" id="sprintPacks"></div>
     </div>
     <button class="btn" id="sprintStart">Hit me 🎤</button>
+  </section>
+
+  <!-- ================= PROGRESS ================= -->
+  <section class="view" id="v-progress">
+    <div class="viewhead">
+      <button class="iconbtn" id="progBack" aria-label="Back">‹</button>
+      <div class="vh-title">Your progress</div>
+    </div>
+
+    <!-- Hero -->
+    <div class="prog-hero">
+      <div class="ph-glow"></div>
+      <div class="ph-row">
+        <div class="ph-lv">
+          <div class="ph-lvnum" id="phLvNum">1</div>
+          <div class="ph-lvcap">LEVEL</div>
+        </div>
+        <div class="ph-stats">
+          <div class="ph-stat"><b id="phStreak">0</b><span>🔥 streak</span></div>
+          <div class="ph-stat"><b id="phSessions">0</b><span>🎯 sessions</span></div>
+          <div class="ph-stat"><b id="phRounds">0</b><span>🗣 rounds</span></div>
+        </div>
+      </div>
+      <div class="ph-xpbar"><div id="phXpFill"></div></div>
+      <div class="ph-xptxt"><span id="phXpNow"></span><span id="phXpNext"></span></div>
+    </div>
+
+    <!-- Trend chart -->
+    <div class="card chartcard">
+      <div class="cc-head">
+        <div>
+          <div class="cc-title">Talk-time trend</div>
+          <div class="cc-sub" id="trendSub">how much of each round you filled with speech</div>
+        </div>
+        <div class="cc-delta" id="trendDelta"></div>
+      </div>
+      <div id="chartWrap" class="chartwrap"></div>
+    </div>
+
+    <!-- This week -->
+    <div class="card">
+      <div class="cc-title">This week</div>
+      <div class="wkdots" id="wkDots"></div>
+      <div class="wkstats">
+        <div><b id="wkSessions">0</b><span>sessions</span></div>
+        <div><b id="wkRounds">0</b><span>rounds</span></div>
+        <div><b id="wkXp">0</b><span>XP</span></div>
+      </div>
+    </div>
+
+    <!-- Per-mode bests -->
+    <div class="cc-title" style="margin:2px 2px 10px;">Personal bests</div>
+    <div class="msgrid">
+      <div class="mscard"><div class="ms-ic">📜</div><div class="ms-txt"><span>Flow · best clean read</span><small id="msFlowN"></small></div><b id="msFlow">—</b></div>
+      <div class="mscard"><div class="ms-ic">🌉</div><div class="ms-txt"><span>Bridge · best run of beats</span><small id="msBridgeN"></small></div><b id="msBridge">—</b></div>
+      <div class="mscard"><div class="ms-ic">⚡️</div><div class="ms-txt"><span>Sprint · best talk ratio</span><small id="msSprintN"></small></div><b id="msSprint">—</b></div>
+    </div>
+
+    <p class="homehint" id="progHint"></p>
   </section>
 </main>
 
@@ -710,8 +843,9 @@ const DEFAULT_STATE = {
   flowWpm: 120,                     // last used reading speed
   unlocks: { legends: false, curveballs: false },
   settings: { theme: 'auto', sfx: true, sens: 'normal', record: true },
-  session: { lastDoneDay: null, count: 0 },
-  history: [],                      // last N rounds: {d, mode, ratio} for the trend
+  session: { lastDoneDay: null, count: 0, days: [] },
+  history: [],                      // last N scored rounds: {d, mode, ratio, hesit, xp}
+  xpByDay: {},                      // 'YYYY-MM-DD' -> xp earned that day
   seenOnboard: false
 };
 
@@ -731,7 +865,9 @@ function loadState() {
       state.unlocks  = Object.assign({}, DEFAULT_STATE.unlocks,  s.unlocks);
       state.settings = Object.assign({}, DEFAULT_STATE.settings, s.settings);
       state.session  = Object.assign({}, DEFAULT_STATE.session,  s.session);
+      if (!Array.isArray(state.session.days)) state.session.days = [];
       state.history  = Array.isArray(s.history) ? s.history : [];
+      state.xpByDay  = (s.xpByDay && typeof s.xpByDay === 'object') ? s.xpByDay : {};
       return;
     }
     // First run of v2: migrate XP + coins from the old tap-game version.
@@ -1194,9 +1330,14 @@ function advanceSession() {
 
 function completeSession() {
   const totalXp = session.results.reduce((a, r) => a + r.xp, 0);
-  const firstToday = state.session.lastDoneDay !== todayStr();
-  state.session.lastDoneDay = todayStr();
-  if (firstToday) state.session.count = (state.session.count || 0) + 1;
+  const today = todayStr();
+  const firstToday = state.session.lastDoneDay !== today;
+  state.session.lastDoneDay = today;
+  if (firstToday) {
+    state.session.count = (state.session.count || 0) + 1;
+    if (!state.session.days.includes(today)) state.session.days.push(today);
+    if (state.session.days.length > 60) state.session.days = state.session.days.slice(-60);
+  }
   saveState();
   SFX.win(); buzz(60);
   $('sessDoneSub').textContent = state.daily.xp >= DAILY_GOAL
@@ -1213,6 +1354,138 @@ function completeSession() {
 function endSession() { session = null; }
 
 /* ================================================================
+   PROGRESS VIEW
+   ================================================================ */
+function last7Days() {
+  const out = [];
+  for (let i = 6; i >= 0; i--) {
+    const dt = new Date(Date.now() - i * 864e5);
+    out.push({ dt, ds: dt.getFullYear() + '-' + pad2(dt.getMonth() + 1) + '-' + pad2(dt.getDate()) });
+  }
+  return out;
+}
+const _avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : NaN;
+
+function renderProgress() {
+  const lv = levelFromXp(state.xp);
+  $('phLvNum').textContent = lv;
+  $('phStreak').textContent = state.streak.count || 0;
+  $('phSessions').textContent = state.session.count || 0;
+  $('phRounds').textContent = (state.plays.flow || 0) + (state.plays.bridge || 0) + (state.plays.sprint || 0);
+
+  // XP within current level: level L spans [60*(L-1)^2, 60*L^2)
+  const base = 60 * (lv - 1) * (lv - 1), next = 60 * lv * lv;
+  const pct = clamp((state.xp - base) / (next - base) * 100, 0, 100);
+  $('phXpFill').style.width = '0%';
+  setTimeout(() => { $('phXpFill').style.width = pct + '%'; }, 60);
+  $('phXpNow').textContent = state.xp + ' XP total';
+  $('phXpNext').textContent = (next - state.xp) + ' XP to Lv ' + (lv + 1);
+
+  renderTrendChart();
+  renderWeek();
+  renderModeBests();
+
+  const scored = state.history.filter(h => typeof h.ratio === 'number');
+  $('progHint').textContent = scored.length < 3
+    ? 'Play a few Sprint or Flow rounds with your mic on — your trend line builds from scored rounds.'
+    : 'Talk-time is the share of each round you filled with speech. Steadier delivery, fewer stalls — that’s the confidence curve.';
+}
+
+function renderModeBests() {
+  $('msFlow').textContent   = state.best.flowWpm ? state.best.flowWpm + ' wpm' : '—';
+  $('msFlowN').textContent  = (state.plays.flow || 0) + ' rounds played';
+  $('msBridge').textContent = state.best.bridgeBeats ? state.best.bridgeBeats + '×' : '—';
+  $('msBridgeN').textContent= (state.plays.bridge || 0) + ' rounds played';
+  $('msSprint').textContent = state.best.sprintRatio ? Math.round(state.best.sprintRatio * 100) + '%' : '—';
+  $('msSprintN').textContent= (state.plays.sprint || 0) + ' rounds played';
+}
+
+function renderWeek() {
+  const dots = $('wkDots'); dots.innerHTML = '';
+  const wd = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const today = todayStr();
+  const roundsByDay = {};
+  state.history.forEach(h => { roundsByDay[h.d] = (roundsByDay[h.d] || 0) + 1; });
+  let sessions = 0, rounds = 0, xp = 0;
+  last7Days().forEach(({ dt, ds }) => {
+    const hasSession = state.session.days.includes(ds);
+    const dayXp = state.xpByDay[ds] || 0;
+    if (hasSession) sessions++;
+    rounds += roundsByDay[ds] || 0;
+    xp += dayXp;
+    const el = document.createElement('div');
+    el.className = 'wkday' + ((dayXp > 0 || hasSession) ? ' on' : '') + (ds === today ? ' today' : '');
+    el.innerHTML = '<div class="dot">' + (hasSession ? '🎯' : (dayXp > 0 ? '✓' : '')) + '</div><div class="lbl">' + wd[dt.getDay()] + '</div>';
+    dots.appendChild(el);
+  });
+  $('wkSessions').textContent = sessions;
+  $('wkRounds').textContent = rounds;
+  $('wkXp').textContent = xp;
+}
+
+function smoothPath(pts) {
+  let d = 'M ' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += ' C ' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ', ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ', ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+  }
+  return d;
+}
+
+function renderTrendChart() {
+  const wrap = $('chartWrap');
+  const data = state.history.filter(h => typeof h.ratio === 'number').slice(-16).map(h => h.ratio);
+  const de = $('trendDelta');
+  if (data.length < 2) {
+    wrap.innerHTML = '<div class="chart-empty">Your talk-time trend appears here after a couple of scored rounds.<br>Turn your mic on and run a Sprint or Flow.</div>';
+    de.textContent = ''; de.className = 'cc-delta';
+    $('trendSub').textContent = 'how much of each round you filled with speech';
+    return;
+  }
+  const W = 320, H = 150, padL = 26, padR = 8, padT = 12, padB = 18;
+  const iw = W - padL - padR, ih = H - padT - padB, n = data.length;
+  const x = i => padL + (n === 1 ? iw / 2 : iw * i / (n - 1));
+  const y = v => padT + ih * (1 - v / 100);
+
+  let grid = '';
+  [0, 25, 50, 75, 100].forEach(g => {
+    const yy = y(g);
+    grid += '<line class="chart-grid" x1="' + padL + '" y1="' + yy.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + yy.toFixed(1) + '"/>';
+    grid += '<text class="chart-glabel" x="' + (padL - 6) + '" y="' + (yy + 3).toFixed(1) + '" text-anchor="end">' + g + '</text>';
+  });
+
+  const pts = data.map((v, i) => [x(i), y(v)]);
+  const line = smoothPath(pts);
+  const area = line + ' L ' + x(n - 1).toFixed(1) + ' ' + (padT + ih).toFixed(1) + ' L ' + x(0).toFixed(1) + ' ' + (padT + ih).toFixed(1) + ' Z';
+  const dots = pts.map((p, i) => '<circle class="chart-dot' + (i === n - 1 ? ' chart-dot-last' : '') + '" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (i === n - 1 ? 4 : 3) + '"/>').join('');
+  let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]);
+  len *= 1.3;
+
+  wrap.innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Talk-time trend">' +
+      '<defs><linearGradient id="cgrad" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" style="stop-color:var(--teal);stop-opacity:.34"/>' +
+        '<stop offset="100%" style="stop-color:var(--teal);stop-opacity:0"/>' +
+      '</linearGradient></defs>' +
+      grid +
+      '<path d="' + area + '" fill="url(#cgrad)"/>' +
+      '<path class="chart-line" d="' + line + '" style="stroke-dasharray:' + len.toFixed(0) + ';stroke-dashoffset:' + len.toFixed(0) + ';animation:drawline 1s ease .1s forwards"/>' +
+      dots +
+    '</svg>';
+
+  const half = Math.min(5, Math.floor(n / 2));
+  const recent = _avg(data.slice(-half)), prior = _avg(data.slice(-half * 2, -half));
+  if (n >= 4 && !isNaN(prior)) {
+    const d = Math.round(recent - prior);
+    de.textContent = (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d) + '%';
+    de.className = 'cc-delta ' + (d >= 0 ? 'up' : 'down');
+  } else { de.textContent = ''; de.className = 'cc-delta'; }
+  $('trendSub').textContent = 'last ' + n + ' scored rounds · latest ' + data[n - 1] + '%';
+}
+
+/* ================================================================
    REWARDS
    ================================================================ */
 function award(xp, coins) {
@@ -1221,9 +1494,13 @@ function award(xp, coins) {
   state.xp += xp;
   state.coins += coins;
   state.daily.xp += xp;
+  // per-day XP log for the weekly view (pruned to ~60 days)
+  const t = todayStr();
+  state.xpByDay[t] = (state.xpByDay[t] || 0) + xp;
+  const keys = Object.keys(state.xpByDay);
+  if (keys.length > 70) { keys.sort(); keys.slice(0, keys.length - 60).forEach(k => delete state.xpByDay[k]); }
   // streak: first time crossing the goal today
   if (!beforeMet && state.daily.xp >= DAILY_GOAL) {
-    const t = todayStr();
     if (state.streak.lastGoalDay === yesterStr()) state.streak.count += 1;
     else if (state.streak.lastGoalDay !== t) state.streak.count = 1;
     state.streak.lastGoalDay = t;
@@ -1240,6 +1517,7 @@ function showView(id) {
   $(id).classList.add('active');
   window.scrollTo(0, 0);
   if (id === 'v-home') renderHome();
+  else if (id === 'v-progress') renderProgress();
 }
 document.querySelectorAll('.modecard').forEach(c => {
   c.addEventListener('click', () => {
@@ -1247,6 +1525,10 @@ document.querySelectorAll('.modecard').forEach(c => {
     showView('v-' + c.dataset.go);
   });
 });
+// global nav: tap the logo → home, tap your stats → progress
+$('siteLogo').addEventListener('click', () => { SFX.ensure(); SFX.tick(); showView('v-home'); });
+$('siteChips').addEventListener('click', () => { SFX.ensure(); SFX.tick(); showView('v-progress'); });
+$('progBack').addEventListener('click', () => { SFX.tick(); showView('v-home'); });
 
 /* ================================================================
    SHARED ROUND HELPERS
@@ -1349,8 +1631,12 @@ function showResults(opts) {
 
   // trend history (talk ratio per scored round)
   if (typeof opts.ratio === 'number') {
-    state.history.push({ d: todayStr(), mode: opts.mode, ratio: Math.round(opts.ratio * 100) });
-    if (state.history.length > 60) state.history = state.history.slice(-60);
+    state.history.push({
+      d: todayStr(), t: Date.now(), mode: opts.mode,
+      ratio: Math.round(opts.ratio * 100),
+      hesit: typeof opts.hesit === 'number' ? opts.hesit : null
+    });
+    if (state.history.length > 80) state.history = state.history.slice(-80);
   }
 
   // listen-back (Sprint)
@@ -1810,6 +2096,7 @@ function finishSprint(prompt, durMs, noMic) {
   const present = url => showResults({
     mode: 'sprint', grade, sub, rows, xp, coins,
     ratio: noMic ? undefined : ratio,
+    hesit: noMic ? undefined : m.hesitations,
     clipUrl: url || null,
     again: () => { showView('v-sprint'); setTimeout(() => withMic(nm => startSprintRound(nm)), 120); }
   });
