@@ -319,6 +319,26 @@ body[data-theme="light"] .seg button.on { color:#fff; }
 .note { background: var(--card2); border:1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size:.8rem; color:var(--mut); line-height:1.45; margin-top:10px; }
 .crosslink { display:block; text-align:center; color: var(--teal); font-weight:800; font-size:.9rem; text-decoration:none; padding: 14px 0 4px; }
 .homehint { color: var(--mut); font-size:.78rem; text-align:center; margin-top: 6px; line-height:1.4; }
+
+/* ---- Daily Session card ---- */
+.sessioncard { background: linear-gradient(140deg, var(--card2), var(--card)); border-color: color-mix(in srgb, var(--teal) 30%, var(--line)); }
+.sessiontop { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.sesskicker { font-size:.7rem; font-weight:900; letter-spacing:.14em; color: var(--teal); margin-bottom:2px; }
+.sessring { flex:0 0 52px; width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:.9rem; color: var(--ink); background: conic-gradient(var(--teal2) 0deg, var(--card2) 0deg); position:relative; }
+.sessring::before { content:""; position:absolute; inset:5px; border-radius:50%; background: var(--card); }
+.sessring span { position:relative; z-index:1; }
+.sesssteps { display:flex; gap:8px; margin-top:12px; }
+.sessstep { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 4px; border-radius:12px; background: var(--card2); border:1px solid var(--line); font-size:.72rem; font-weight:700; color: var(--mut); }
+.sessstep .sicon { font-size:1.1rem; }
+.sessstep.done { color: var(--teal); border-color: color-mix(in srgb, var(--teal) 40%, transparent); }
+.sessstep.done .sicon::after { content:" ✓"; }
+.freehdr { font-size:.74rem; font-weight:900; letter-spacing:.12em; color: var(--mut); text-transform:uppercase; margin: 4px 2px 10px; }
+
+/* ---- Results: session progress + playback ---- */
+.sessprogress { text-align:center; font-size:.74rem; font-weight:900; letter-spacing:.1em; color: var(--teal); margin-bottom:8px; text-transform:uppercase; }
+.playback { background: var(--card2); border:1px solid color-mix(in srgb, var(--teal) 26%, var(--line)); border-radius: 14px; padding: 12px; margin: 4px 0 14px; }
+.pbhdr { font-weight:800; font-size:.95rem; margin-bottom:8px; }
+.pbnote { color: var(--mut); font-size:.76rem; line-height:1.4; margin-top:8px; }
 </style>
 </head>
 <body>
@@ -341,10 +361,24 @@ body[data-theme="light"] .seg button.on { color:#fff; }
       <h2>🎤 SpeakGame is now voice-first</h2>
       <p class="sub" style="margin-top:6px;">
         The old tap-games are gone. Every mode here is played <b>out loud</b> —
-        your mic listens for pace and hesitation. Nothing is recorded and no audio
-        leaves your phone; it only measures when you're speaking.
+        your mic listens for pace and hesitation. Sprint rounds also record a short
+        clip so you can play yourself back. Everything stays on your phone; no audio
+        is ever uploaded, and clips are discarded when you leave the round.
       </p>
       <button class="btn small ghost" style="margin-top:12px;" id="onboardDismiss">Got it</button>
+    </div>
+
+    <div class="card sessioncard" id="sessionCard">
+      <div class="sessiontop">
+        <div>
+          <div class="sesskicker" id="sessKicker">TODAY'S SESSION</div>
+          <h2 id="sessTitle">Your 4-minute warm-up</h2>
+        </div>
+        <div class="sessring" id="sessRing"><span id="sessRingTxt">0/3</span></div>
+      </div>
+      <p class="sub" id="sessDesc">One tip and one round of each mode — finish it and your daily goal is met. This is the whole app in four minutes.</p>
+      <div class="sesssteps" id="sessSteps"></div>
+      <button class="btn" id="sessStart" style="margin-top:12px;">Start today's session 🎤</button>
     </div>
 
     <div class="card">
@@ -355,6 +389,8 @@ body[data-theme="light"] .seg button.on { color:#fff; }
       <div class="goalbar"><div id="goalFill"></div></div>
       <div class="goalrow"><span id="goalText">0 / 60 XP today</span><span id="goalDone"></span></div>
     </div>
+
+    <div class="freehdr">Free practice</div>
 
     <button class="modecard" data-go="flow">
       <div class="modeicon">📜</div>
@@ -518,14 +554,52 @@ body[data-theme="light"] .seg button.on { color:#fff; }
 <!-- ================= RESULTS ================= -->
 <div class="overlay" id="resultsOverlay">
   <div class="sheet">
+    <div class="sessprogress" id="resSessProg"></div>
     <div class="grade" id="resGrade">A</div>
     <div class="gradesub" id="resGradeSub"></div>
+
+    <div class="playback" id="resPlayback" style="display:none;">
+      <div class="pbhdr">🎧 Hear yourself back</div>
+      <audio id="resAudio" controls preload="metadata" style="width:100%;"></audio>
+      <p class="pbnote">This is the moment that builds confidence: most people sound far better than they feared. Private to this device — deleted when you leave.</p>
+      <div class="btnrow" style="margin-top:8px;">
+        <button class="btn small ghost" id="pbKeep">Sounded good 👍</button>
+        <button class="btn small ghost" id="pbRetry">Redo it 🔁</button>
+      </div>
+    </div>
+
     <div class="statrows" id="resRows"></div>
     <div class="xpline" id="resXp"></div>
     <div class="btnrow">
       <button class="btn ghost" id="resHome">Home</button>
       <button class="btn" id="resAgain">Again</button>
     </div>
+  </div>
+</div>
+
+<!-- ================= SESSION INTRO ================= -->
+<div class="modal" id="sessIntroModal">
+  <div class="modalcard">
+    <div class="sesskicker">COACH'S TIP</div>
+    <h2 id="sessTipTitle" style="margin:4px 0 8px;"></h2>
+    <p class="sub" id="sessTipBody"></p>
+    <div class="note" id="sessPlan"></div>
+    <div class="btnrow" style="margin-top:14px;">
+      <button class="btn ghost" id="sessIntroCancel">Not now</button>
+      <button class="btn" id="sessIntroBegin">Begin 🎤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SESSION COMPLETE ================= -->
+<div class="modal" id="sessDoneModal">
+  <div class="modalcard" style="text-align:center;">
+    <div style="font-size:3rem;">🎉</div>
+    <h2 style="margin:4px 0;">Session complete</h2>
+    <p class="sub" id="sessDoneSub"></p>
+    <div class="statrows" id="sessDoneRows" style="text-align:left;"></div>
+    <div class="xpline" id="sessDoneXp"></div>
+    <button class="btn" id="sessDoneClose">Done</button>
   </div>
 </div>
 
@@ -553,7 +627,11 @@ body[data-theme="light"] .seg button.on { color:#fff; }
       <div class="lab"><b>Unlockable packs</b><span>Spend Charisma Coins</span></div>
     </div>
     <div id="packShop"></div>
-    <div class="note">🎤 Privacy: the mic is only used to measure <i>when</i> you're speaking (volume level). Nothing is recorded, transcribed, or uploaded.</div>
+    <div class="note">🎤 Privacy: the mic measures <i>when</i> you're speaking (volume level). Sprint rounds also record a short clip so you can play yourself back — it stays on this device, is never uploaded, and is discarded when you leave the round. Turn it off below if you prefer.</div>
+    <div class="setrow">
+      <div class="lab"><b>Sprint listen-back</b><span>Record & replay your Sprint voice</span></div>
+      <div class="tog" id="togRec" role="switch"></div>
+    </div>
     <div class="setrow" style="margin-top:6px;">
       <div class="lab"><b>Reset all progress</b><span>XP, coins, streak, bests</span></div>
       <button class="btn small ghost" id="btnReset" style="color:var(--bad);">Reset</button>
@@ -631,7 +709,9 @@ const DEFAULT_STATE = {
   plays: { flow: 0, bridge: 0, sprint: 0 },
   flowWpm: 120,                     // last used reading speed
   unlocks: { legends: false, curveballs: false },
-  settings: { theme: 'auto', sfx: true, sens: 'normal' },
+  settings: { theme: 'auto', sfx: true, sens: 'normal', record: true },
+  session: { lastDoneDay: null, count: 0 },
+  history: [],                      // last N rounds: {d, mode, ratio} for the trend
   seenOnboard: false
 };
 
@@ -650,6 +730,8 @@ function loadState() {
       state.plays    = Object.assign({}, DEFAULT_STATE.plays,    s.plays);
       state.unlocks  = Object.assign({}, DEFAULT_STATE.unlocks,  s.unlocks);
       state.settings = Object.assign({}, DEFAULT_STATE.settings, s.settings);
+      state.session  = Object.assign({}, DEFAULT_STATE.session,  s.session);
+      state.history  = Array.isArray(s.history) ? s.history : [];
       return;
     }
     // First run of v2: migrate XP + coins from the old tap-game version.
@@ -791,7 +873,50 @@ const Mic = {
     return m;
   },
   endRound() { const m = this.m; this.m = null; return m; },
-  suspend() { if (this.ctx && this.ctx.state === 'running') this.ctx.suspend(); }
+  suspend() { if (this.ctx && this.ctx.state === 'running') this.ctx.suspend(); },
+
+  /* ---- optional voice recording for listen-back (Sprint only) ---- */
+  rec: null, chunks: [], clipUrl: null,
+  recSupported() {
+    if (typeof MediaRecorder === 'undefined') return false;
+    return this.pickMime() !== null;
+  },
+  pickMime() {
+    const types = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/aac'];
+    for (const t of types) { try { if (MediaRecorder.isTypeSupported(t)) return t; } catch(e){} }
+    // Safari sometimes records fine with no explicit type
+    return '';
+  },
+  clearClip() {
+    if (this.clipUrl) { try { URL.revokeObjectURL(this.clipUrl); } catch(e){} this.clipUrl = null; }
+  },
+  startRecording() {
+    this.clearClip();
+    this.chunks = [];
+    if (!this.ready || !this.stream || !this.recSupported()) { this.rec = null; return false; }
+    try {
+      const mime = this.pickMime();
+      this.rec = mime ? new MediaRecorder(this.stream, { mimeType: mime }) : new MediaRecorder(this.stream);
+      this.rec.ondataavailable = e => { if (e.data && e.data.size) this.chunks.push(e.data); };
+      this.rec.start();
+      return true;
+    } catch(e) { this.rec = null; return false; }
+  },
+  stopRecording() {
+    return new Promise(resolve => {
+      if (!this.rec || this.rec.state === 'inactive') { resolve(null); return; }
+      this.rec.onstop = () => {
+        try {
+          const blob = new Blob(this.chunks, { type: this.chunks[0] ? this.chunks[0].type : 'audio/mp4' });
+          this.chunks = [];
+          if (!blob.size) { resolve(null); return; }
+          this.clipUrl = URL.createObjectURL(blob);
+          resolve(this.clipUrl);
+        } catch(e) { resolve(null); }
+      };
+      try { this.rec.stop(); } catch(e) { resolve(null); }
+    });
+  }
 };
 
 /* ================================================================
@@ -972,8 +1097,120 @@ function renderHome() {
   $('bestBridge').textContent = state.plays.bridge ? ('Best beats: ' + state.best.bridgeBeats + ' in a row · ' + state.plays.bridge + ' rounds') : 'Not played yet';
   $('bestSprint').textContent = state.best.sprintRatio ? ('Best talk ratio: ' + Math.round(state.best.sprintRatio * 100) + '%') : 'Not played yet';
   $('onboardCard').style.display = state.seenOnboard ? 'none' : 'block';
+  renderSessionCard();
   renderHeader();
 }
+
+/* ================================================================
+   DAILY SESSION
+   ================================================================ */
+const SESSION_STEPS = [
+  { mode: 'flow',   icon: '📜', label: 'Flow' },
+  { mode: 'bridge', icon: '🌉', label: 'Bridge' },
+  { mode: 'sprint', icon: '⚡️', label: 'Sprint' }
+];
+
+// Coaching tips shown at the top of each day's session (rotates by day-of-year).
+const SESSION_TIPS = [
+  { t: 'The pause is your friend', b: 'Silence feels longer to you than to your audience. A two-second pause before your key point makes it land harder. Today, let yourself stop.' },
+  { t: 'Land your endings', b: 'Most speakers trail off. Decide your last sentence, say it slower than the rest, then stop completely. Practise finishing strong in every round today.' },
+  { t: 'Short sentences win', b: 'When nerves rise, sentences run long and fillers creep in. Speak in short sentences. Stop at the period. It buys your brain time.' },
+  { t: 'Aim the nerves', b: 'That racing heart is fuel, not a fault. Don’t try to calm down — aim it. Bigger gestures, stronger voice, slower delivery.' },
+  { t: 'Talk to one person', b: 'Rooms don’t listen; people do. Deliver a full thought to one imagined person, then move on. Warmth beats broadcasting.' },
+  { t: 'Open with a claim', b: 'No throat-clearing, no “basically”. Start with a claim, a question, or a surprising number. You have seven seconds.' },
+  { t: 'Breathe at the commas', b: 'Run out of breath and you rush. Take a small breath where the comma lives. Today, notice where you breathe.' }
+];
+
+function dayOfYear() {
+  const d = new Date();
+  return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5);
+}
+function todaysTip() { return SESSION_TIPS[dayOfYear() % SESSION_TIPS.length]; }
+function todaysFramework() { return BRIDGE_FW[dayOfYear() % BRIDGE_FW.length]; }
+
+function renderSessionCard() {
+  const doneToday = state.session.lastDoneDay === todayStr();
+  const ring = $('sessRing'), steps = $('sessSteps');
+  const doneCount = doneToday ? 3 : 0;
+  $('sessRingTxt').textContent = doneCount + '/3';
+  ring.style.background = 'conic-gradient(var(--teal2) ' + (doneCount / 3 * 360) + 'deg, var(--card2) 0deg)';
+  steps.innerHTML = SESSION_STEPS.map(s =>
+    '<div class="sessstep' + (doneToday ? ' done' : '') + '"><span class="sicon">' + s.icon + '</span>' + s.label + '</div>'
+  ).join('');
+  if (doneToday) {
+    $('sessKicker').textContent = 'DONE TODAY';
+    $('sessTitle').textContent = 'Session complete 🎉';
+    $('sessDesc').textContent = 'You’ve done today’s session — come back tomorrow for a fresh tip. Or keep going with free practice below.';
+    $('sessStart').textContent = 'Run it again';
+    $('sessStart').classList.add('ghost');
+  } else {
+    $('sessKicker').textContent = "TODAY'S SESSION";
+    $('sessTitle').textContent = 'Your 4-minute warm-up';
+    $('sessDesc').textContent = 'One tip and one round of each mode — finish it and your daily goal is met. This is the whole app in four minutes.';
+    $('sessStart').textContent = 'Start today’s session 🎤';
+    $('sessStart').classList.remove('ghost');
+  }
+}
+
+let session = null;   // { active, steps, idx, results }
+
+function openSessionIntro() {
+  SFX.ensure(); SFX.tick();
+  const tip = todaysTip(), fw = todaysFramework();
+  $('sessTipTitle').textContent = tip.t;
+  $('sessTipBody').textContent = tip.b;
+  $('sessPlan').innerHTML = 'Today’s plan: <b>Flow</b> warm-up → <b>Bridge</b> (' + fw.name + ') → <b>Sprint</b> (30s). About 4 minutes.';
+  $('sessIntroModal').classList.add('show');
+}
+
+function beginSession() {
+  $('sessIntroModal').classList.remove('show');
+  session = { active: true, steps: SESSION_STEPS.map(s => s.mode), idx: 0, results: [] };
+  runSessionStep();
+}
+
+function runSessionStep() {
+  const mode = session.steps[session.idx];
+  // configure each mode to sensible session defaults, then reuse its round starter
+  if (mode === 'flow') {
+    flowUI.packSel = 'coach';
+    withMic(noMic => startFlowRound(noMic));
+  } else if (mode === 'bridge') {
+    bridgeUI.fwSel = todaysFramework().id;
+    withMic(noMic => startBridgeRound(noMic));
+  } else {
+    sprintUI.dur = 30;
+    sprintUI.packSel = 'work';
+    withMic(noMic => startSprintRound(noMic));
+  }
+}
+
+function advanceSession() {
+  Mic.clearClip();
+  session.idx++;
+  if (session.idx >= session.steps.length) { completeSession(); return; }
+  runSessionStep();
+}
+
+function completeSession() {
+  const totalXp = session.results.reduce((a, r) => a + r.xp, 0);
+  const firstToday = state.session.lastDoneDay !== todayStr();
+  state.session.lastDoneDay = todayStr();
+  if (firstToday) state.session.count = (state.session.count || 0) + 1;
+  saveState();
+  SFX.win(); buzz(60);
+  $('sessDoneSub').textContent = state.daily.xp >= DAILY_GOAL
+    ? 'Daily goal met — your ' + state.streak.count + '-day streak is safe. 🔥'
+    : 'Great work. A little more free practice hits today’s goal.';
+  $('sessDoneRows').innerHTML = session.results.map((r, i) =>
+    '<div class="statrow"><span>' + SESSION_STEPS[i].icon + ' ' + SESSION_STEPS[i].label + '</span><b>' + r.grade + '</b></div>'
+  ).join('');
+  $('sessDoneXp').textContent = 'Session total: +' + totalXp + ' XP';
+  session = null;
+  $('sessDoneModal').classList.add('show');
+}
+
+function endSession() { session = null; }
 
 /* ================================================================
    REWARDS
@@ -1032,8 +1269,11 @@ document.querySelectorAll('[data-quit]').forEach(b => {
   b.addEventListener('click', () => {
     const mode = b.dataset.quit;
     stopRound();
+    if (Mic.rec && Mic.rec.state !== 'inactive') { try { Mic.rec.stop(); } catch(e){} }
+    Mic.clearClip();
     closeStage(mode);
-    showView('v-' + mode);
+    if (session) { session = null; showView('v-home'); }   // bail out of the session
+    else showView('v-' + mode);
   });
 });
 
@@ -1044,7 +1284,10 @@ function withMic(cb) {
     // show help modal; user may play in honor mode
     $('micModal').classList.add('show');
     $('micContinue').onclick = () => { $('micModal').classList.remove('show'); cb(true); };
-    $('micCancel').onclick = () => { $('micModal').classList.remove('show'); };
+    $('micCancel').onclick = () => {
+      $('micModal').classList.remove('show');
+      if (session) { session = null; renderHome(); }   // abort a session that never started a round
+    };
   });
 }
 
@@ -1092,24 +1335,70 @@ function meterUpdater(fillId, trackId, stateId) {
 /* ================================================================
    RESULTS SHEET
    ================================================================ */
-let againFn = null;
+let againFn = null;   // action for the primary "Again"/"Continue" button
+let redoFn = null;    // redo the SAME round (listen-back retry)
 function showResults(opts) {
-  // opts: { grade, sub, rows:[[k,v]], xp, coins, again }
+  // opts: { mode, grade, sub, rows:[[k,v]], xp, coins, again, clipUrl, ratio }
   $('resGrade').textContent = opts.grade;
   $('resGradeSub').textContent = opts.sub;
   $('resRows').innerHTML = opts.rows.map(r => '<div class="statrow"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('');
   $('resXp').textContent = '+' + opts.xp + ' XP · +' + opts.coins + ' 🪙';
+  // in a session, "redo" re-runs the current step; in free play it uses the mode's own restart
+  redoFn = (session && session.active) ? (() => runSessionStep()) : opts.again;
   againFn = opts.again;
+
+  // trend history (talk ratio per scored round)
+  if (typeof opts.ratio === 'number') {
+    state.history.push({ d: todayStr(), mode: opts.mode, ratio: Math.round(opts.ratio * 100) });
+    if (state.history.length > 60) state.history = state.history.slice(-60);
+  }
+
+  // listen-back (Sprint)
+  const pb = $('resPlayback');
+  if (opts.clipUrl) {
+    $('resAudio').src = opts.clipUrl;
+    pb.style.display = 'block';
+  } else {
+    $('resAudio').removeAttribute('src');
+    pb.style.display = 'none';
+  }
+
+  // session vs free-practice buttons
+  if (session && session.active) {
+    session.results.push({ mode: opts.mode, grade: opts.grade, xp: opts.xp });
+    const last = session.idx >= session.steps.length - 1;
+    $('resSessProg').style.display = 'block';
+    $('resSessProg').textContent = 'Session · step ' + (session.idx + 1) + ' of ' + session.steps.length;
+    $('resHome').textContent = 'Quit session';
+    $('resAgain').textContent = last ? 'Finish ✓' : 'Continue →';
+    againFn = () => advanceSession();
+  } else {
+    $('resSessProg').style.display = 'none';
+    $('resHome').textContent = 'Home';
+    $('resAgain').textContent = 'Again';
+  }
+
   $('resultsOverlay').classList.add('show');
   award(opts.xp, opts.coins);
 }
 $('resHome').addEventListener('click', () => {
   $('resultsOverlay').classList.remove('show');
+  Mic.clearClip();
+  if (session) endSession(false);
   showView('v-home');
 });
 $('resAgain').addEventListener('click', () => {
   $('resultsOverlay').classList.remove('show');
   if (againFn) againFn();
+});
+$('pbRetry').addEventListener('click', () => {
+  $('resultsOverlay').classList.remove('show');
+  Mic.clearClip();
+  if (redoFn) redoFn();
+});
+$('pbKeep').addEventListener('click', () => {
+  $('pbKeep').textContent = 'Nice — that’s the feeling ✓';
+  $('pbKeep').disabled = true;
 });
 
 /* ================================================================
@@ -1252,7 +1541,8 @@ function finishFlow(wpm, words, noMic) {
   if (clean) rows.push(['Clean read', wpm >= state.best.flowWpm ? '🏆 New best pace!' : '✅']);
 
   showResults({
-    grade, sub, rows, xp, coins,
+    mode: 'flow', grade, sub, rows, xp, coins,
+    ratio: noMic ? undefined : ratio,
     again: () => { showView('v-flow'); renderFlowPre(); startFlowRoundSoon(); }
   });
 }
@@ -1384,7 +1674,8 @@ function finishBridge(fw, prompt, beatResults, noMic) {
   beatResults.forEach(b => rows.push([b.label, noMic ? '—' : (Math.round(b.ratio * 100) + '% ' + (b.pass ? '✅' : '✗'))]));
 
   showResults({
-    grade, sub, rows, xp, coins,
+    mode: 'bridge', grade, sub, rows, xp, coins,
+    ratio: noMic ? undefined : (passed / total),
     again: () => { showView('v-bridge'); setTimeout(() => withMic(nm => startBridgeRound(nm)), 120); }
   });
 }
@@ -1449,6 +1740,8 @@ function startSprintRound(noMic) {
 
   runCountdown('sprintCount', () => {
     Mic.startRound();
+    // record the sprint for private listen-back (opt-out in settings)
+    activeRound.recording = (!noMic && state.settings.record) ? Mic.startRecording() : false;
     const t0 = performance.now();
     let stallShown = false;
 
@@ -1480,6 +1773,7 @@ function fmtClock(ms) {
 
 function finishSprint(prompt, durMs, noMic) {
   if (!activeRound) return;   // guard: round already finished or quit
+  const wasRecording = activeRound.recording;
   const m = Mic.endRound() || { talkMs: 0, totalMs: 1, hesitations: 0, longestPauseMs: 0 };
   $('sprintStall').classList.remove('show');
   stopRoundKeepStage('sprint');
@@ -1513,10 +1807,15 @@ function finishSprint(prompt, durMs, noMic) {
     rows.push(['Longest silence', (m.longestPauseMs / 1000).toFixed(1) + 's']);
   }
 
-  showResults({
-    grade, sub, rows, xp, coins,
+  const present = url => showResults({
+    mode: 'sprint', grade, sub, rows, xp, coins,
+    ratio: noMic ? undefined : ratio,
+    clipUrl: url || null,
     again: () => { showView('v-sprint'); setTimeout(() => withMic(nm => startSprintRound(nm)), 120); }
   });
+
+  if (wasRecording) Mic.stopRecording().then(present);
+  else present(null);
 }
 
 /* ================================================================
@@ -1526,6 +1825,7 @@ function renderSettings() {
   document.querySelectorAll('#segTheme button').forEach(b => b.classList.toggle('on', b.dataset.v === state.settings.theme));
   document.querySelectorAll('#segSens button').forEach(b => b.classList.toggle('on', b.dataset.v === state.settings.sens));
   $('togSfx').classList.toggle('on', state.settings.sfx);
+  $('togRec').classList.toggle('on', state.settings.record);
   const shop = $('packShop');
   const packs = [
     { key: 'legends', name: 'Big Rooms (Flow)', cost: 150, desc: '6 keynote-style passages' },
@@ -1567,6 +1867,9 @@ $('togSfx').addEventListener('click', () => {
   state.settings.sfx = !state.settings.sfx; saveState(); renderSettings();
   if (state.settings.sfx) { SFX.ensure(); SFX.tick(); }
 });
+$('togRec').addEventListener('click', () => {
+  state.settings.record = !state.settings.record; saveState(); renderSettings();
+});
 
 $('btnReset').addEventListener('click', () => {
   $('settingsModal').classList.remove('show');
@@ -1589,6 +1892,17 @@ function applyTheme() {
   document.body.setAttribute('data-theme', t);
 }
 darkMedia.addEventListener && darkMedia.addEventListener('change', applyTheme);
+
+/* ================================================================
+   SESSION WIRING
+   ================================================================ */
+$('sessStart').addEventListener('click', openSessionIntro);
+$('sessIntroBegin').addEventListener('click', beginSession);
+$('sessIntroCancel').addEventListener('click', () => $('sessIntroModal').classList.remove('show'));
+$('sessDoneClose').addEventListener('click', () => {
+  $('sessDoneModal').classList.remove('show');
+  showView('v-home');
+});
 
 /* ================================================================
    ONBOARDING + INIT
