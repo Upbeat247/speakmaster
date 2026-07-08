@@ -4407,6 +4407,63 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   font-weight: 400; color: var(--text-secondary); margin-top: 0.15rem;
   font-size: 0.78rem;
 }
+
+/* ===== Save-to-Library button (score screen) ===== */
+.save-review-btn.is-saved { background: var(--green-light); color: var(--green); border-color: var(--green); }
+
+/* ===== Saved Reviews (Library) ===== */
+.library-header { margin-bottom: 1.25rem; }
+.library-header h1 { display: flex; align-items: center; gap: 0.5rem; }
+.library-sub { color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem; }
+
+.lib-empty { text-align: center; padding: 3rem 1.5rem; color: var(--text-secondary); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.lib-empty i { color: var(--teal); opacity: 0.7; }
+.lib-empty h3 { margin: 0.75rem 0 0.35rem; color: var(--text-primary); }
+.lib-empty p { max-width: 34ch; margin: 0 auto 1.1rem; font-size: 0.9rem; line-height: 1.5; }
+
+.lib-group { margin-bottom: 1.5rem; }
+.lib-group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0 0.15rem 0.6rem; border-bottom: 2px solid var(--border); margin-bottom: 0.6rem; }
+.lib-group-name { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--text-primary); }
+.lib-group-sub { color: var(--text-muted); font-size: 0.78rem; margin-left: 0.5rem; }
+.lib-group-count { color: var(--teal); font-weight: 700; font-size: 0.78rem; white-space: nowrap; }
+
+.lib-prompt { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: 0.6rem; overflow: hidden; }
+.lib-prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.85rem 1rem; cursor: pointer; user-select: none; }
+.lib-prompt-head:hover { background: var(--bg-secondary); }
+.lib-prompt-q { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.92rem; color: var(--text-primary); }
+.lib-caret { flex-shrink: 0; color: var(--text-muted); transition: transform 0.2s; }
+.lib-prompt.open .lib-caret { transform: rotate(90deg); }
+.lib-prompt-meta { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.lib-attempt-count { font-weight: 800; font-size: 0.8rem; color: var(--teal); background: var(--teal-light); padding: 0.1rem 0.45rem; border-radius: 999px; }
+.lib-best { font-size: 0.74rem; color: var(--text-muted); font-weight: 600; }
+.lib-prompt-body { display: none; padding: 0 0.75rem 0.75rem; }
+.lib-prompt.open .lib-prompt-body { display: block; }
+
+.lib-entry { border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.75rem; }
+.lib-prompt-body .lib-entry:first-child { border-top: none; margin-top: 0; }
+.lib-entry-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+.lib-entry-meta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; color: var(--text-muted); flex-wrap: wrap; }
+.lib-date { font-weight: 700; color: var(--text-secondary); }
+.lib-dot { opacity: 0.5; }
+.lib-entry-right { display: flex; align-items: center; gap: 0.5rem; }
+.lib-chips { display: flex; gap: 0.35rem; }
+.lib-chip { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 999px; padding: 0.15rem 0.5rem; font-size: 0.74rem; }
+.lib-chip .lc-k { color: var(--text-muted); font-weight: 700; }
+.lib-chip .lc-v { color: var(--text-primary); font-weight: 800; }
+.lib-chip-ai { background: var(--teal-light); border-color: var(--teal); }
+.lib-chip-ai .lc-k, .lib-chip-ai .lc-v { color: var(--teal); }
+.lib-del { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; border-radius: 6px; display: flex; }
+.lib-del:hover { color: var(--red); background: var(--red-light); }
+
+.lib-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.lib-col { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.7rem 0.8rem; }
+.lib-col-perfect { background: var(--teal-light); border-color: var(--teal); }
+.lib-col-title { display: flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-secondary); margin-bottom: 0.4rem; }
+.lib-col-perfect .lib-col-title { color: var(--teal); }
+.lib-col-body { font-size: 0.86rem; line-height: 1.55; color: var(--text-primary); white-space: pre-wrap; }
+.lib-verdict { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--teal); font-size: 0.8rem; font-style: italic; color: var(--text-secondary); }
+.lib-muted { color: var(--text-muted); }
+@media (max-width: 560px) { .lib-cols { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -4429,6 +4486,10 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <button class="nav-link" data-view="progress" onclick="navigate('progress')">
       <i data-lucide="bar-chart-3" style="width:16px;height:16px"></i>
       <span>Progress</span>
+    </button>
+    <button class="nav-link" data-view="library" onclick="navigate('library')">
+      <i data-lucide="bookmark" style="width:16px;height:16px"></i>
+      <span>Saved</span>
     </button>
     <button class="nav-link" data-view="settings" onclick="navigate('settings')">
       <i data-lucide="settings" style="width:16px;height:16px"></i>
@@ -4458,6 +4519,10 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <button class="mobile-nav-link" data-view="progress" onclick="navigate('progress')">
       <i data-lucide="bar-chart-3"></i>
       Progress
+    </button>
+    <button class="mobile-nav-link" data-view="library" onclick="navigate('library')">
+      <i data-lucide="bookmark"></i>
+      Saved
     </button>
     <button class="mobile-nav-link" data-view="settings" onclick="navigate('settings')">
       <i data-lucide="settings"></i>
@@ -4597,6 +4662,11 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
       <div id="fluency-content"></div>
     </div>
 
+    <!-- SAVED REVIEWS (LIBRARY) VIEW -->
+    <div id="view-library" class="view">
+      <div id="library-content"></div>
+    </div>
+
     <!-- SETTINGS VIEW -->
     <div id="view-settings" class="view">
       <div id="settings-content"></div>
@@ -4632,6 +4702,7 @@ const state = {
   certificateDates: {},      // { 1: "2026-04-09" }
   xpHistory: [],             // [{ date: "2026-04-09", xp: 85 }, ...]
   practiceLog: [],           // [{ lessonId, lessonTitle, prompt, response, score, date }]
+  savedReviews: [],          // curated library: [{ id, savedAt, trackName, lessonTitle, framework, promptText, response, heuristic, ai, perfect }]
   customPrompts: {},         // { "1-1": [{ text, isCustom: true }, ...] }
   dailyChallenge: null,      // { date, trackId, lessonIndex, promptIndex, completed }
   weeklyGoal: null,          // { type: 'lessons'|'minutes'|'xp'|'mastery', target, weekStart, progress }
@@ -8466,6 +8537,7 @@ function handleRoute() {
       if (viewName === 'dashboard') renderDashboard();
       if (viewName === 'tracks') renderTracks();
       if (viewName === 'progress') renderProgress();
+      if (viewName === 'library') renderLibrary();
       if (viewName === 'settings') renderSettings();
       if (viewName === 'focus') renderFocusEntry();
       if (viewName === 'speed-tier') renderSpeedTierEntry();
@@ -12384,6 +12456,10 @@ function calculateScore() {
 
 function renderScore(container, lesson) {
   const s = state.lastScore;
+  // Fresh attempt: clear any prior Deep AI Review result and the "already saved" marker
+  // so the Save button and AI-rewrite capture reflect THIS attempt only.
+  _lastAIReview = null;
+  state._savedEntryId = null;
   const { trackId, lessonIndex } = state.currentLesson;
   const passMark = (state.settings && state.settings.passMark) || 70;
   // Mastery threshold scales with pass mark — 15 pts above the pass mark (capped at 95)
@@ -12845,6 +12921,9 @@ function renderScore(container, lesson) {
               <i data-lucide="brain-circuit" style="width:14px;height:14px"></i> Deep AI Review
             </button>
           ` : ''}
+          <button class="btn btn-secondary save-review-btn" onclick="saveCurrentReview(this)" title="Save this speech, score & the AI's perfect version to your library">
+            <i data-lucide="bookmark-plus" style="width:14px;height:14px"></i> Save to Library
+          </button>
           <button class="btn btn-secondary" onclick="startDrill()" title="3 rapid-fire prompts">
             <i data-lucide="zap" style="width:14px;height:14px"></i> Speed Drill
           </button>
@@ -12866,6 +12945,9 @@ function renderScore(container, lesson) {
               <i data-lucide="brain-circuit" style="width:14px;height:14px"></i> Deep AI Review
             </button>
           ` : ''}
+          <button class="btn btn-secondary save-review-btn" onclick="saveCurrentReview(this)" title="Save this speech, score & the AI's perfect version to your library">
+            <i data-lucide="bookmark-plus" style="width:14px;height:14px"></i> Save to Library
+          </button>
           <button class="btn btn-ghost" onclick="exportSessionAsPDF()" title="Print-friendly session export">
             <i data-lucide="file-text" style="width:14px;height:14px"></i> Export PDF
           </button>
@@ -14346,7 +14428,7 @@ const PERSISTED_KEYS = [
   'theme', 'xp', 'level', 'streak', 'lastPracticeDate', 'activityDays',
   'totalPracticeSeconds', 'lessonScores', 'completedLessons',
   'unlockedTracks', 'unlockedLessons', 'completedTracks', 'certificateDates',
-  'xpHistory', 'practiceLog', 'customPrompts', 'dailyChallenge', 'settings',
+  'xpHistory', 'practiceLog', 'savedReviews', 'customPrompts', 'dailyChallenge', 'settings',
   'weeklyGoal', 'reflections', 'lastWarmupDate', 'onboardingComplete', 'favorites',
   'achievements', 'lastModified', 'fluencyProgress'
 ];
@@ -18367,6 +18449,16 @@ async function requestDeepAIReview(btn) {
     renderAIReviewPanel({ review: data });
     playPass && playPass();
     showToast('AI review complete');
+    // If the user already saved this attempt (before running the review), fold the
+    // AI score + rewrite into that saved entry so their library has the perfect version.
+    if (state._savedEntryId) {
+      const idx = (state.savedReviews || []).findIndex(e => e.id === state._savedEntryId);
+      if (idx >= 0) {
+        state.savedReviews[idx] = buildSavedReviewEntry(state._savedEntryId, state.savedReviews[idx].savedAt);
+        saveState();
+        showToast('Saved review updated with the AI version');
+      }
+    }
   } catch (e) {
     const msg = e && e.name === 'AbortError' ? 'AI review timed out (45s).' : 'AI review failed: ' + (e && e.message ? e.message : 'unknown');
     renderAIReviewPanel({ error: msg });
@@ -18379,6 +18471,216 @@ async function requestDeepAIReview(btn) {
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
   }
+}
+
+// ========== SAVED REVIEWS (LIBRARY) ==========
+// Resolve the "perfect version" to store: the AI's rewrite if a Deep AI Review
+// was run this attempt, else the prompt/lesson Model Answer (segments joined).
+function getPerfectSpeechForSave() {
+  if (_lastAIReview && typeof _lastAIReview.rewrite === 'string' && _lastAIReview.rewrite.trim()) {
+    return { source: 'ai', text: _lastAIReview.rewrite.trim() };
+  }
+  const lesson = state.currentLesson && state.currentLesson.lesson;
+  let segs = null;
+  if (state.currentPrompt && state.currentPrompt.modelResponse) segs = state.currentPrompt.modelResponse;
+  else if (lesson && lesson.example && lesson.example.response) segs = lesson.example.response;
+  if (segs) {
+    const text = Array.isArray(segs) ? segs.map(x => (x && x.text) ? x.text : '').join(' ').trim() : String(segs);
+    if (text) return { source: (state.currentPrompt && state.currentPrompt._aiGenerated) ? 'model-ai' : 'model', text };
+  }
+  return null;
+}
+
+// Build a saved-review snapshot from the current score screen. Pass id/savedAt to
+// update an existing entry in place (keeps its identity + original save time).
+function buildSavedReviewEntry(id, savedAt) {
+  const cl = state.currentLesson || {};
+  const lesson = cl.lesson || {};
+  const track = (typeof TRACKS !== 'undefined') ? TRACKS.find(t => t.id === cl.trackId) : null;
+  const s = state.lastScore || {};
+  const promptText = (state.currentPrompt && state.currentPrompt.text) || (lesson.example && lesson.example.prompt) || '';
+  const resp = state.practiceText || '';
+  const ai = _lastAIReview ? {
+    total: _lastAIReview.total, structure: _lastAIReview.structure, clarity: _lastAIReview.clarity,
+    depth: _lastAIReview.depth, completion: _lastAIReview.completion,
+    verdict: _lastAIReview.verdict || '', model: _lastAIReview.model || ''
+  } : null;
+  return {
+    id: id || ('sr_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+    savedAt: savedAt || new Date().toISOString(),
+    trackId: cl.trackId != null ? cl.trackId : null,
+    trackName: track ? track.name : '',
+    lessonId: lesson.id || '',
+    lessonTitle: lesson.title || 'Practice',
+    lessonSubtitle: lesson.subtitle || '',
+    framework: (lesson.elements || []).map(e => e.name),
+    promptText: promptText,
+    response: resp,
+    wordCount: resp.trim() ? resp.trim().split(/\s+/).filter(Boolean).length : 0,
+    wpm: s.wpm || 0,
+    inputMode: state.inputMode || 'typing',
+    heuristic: { total: s.total || 0, structure: s.structure, clarity: s.clarity, depth: s.depth, completion: s.completion },
+    ai: ai,
+    perfect: getPerfectSpeechForSave()
+  };
+}
+
+function saveCurrentReview(btn) {
+  if (!state.currentLesson || !state.lastScore) { showToast('No scored session to save'); return; }
+  if (!Array.isArray(state.savedReviews)) state.savedReviews = [];
+  let entry;
+  if (state._savedEntryId) {
+    // Already saved this attempt — update it in place (e.g. after running AI review)
+    const idx = state.savedReviews.findIndex(e => e.id === state._savedEntryId);
+    if (idx >= 0) {
+      entry = buildSavedReviewEntry(state._savedEntryId, state.savedReviews[idx].savedAt);
+      state.savedReviews[idx] = entry;
+    } else {
+      entry = buildSavedReviewEntry();
+      state.savedReviews.push(entry);
+      state._savedEntryId = entry.id;
+    }
+  } else {
+    entry = buildSavedReviewEntry();
+    state.savedReviews.push(entry);
+    state._savedEntryId = entry.id;
+  }
+  saveState();
+  if (btn) {
+    btn.classList.add('is-saved');
+    btn.innerHTML = '<i data-lucide="check"></i> Saved ✓';
+    btn.setAttribute('onclick', "navigate('library')");
+    btn.setAttribute('title', 'View your Saved Reviews');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+  showToast(entry.ai ? 'Saved with AI version to your library' : 'Saved to your library');
+}
+
+function deleteSavedReview(id) {
+  if (!confirm('Delete this saved review? This cannot be undone.')) return;
+  state.savedReviews = (state.savedReviews || []).filter(e => e.id !== id);
+  saveState();
+  renderLibrary();
+  showToast('Deleted');
+}
+
+function toggleLibPrompt(headerEl) {
+  const group = headerEl.closest('.lib-prompt');
+  if (group) group.classList.toggle('open');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderLibrary() {
+  const container = document.getElementById('library-content');
+  if (!container) return;
+  const all = Array.isArray(state.savedReviews) ? state.savedReviews.slice() : [];
+
+  if (!all.length) {
+    container.innerHTML = `
+      <div class="library-header">
+        <h1><i data-lucide="bookmark" style="width:22px;height:22px"></i> Saved Reviews</h1>
+        <p class="library-sub">Your saved speeches, scores and the AI's perfect version — grouped by framework and prompt.</p>
+      </div>
+      <div class="lib-empty">
+        <i data-lucide="bookmark-plus" style="width:40px;height:40px"></i>
+        <h3>Nothing saved yet</h3>
+        <p>After you practise and score a response, tap <strong>Save to Library</strong> on the results screen. Run <strong>Deep AI Review</strong> first to capture the AI's improved version too.</p>
+        <button class="btn btn-primary" onclick="navigate('tracks')">Go practise</button>
+      </div>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
+  // Group by framework (lessonTitle) → prompt → attempts (newest first)
+  const groups = {};
+  all.forEach(e => {
+    const gk = e.lessonTitle || 'Practice';
+    (groups[gk] = groups[gk] || []).push(e);
+  });
+  const groupNames = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+
+  const esc = escapeHtmlSafe;
+  const scoreChips = e => {
+    let html = `<span class="lib-chip"><span class="lc-k">App</span><span class="lc-v">${e.heuristic ? e.heuristic.total : '—'}</span></span>`;
+    if (e.ai && typeof e.ai.total === 'number') html += `<span class="lib-chip lib-chip-ai"><span class="lc-k">AI</span><span class="lc-v">${e.ai.total}</span></span>`;
+    return html;
+  };
+  const fmtDate = iso => { try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; } };
+
+  let bodyHTML = '';
+  groupNames.forEach(gName => {
+    const entries = groups[gName];
+    // sub-group by prompt
+    const byPrompt = {};
+    entries.forEach(e => { const pk = e.promptText || '(no prompt)'; (byPrompt[pk] = byPrompt[pk] || []).push(e); });
+    const promptKeys = Object.keys(byPrompt).sort((a, b) => a.localeCompare(b));
+    const sub = entries[0].lessonSubtitle ? `<span class="lib-group-sub">${esc(entries[0].lessonSubtitle)}</span>` : '';
+
+    bodyHTML += `
+      <section class="lib-group">
+        <div class="lib-group-head">
+          <div><span class="lib-group-name">${esc(gName)}</span>${sub}</div>
+          <span class="lib-group-count">${entries.length} saved</span>
+        </div>`;
+
+    promptKeys.forEach((pk, pi) => {
+      const attempts = byPrompt[pk].slice().sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
+      const bestApp = Math.max(...attempts.map(a => (a.heuristic && a.heuristic.total) || 0));
+      const openClass = (groupNames.length === 1 && promptKeys.length === 1) ? ' open' : '';
+      const attemptsHTML = attempts.map(e => {
+        const perfLabel = !e.perfect ? 'Model answer'
+          : e.perfect.source === 'ai' ? "AI's perfect version (rewrite of your answer)"
+          : e.perfect.source === 'model-ai' ? 'AI-generated model answer'
+          : 'Model answer';
+        const perfBody = e.perfect && e.perfect.text ? esc(e.perfect.text) : '<em class="lib-muted">No model answer was available for this prompt.</em>';
+        return `
+          <div class="lib-entry">
+            <div class="lib-entry-top">
+              <div class="lib-entry-meta">
+                <span class="lib-date">${fmtDate(e.savedAt)}</span>
+                <span class="lib-dot">·</span>
+                <span class="lib-mode">${e.inputMode === 'speaking' ? '🎤 Spoken' : '⌨️ Typed'}</span>
+                ${e.wordCount ? `<span class="lib-dot">·</span><span>${e.wordCount} words</span>` : ''}
+              </div>
+              <div class="lib-entry-right">
+                <div class="lib-chips">${scoreChips(e)}</div>
+                <button class="lib-del" title="Delete this saved review" onclick="deleteSavedReview('${e.id}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+              </div>
+            </div>
+            <div class="lib-cols">
+              <div class="lib-col">
+                <div class="lib-col-title"><i data-lucide="user" style="width:13px;height:13px"></i> Your response</div>
+                <div class="lib-col-body">${e.response ? esc(e.response) : '<em class="lib-muted">(empty)</em>'}</div>
+              </div>
+              <div class="lib-col lib-col-perfect">
+                <div class="lib-col-title"><i data-lucide="sparkles" style="width:13px;height:13px"></i> ${esc(perfLabel)}</div>
+                <div class="lib-col-body">${perfBody}</div>
+                ${e.ai && e.ai.verdict ? `<div class="lib-verdict">${esc(e.ai.verdict)}</div>` : ''}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+
+      bodyHTML += `
+        <div class="lib-prompt${openClass}">
+          <div class="lib-prompt-head" onclick="toggleLibPrompt(this)">
+            <div class="lib-prompt-q"><i data-lucide="chevron-right" class="lib-caret" style="width:16px;height:16px"></i><span>${esc(pk)}</span></div>
+            <div class="lib-prompt-meta"><span class="lib-attempt-count">${attempts.length}×</span><span class="lib-best">best ${bestApp}</span></div>
+          </div>
+          <div class="lib-prompt-body">${attemptsHTML}</div>
+        </div>`;
+    });
+
+    bodyHTML += `</section>`;
+  });
+
+  container.innerHTML = `
+    <div class="library-header">
+      <h1><i data-lucide="bookmark" style="width:22px;height:22px"></i> Saved Reviews</h1>
+      <p class="library-sub">${all.length} saved ${all.length === 1 ? 'entry' : 'entries'} · grouped by framework and prompt. Tap a prompt to expand.</p>
+    </div>
+    ${bodyHTML}`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // Render the AI review output into a container on the score screen.
