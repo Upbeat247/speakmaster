@@ -53,6 +53,7 @@ exports.handler = async (event) => {
       case 'debate-turn':           request = buildDebateTurnRequest(payload); break;
       case 'debate-verdict':        request = buildDebateVerdictRequest(payload); break;
       case 'coach-turn':            request = buildCoachTurnRequest(payload); break;
+      case 'coach-prep-turn':       request = buildCoachPrepTurnRequest(payload); break;
       default:
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Unknown mode: ${mode}` }) };
     }
@@ -509,6 +510,83 @@ THE APP'S SCORING ENGINE ALREADY GRADED IT:
 - Result: ${passed ? 'PASS' : 'below pass'}
 Signals it found:
 ${sig}${deliveryBlock}${historyBlock}
+
+Coach them now. Return the JSON.`;
+
+  return {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    jsonMode: true,
+    temperature: 0.7,
+    maxTokens: 450
+  };
+}
+
+// coach-prep-turn : rehearsal against the user's REAL upcoming material (a meeting,
+// presentation, Q&A). No framework score — the AI coach judges whether the message
+// lands for the stated audience, escalates through pushback and audience reframes,
+// and calls "done" when the delivery is fit-for-purpose.
+function buildCoachPrepTurnRequest(p) {
+  const { stage, brief, goals, profileSummary, response, wordCount, wpm, elapsed, conversationHistory } = p;
+  if (!brief || !brief.title || !brief.message) throw new Error('Missing prep brief');
+  if (!response) throw new Error('Missing response');
+  const s = (stage || 'deliver').toLowerCase();
+
+  const stageGuide = {
+    deliver:  'FIRST DELIVERY. Give one warm, specific critique of what they just delivered — quote them if useful. Decide the next move: "redo" if the delivery clearly missed the message; otherwise "pushback" and pose ONE hard question a real stakeholder in that audience would fire back with.',
+    pushback: 'PUSHBACK ROUND. They just handled a stakeholder challenge. If they defused it well, escalate to "audience" — pick a DIFFERENT stakeholder persona from this same audience and have them redeliver the core message for that person. If they fumbled, "redo" with a sharper pushback.',
+    audience: 'AUDIENCE REFRAME. They just redelivered for a different persona. If it worked, call "done" and give a short, warm sign-off with one thing to keep in mind on the day. If it was weak, "redo" and coach the reframe.'
+  };
+  const guide = stageGuide[s] || stageGuide.deliver;
+
+  const goalsLine = Array.isArray(goals) && goals.length ? goals.join(', ') : '(none noted)';
+
+  const systemPrompt = `You are an elite, warm public-speaking coach helping someone rehearse a REAL upcoming talk. This is not a framework drill — your job is to make sure their MESSAGE LANDS with THEIR stated audience under realistic pressure. Your "spoken" text will be read aloud, so it must sound like a real person talking: warm, direct, concise.
+
+METHOD:
+- ${guide}
+- Refer to what they actually said. Quote them when you praise or fix something.
+- Never generic. Never harsh. Always in service of the real event.
+- Your ENTIRE spoken turn must be <= 65 words and sound natural spoken aloud.
+
+DECISION (field "action"):
+- "redo": the delivery clearly didn't land at this stage — coach it and have them try again.
+- "pushback": deliver was good enough; now hit them with a realistic stakeholder pushback (bake the pushback INTO your spoken line as a question).
+- "audience": pushback handled; shift persona and have them redeliver for a different stakeholder (bake the new persona INTO your spoken line).
+- "done": rehearsal is fit-for-purpose — sign off warmly with ONE thing to remember on the day.
+
+OUTPUT — return ONLY this JSON:
+{
+  "spoken": "<what you say aloud, <=65 words, natural spoken rhythm>",
+  "diagnosis": "<the single most important note in <=12 words>",
+  "action": "redo|pushback|audience|done",
+  "modelLine": "<optional: a short exemplar of THEIR message delivered how it should sound. Empty if not useful.>",
+  "profileSummaryUpdate": "<optional: refreshed 1-2 sentence running note on this speaker. Empty if unchanged.>"
+}`;
+
+  const historyBlock = (Array.isArray(conversationHistory) && conversationHistory.length)
+    ? '\n\nREHEARSAL SO FAR:\n' + conversationHistory.map(t => `${t.role === 'coach' ? 'COACH' : 'THEM'}: ${t.text}`).join('\n')
+    : '';
+
+  const userPrompt = `WHO YOU'RE COACHING:
+- Their goals: ${goalsLine}
+- Your notes on them: ${profileSummary || '(no notes yet)'}
+
+THE REAL EVENT THEY'RE PREPARING FOR:
+- Title: ${brief.title}
+- Audience: ${brief.audience || '(unspecified)'}
+- The message they need to land:
+"""
+${brief.message}
+"""
+- Their notes / constraints: ${brief.notes || '(none)'}
+
+CURRENT STAGE: ${s}
+
+WHAT THEY JUST DELIVERED (${wordCount || 0} words, ${wpm || 0} wpm, ${elapsed || 0}s):
+"${response}"${historyBlock}
 
 Coach them now. Return the JSON.`;
 

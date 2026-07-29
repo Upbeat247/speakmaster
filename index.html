@@ -14577,7 +14577,11 @@ function defaultCoachState() {
     dialogue: [],                   // recent turns [{ role:'coach'|'you', text }] (kept short)
     voiceOn: true,
     lastCoachDate: null,
-    sessionsCount: 0
+    sessionsCount: 0,
+    // Real-material prep — briefs the user is preparing for (a meeting, presentation, Q&A).
+    // Rehearsals count as sessions but do not touch the framework curriculum.
+    prepBriefs: [],                 // [{ id, title, audience, message, notes, createdAt, lastUsedAt, rehearsals }]
+    activePrepId: null              // set while a prep rehearsal is in progress
   };
 }
 
@@ -14591,6 +14595,7 @@ function normalizeCoachState(cs) {
   out.weaknesses = Object.assign({}, cs.weaknesses || {});
   if (!Array.isArray(out.goals)) out.goals = [];
   if (!Array.isArray(out.dialogue)) out.dialogue = [];
+  if (!Array.isArray(out.prepBriefs)) out.prepBriefs = [];
   if (!COACH_DIMENSIONS.some(d => d.key === out.currentFocus)) out.currentFocus = 'structure';
   return out;
 }
@@ -14895,10 +14900,198 @@ function coachHomeHTML() {
     <button class="btn btn-primary btn-lg" style="width:100%" onclick="coachStartSession()">
       <i data-lucide="play" style="width:18px;height:18px"></i> Start today's session
     </button>
-    <button class="btn btn-ghost" style="width:100%;margin-top:8px;color:var(--text-muted)" onclick="coachReset()">
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+        <div>
+          <div style="font-family:var(--font-display);font-size:1.05rem;color:var(--text-primary)">Prep for something real</div>
+          <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:2px">A meeting, presentation, or Q&amp;A — I'll rehearse it with you.</div>
+        </div>
+      </div>
+      ${coachPrepListHTML(cs.prepBriefs)}
+      <button class="btn btn-secondary" style="width:100%;margin-top:10px" onclick="coachPrepIntake()">
+        <i data-lucide="plus" style="width:16px;height:16px"></i> New prep brief
+      </button>
+    </div>
+
+    <button class="btn btn-ghost" style="width:100%;margin-top:16px;color:var(--text-muted)" onclick="coachReset()">
       <i data-lucide="rotate-ccw" style="width:14px;height:14px"></i> Reset coach
     </button>
   </div>`;
+}
+function coachPrepListHTML(briefs) {
+  if (!Array.isArray(briefs) || briefs.length === 0) {
+    return `<div style="padding:14px;border:1px dashed var(--border);border-radius:var(--radius-md);color:var(--text-muted);font-size:0.88rem;text-align:center">No prep briefs yet. Add one and I'll drill you on it.</div>`;
+  }
+  return briefs.slice().sort((a, b) => (b.lastUsedAt || b.createdAt || '').localeCompare(a.lastUsedAt || a.createdAt || '')).map(b => `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);margin-bottom:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${coachEsc(b.title)}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${coachEsc(b.audience || 'no audience noted')} · ${b.rehearsals || 0} rehearsal${(b.rehearsals || 0) === 1 ? '' : 's'}</div>
+      </div>
+      <button class="btn btn-primary" onclick="coachPrepStart('${b.id}')" style="padding:8px 12px;font-size:0.85rem">
+        <i data-lucide="mic" style="width:14px;height:14px"></i> Rehearse
+      </button>
+      <button class="btn btn-ghost" onclick="coachPrepDelete('${b.id}')" aria-label="Delete brief" style="padding:8px">
+        <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+      </button>
+    </div>`).join('');
+}
+
+// ---------- PREP: intake + persistence ----------
+function coachPrepIntake(existingId) {
+  const cs = state.coachState;
+  const b = existingId ? (cs.prepBriefs || []).find(x => x.id === existingId) : null;
+  const el = document.getElementById('coach-content');
+  if (!el) return;
+  el.innerHTML = `
+  <div style="max-width:620px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-ghost" onclick="renderCoach()" aria-label="Back" style="padding:8px"><i data-lucide="arrow-left" style="width:18px;height:18px"></i></button>
+      <div>
+        <h1 style="font-family:var(--font-display);font-size:1.4rem;margin:0">${b ? 'Edit prep brief' : 'New prep brief'}</h1>
+        <p style="color:var(--text-secondary);margin:2px 0 0;font-size:0.88rem">Tell me what you're preparing for. I'll rehearse you against it.</p>
+      </div>
+    </div>
+    <div class="card" style="padding:18px">
+      <label style="display:block;font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px">What are you preparing for?</label>
+      <input id="prep-title" type="text" maxlength="120" value="${b ? coachEsc(b.title) : ''}" placeholder="e.g. Board update on CUI inspection findings"
+        style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;margin-bottom:14px">
+
+      <label style="display:block;font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px">Who's the audience?</label>
+      <input id="prep-audience" type="text" maxlength="200" value="${b ? coachEsc(b.audience || '') : ''}" placeholder="e.g. Senior management, non-technical, budget-conscious"
+        style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;margin-bottom:14px">
+
+      <label style="display:block;font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px">The message you need to land</label>
+      <textarea id="prep-message" maxlength="4000" placeholder="Your key points, findings, recommendation — the substance. Bullets or prose, whatever feels right."
+        style="width:100%;min-height:140px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;resize:vertical;margin-bottom:14px">${b ? coachEsc(b.message || '') : ''}</textarea>
+
+      <label style="display:block;font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px">Anything else? (optional)</label>
+      <textarea id="prep-notes" maxlength="1000" placeholder="Constraints, time limit, what tends to go wrong, tough questions you fear…"
+        style="width:100%;min-height:70px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;resize:vertical">${b ? coachEsc(b.notes || '') : ''}</textarea>
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%;margin-top:14px" onclick="coachPrepSave('${b ? b.id : ''}')">
+      <i data-lucide="mic" style="width:18px;height:18px"></i> Save and rehearse
+    </button>
+  </div>`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function coachPrepGenId() {
+  return 'pb_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+function coachPrepSave(existingId) {
+  const title = (document.getElementById('prep-title').value || '').trim();
+  const audience = (document.getElementById('prep-audience').value || '').trim();
+  const message = (document.getElementById('prep-message').value || '').trim();
+  const notes = (document.getElementById('prep-notes').value || '').trim();
+  if (title.length < 3) { showToast('Give this brief a short title.'); return; }
+  if (message.length < 20) { showToast('Add at least a couple of sentences of message.'); return; }
+  const cs = state.coachState;
+  if (!Array.isArray(cs.prepBriefs)) cs.prepBriefs = [];
+  const now = new Date().toISOString();
+  let brief;
+  if (existingId) {
+    brief = cs.prepBriefs.find(b => b.id === existingId);
+    if (!brief) { brief = { id: coachPrepGenId(), createdAt: now, rehearsals: 0 }; cs.prepBriefs.push(brief); }
+    brief.title = title; brief.audience = audience; brief.message = message; brief.notes = notes;
+  } else {
+    brief = { id: coachPrepGenId(), title, audience, message, notes, createdAt: now, lastUsedAt: null, rehearsals: 0 };
+    cs.prepBriefs.push(brief);
+  }
+  saveState();
+  coachPrepStart(brief.id);
+}
+function coachPrepDelete(id) {
+  if (!confirm('Delete this prep brief? Rehearsal history stays in your practice log.')) return;
+  const cs = state.coachState;
+  cs.prepBriefs = (cs.prepBriefs || []).filter(b => b.id !== id);
+  saveState();
+  renderCoach();
+}
+function coachPrepStart(id) {
+  const cs = state.coachState;
+  const brief = (cs.prepBriefs || []).find(b => b.id === id);
+  if (!brief) { showToast('Brief not found.'); return; }
+  brief.lastUsedAt = new Date().toISOString();
+  brief.rehearsals = (brief.rehearsals || 0) + 1;
+  cs.activePrepId = id;
+  cs.sessionsCount = (cs.sessionsCount || 0) + 1;
+  cs.lastCoachDate = new Date().toISOString().slice(0, 10);
+  _coachSession = { mode: 'prep', prepId: id, stage: 'deliver', phase: 'await', thread: [], attempts: 0, lastModelLine: '', lastPassed: false };
+  saveState();
+  renderCoachConversation();
+  const opener = `Alright — rehearsing "${brief.title}"${brief.audience ? ' for ' + brief.audience : ''}. Deliver it the way you plan to. I'll listen, then we'll sharpen it and handle the pushback you're likely to get.`;
+  coachSay(opener);
+  setTimeout(() => coachPresentPrepPrompt(brief), 500);
+}
+function coachPresentPrepPrompt(brief) {
+  _coachSession.phase = 'await';
+  _coachSession.startTime = Date.now();
+  const label = _coachSession.stage === 'pushback'
+    ? 'Answer the pushback out loud.'
+    : (_coachSession.stage === 'audience'
+      ? 'Deliver it again — this time tuned to that audience.'
+      : 'Deliver your message now.');
+  const meta = `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px">Prep · ${coachEsc(brief.title)}${brief.audience ? ' · ' + coachEsc(brief.audience) : ''}</div>`;
+  coachSay(label, meta);
+  renderCoachDock();
+  const ta = document.getElementById('coach-input'); if (ta) ta.focus();
+}
+
+// ---------- PREP: diagnosis (AI + local fallback) ----------
+function localPrepDiagnosis(text, brief, stage) {
+  const wc = (text || '').trim().split(/\s+/).filter(Boolean).length;
+  const tooShort = wc < 40;
+  if (stage === 'pushback') {
+    return { spoken: tooShort ? 'Give it more — a real leader would keep pressing. Try again with a concrete point.' : 'Solid handle. Next: your audience shifts — imagine a skeptical finance lead in the room. Redeliver the core message for them.', diagnosis: tooShort ? 'Expand your response' : 'Reframe for a skeptical stakeholder', action: tooShort ? 'redo' : 'audience', modelLine: '', profileSummaryUpdate: '' };
+  }
+  if (stage === 'audience') {
+    return { spoken: 'Good rehearsal. That gives us a solid working version. Come back and rerun this before the real thing to lock it in.', diagnosis: 'Rehearsal complete', action: 'done', modelLine: '', profileSummaryUpdate: '' };
+  }
+  // deliver
+  if (tooShort) return { spoken: 'That was too brief for what you’re delivering. Take another pass and give me your full message.', diagnosis: 'Deliver the full message', action: 'redo', modelLine: '', profileSummaryUpdate: '' };
+  return { spoken: 'Good first pass. Now let’s pressure-test it: a stakeholder cuts in and asks what the cost impact is. Handle that.', diagnosis: 'Handle cost pushback', action: 'pushback', modelLine: '', profileSummaryUpdate: '' };
+}
+function normalizeCoachPrepTurn(data, ctx) {
+  const okActions = ['redo', 'pushback', 'audience', 'done'];
+  let action = (data && typeof data.action === 'string') ? data.action.toLowerCase() : '';
+  if (!okActions.includes(action)) action = ctx.stage === 'audience' ? 'done' : (ctx.stage === 'pushback' ? 'audience' : 'pushback');
+  return {
+    spoken: (data && data.spoken) ? String(data.spoken) : localPrepDiagnosis(ctx.text, ctx.brief, ctx.stage).spoken,
+    diagnosis: (data && data.diagnosis) ? String(data.diagnosis) : '',
+    action,
+    modelLine: (data && data.modelLine) ? String(data.modelLine) : '',
+    profileSummaryUpdate: (data && data.profileSummaryUpdate) ? String(data.profileSummaryUpdate) : ''
+  };
+}
+async function getCoachPrepDiagnosis(ctx) {
+  if (!location.protocol.startsWith('http')) return localPrepDiagnosis(ctx.text, ctx.brief, ctx.stage);
+  try {
+    const data = await callAIChat({
+      mode: 'coach-prep-turn',
+      stage: ctx.stage,
+      brief: { title: ctx.brief.title, audience: ctx.brief.audience || '', message: ctx.brief.message || '', notes: ctx.brief.notes || '' },
+      goals: state.coachState.goals,
+      profileSummary: state.coachState.profileSummary,
+      response: ctx.text,
+      wordCount: ctx.wc,
+      wpm: ctx.wpm,
+      elapsed: ctx.elapsed,
+      conversationHistory: (state.coachState.dialogue || []).slice(-6)
+    });
+    return normalizeCoachPrepTurn(data, ctx);
+  } catch (e) {
+    return localPrepDiagnosis(ctx.text, ctx.brief, ctx.stage);
+  }
+}
+function coachRecordPrepAttempt(brief, text, wc, wpm, elapsed) {
+  state.practiceLog.push({
+    lessonId: 'prep-' + brief.id, lessonTitle: 'Prep: ' + brief.title, prompt: brief.title, response: text,
+    score: null, wpm, inputMode: 'speaking', timeSpent: elapsed,
+    mode: 'coach-prep', prepId: brief.id, date: new Date().toISOString()
+  });
+  if (state.practiceLog.length > 200) state.practiceLog.shift();
+  state.totalPracticeSeconds = (state.totalPracticeSeconds || 0) + (elapsed || 0);
 }
 function coachReset() {
   if (!confirm('Reset your coach? This clears its memory of your goals and focus (your lesson progress and history are kept).')) return;
@@ -14968,10 +15161,20 @@ function renderCoachDock() {
   if (_coachSession.phase === 'reviewing') {
     const modelBtn = _coachSession.lastModelLine
       ? `<button class="btn btn-secondary" onclick="coachHearModel()"><i data-lucide="volume-2" style="width:16px;height:16px"></i> Hear it done well</button>` : '';
+    let nextLabel;
+    if (_coachSession.mode === 'prep') {
+      const a = _coachSession.lastAction;
+      nextLabel = a === 'done' ? 'Finish rehearsal'
+                : a === 'pushback' ? 'Handle the pushback'
+                : a === 'audience' ? 'Redeliver for that audience'
+                : 'Try again';
+    } else {
+      nextLabel = _coachSession.lastPassed ? 'Next drill' : 'Try again';
+    }
     dock.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap">
       ${modelBtn}
       <button class="btn btn-primary" style="flex:1;min-width:140px" onclick="coachContinue()">
-        <i data-lucide="arrow-right" style="width:16px;height:16px"></i> ${_coachSession.lastPassed ? 'Next drill' : 'Try again'}
+        <i data-lucide="arrow-right" style="width:16px;height:16px"></i> ${nextLabel}
       </button>
     </div>`;
   } else if (_coachSession.phase === 'thinking') {
@@ -15035,6 +15238,9 @@ async function coachSubmit() {
   _coachSession.phase = 'thinking';
   renderCoachDock();
 
+  // Prep mode: score-light, AI-heavy critique against the user's real material.
+  if (_coachSession.mode === 'prep') { await coachSubmitPrep(text); return; }
+
   const unit = _coachSession.unit;
   const lesson = unit.lesson;
   const elapsed = Math.max(1, Math.round((Date.now() - (_coachSession.startTime || Date.now())) / 1000));
@@ -15087,8 +15293,47 @@ function coachUpdateMastery(passed) {
   cs.mastery.passStreak = passed ? cs.mastery.passStreak + 1 : 0;
   return cs.mastery.passStreak >= cs.mastery.threshold;
 }
+async function coachSubmitPrep(text) {
+  const cs = state.coachState;
+  const brief = (cs.prepBriefs || []).find(b => b.id === _coachSession.prepId);
+  if (!brief) { showToast('This brief is gone. Ending rehearsal.'); coachEndSession(); return; }
+  const elapsed = Math.max(1, Math.round((Date.now() - (_coachSession.startTime || Date.now())) / 1000));
+  const wc = text.split(/\s+/).filter(Boolean).length;
+  const wpm = elapsed > 0 ? Math.round((wc / elapsed) * 60) : 0;
+  coachRecordPrepAttempt(brief, text, wc, wpm, elapsed);
+  const turn = await getCoachPrepDiagnosis({ brief, text, stage: _coachSession.stage, elapsed, wc, wpm });
+  if (turn.profileSummaryUpdate) cs.profileSummary = turn.profileSummaryUpdate;
+
+  _coachSession.lastModelLine = turn.modelLine || '';
+  _coachSession.lastAction = turn.action;
+  _coachSession.lastPassed = turn.action !== 'redo';
+
+  const chip = `<span style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:0.78rem;background:var(--teal-light);color:var(--teal);font-weight:700">${wc} words · ${wpm} wpm · ${elapsed}s</span>`;
+  coachSay(turn.spoken, chip);
+
+  if (turn.action === 'done') {
+    try { confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#01696f', '#e8762b', '#c4981a'] }); } catch (e) {}
+    if (typeof playPass === 'function') playPass();
+  }
+  saveState();
+  _coachSession.phase = 'reviewing';
+  renderCoachDock();
+}
 function coachContinue() {
   if (!_coachSession) return;
+  if (_coachSession.mode === 'prep') {
+    const cs = state.coachState;
+    const brief = (cs.prepBriefs || []).find(b => b.id === _coachSession.prepId);
+    if (!brief) { coachEndSession(); return; }
+    const action = _coachSession.lastAction || 'redo';
+    if (action === 'done') { coachEndSession(); return; }
+    // Coach's spoken line already stated the next challenge; advance stage.
+    if (action === 'pushback') _coachSession.stage = 'pushback';
+    else if (action === 'audience') _coachSession.stage = 'audience';
+    // 'redo' keeps the same stage.
+    coachPresentPrepPrompt(brief);
+    return;
+  }
   _coachSession.promptIdx += 1;
   coachPresentPrompt();
 }
@@ -15096,6 +15341,7 @@ function coachHearModel() { if (_coachSession && _coachSession.lastModelLine) co
 function coachEndSession() {
   coachStopSpeaking();
   try { stopAISpeech('coach-input'); } catch (e) {}
+  if (state.coachState) state.coachState.activePrepId = null;
   _coachSession = null;
   saveState();
   renderCoach();
