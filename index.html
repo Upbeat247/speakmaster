@@ -2703,6 +2703,7 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
   border-color: var(--teal);
 }
 .pull-refresh-indicator.ready i { animation: spin 0.8s linear infinite; }
+.coach-spin { animation: spin 0.8s linear infinite; }
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -4479,6 +4480,10 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
       <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i>
       <span>Dashboard</span>
     </button>
+    <button class="nav-link" data-view="coach" onclick="navigate('coach')">
+      <i data-lucide="graduation-cap" style="width:16px;height:16px"></i>
+      <span>Coach</span>
+    </button>
     <button class="nav-link" data-view="tracks" onclick="navigate('tracks')">
       <i data-lucide="map" style="width:16px;height:16px"></i>
       <span>Tracks</span>
@@ -4511,6 +4516,10 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <button class="mobile-nav-link" data-view="dashboard" onclick="navigate('dashboard')">
       <i data-lucide="layout-dashboard"></i>
       Dashboard
+    </button>
+    <button class="mobile-nav-link" data-view="coach" onclick="navigate('coach')">
+      <i data-lucide="graduation-cap"></i>
+      Coach
     </button>
     <button class="mobile-nav-link" data-view="tracks" onclick="navigate('tracks')">
       <i data-lucide="map"></i>
@@ -4662,6 +4671,11 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
       <div id="fluency-content"></div>
     </div>
 
+    <!-- COACH VIEW -->
+    <div id="view-coach" class="view">
+      <div id="coach-content"></div>
+    </div>
+
     <!-- SAVED REVIEWS (LIBRARY) VIEW -->
     <div id="view-library" class="view">
       <div id="library-content"></div>
@@ -4713,6 +4727,7 @@ const state = {
   achievements: [],          // [{ id, unlockedAt }] — unlocked achievements
   lastModified: null,        // ISO timestamp of last local modification — used for cloud sync merge
   fluencyProgress: null,     // Stage 5A: 30-Day Fluency Program — null until user starts
+  coachState: null,          // Coach Mode — user model + adaptive program; built by normalizeCoachState() on init
   settings: {
     passMark: 70,              // 70–95 (%)
     practiceAttempts: 3,       // 1–5 — how many attempts must average passMark to complete a lesson
@@ -8545,6 +8560,7 @@ function handleRoute() {
       if (viewName === 'debate') renderDebateEntry();
       if (viewName === 'packs') renderPacksList();
       if (viewName === 'fluency') renderFluencyHub();
+      if (viewName === 'coach') renderCoach();
     } else {
       document.getElementById('view-dashboard').classList.add('active');
       state.currentView = 'dashboard';
@@ -14430,7 +14446,7 @@ const PERSISTED_KEYS = [
   'unlockedTracks', 'unlockedLessons', 'completedTracks', 'certificateDates',
   'xpHistory', 'practiceLog', 'savedReviews', 'customPrompts', 'dailyChallenge', 'settings',
   'weeklyGoal', 'reflections', 'lastWarmupDate', 'onboardingComplete', 'favorites',
-  'achievements', 'lastModified', 'fluencyProgress'
+  'achievements', 'lastModified', 'fluencyProgress', 'coachState'
 ];
 
 let saveTimer = null;
@@ -14518,6 +14534,573 @@ function persistAfter(fn) {
   };
 }
 
+// ========================================================================
+// ========== COACH MODE — the coaching spine =============================
+// ========================================================================
+// A conversational, adaptive coach layered on top of the existing engine.
+// It remembers the user (state.coachState), diagnoses the ONE highest-leverage
+// fix each turn, drills the current focus, and promotes them up the TRACKS ladder.
+// Reuses: autoScoreResponse() + applyDifficulty() (scoring), callAIChat()
+// ('coach-turn' mode), startAISpeech()/stopAISpeech() (voice input),
+// TRACKS + getLessonData() + getNextLesson() (curriculum), confetti/playPass/haptic.
+// Voice-OUT (the coach speaking) is added here via speechSynthesis.
+
+const COACH_DIMENSIONS = [
+  { key: 'structure', label: 'Structure', max: 40, blurb: 'landing every part of the framework, in order' },
+  { key: 'clarity',   label: 'Clarity',   max: 30, blurb: 'staying focused, well-paced and free of filler' },
+  { key: 'depth',     label: 'Depth',     max: 20, blurb: 'backing points with specific numbers, names and examples' },
+];
+const COACH_MASTERY_STREAK = 3; // consecutive passes on the focus dimension to "master" it
+
+// The goals shown at intake — seed coachState.goals and steer which lessons the coach favours.
+const COACH_GOALS = [
+  { key: 'meetings',      label: 'Speak up in meetings',     icon: 'users' },
+  { key: 'presentations', label: 'Give presentations',       icon: 'presentation' },
+  { key: 'qa',            label: 'Handle Q&A / pushback',     icon: 'messages-square' },
+  { key: 'impromptu',     label: 'Think on my feet',         icon: 'zap' },
+  { key: 'interviews',    label: 'Interview well',           icon: 'briefcase' },
+  { key: 'exec',          label: 'Executive presence',       icon: 'crown' },
+];
+
+let _coachSession = null; // transient per-session state (not persisted)
+
+function defaultCoachState() {
+  return {
+    onboarded: false,
+    goals: [],
+    goalNote: '',
+    profileSummary: '',
+    weaknesses: {},                 // { structure|clarity|depth: 0-100 } (higher = stronger)
+    currentFocus: 'structure',
+    mastery: { skill: 'structure', passStreak: 0, threshold: COACH_MASTERY_STREAK },
+    program: { position: null },    // { trackId, lessonIndex } — current spot on the ladder
+    dialogue: [],                   // recent turns [{ role:'coach'|'you', text }] (kept short)
+    voiceOn: true,
+    lastCoachDate: null,
+    sessionsCount: 0
+  };
+}
+
+// Merge saved coachState onto fresh defaults so newly-added fields never break old saves.
+function normalizeCoachState(cs) {
+  const base = defaultCoachState();
+  if (!cs || typeof cs !== 'object') return base;
+  const out = Object.assign(base, cs);
+  out.mastery = Object.assign(base.mastery, cs.mastery || {});
+  out.program = Object.assign(base.program, cs.program || {});
+  out.weaknesses = Object.assign({}, cs.weaknesses || {});
+  if (!Array.isArray(out.goals)) out.goals = [];
+  if (!Array.isArray(out.dialogue)) out.dialogue = [];
+  if (!COACH_DIMENSIONS.some(d => d.key === out.currentFocus)) out.currentFocus = 'structure';
+  return out;
+}
+
+function coachEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+function coachDim(key) { return COACH_DIMENSIONS.find(d => d.key === key) || COACH_DIMENSIONS[0]; }
+
+// ---------- MEMORY: derive weaknesses from the app's real scoring history ----------
+// Roll recent attempts into a 0-100 strength score per dimension (higher = stronger),
+// normalising each category to its own max. Uses the same practiceLog the rest of the app writes.
+function computeCoachWeaknesses() {
+  const log = Array.isArray(state.practiceLog) ? state.practiceLog.slice(-15) : [];
+  const acc = {}, cnt = {};
+  COACH_DIMENSIONS.forEach(d => { acc[d.key] = 0; cnt[d.key] = 0; });
+  log.forEach(e => COACH_DIMENSIONS.forEach(d => {
+    if (typeof e[d.key] === 'number') { acc[d.key] += (e[d.key] / d.max) * 100; cnt[d.key]++; }
+  }));
+  const out = {};
+  COACH_DIMENSIONS.forEach(d => { out[d.key] = cnt[d.key] ? Math.round(acc[d.key] / cnt[d.key]) : 60; });
+  return out;
+}
+function pickCoachFocus(weaknesses, exclude) {
+  let focus = null, lowest = Infinity;
+  COACH_DIMENSIONS.forEach(d => {
+    if (d.key === exclude) return;
+    const v = (weaknesses && typeof weaknesses[d.key] === 'number') ? weaknesses[d.key] : 60;
+    if (v < lowest) { lowest = v; focus = d.key; }
+  });
+  return focus || exclude || COACH_DIMENSIONS[0].key;
+}
+
+// ---------- CURRICULUM: walk the existing TRACKS ladder (easy -> hard) ----------
+function coachCurrentUnit() {
+  const cs = state.coachState;
+  const pos = cs.program.position;
+  if (pos) {
+    const lesson = getLessonData(pos.trackId, pos.lessonIndex);
+    if (lesson) return { trackId: pos.trackId, lessonIndex: pos.lessonIndex, lesson };
+  }
+  const next = (typeof getNextLesson === 'function') ? getNextLesson() : null;
+  if (next) {
+    cs.program.position = { trackId: next.track.id, lessonIndex: next.index };
+    return { trackId: next.track.id, lessonIndex: next.index, lesson: next.lesson };
+  }
+  // Everything complete — keep drilling from the top.
+  const t0 = TRACKS[0];
+  cs.program.position = { trackId: t0.id, lessonIndex: 0 };
+  return { trackId: t0.id, lessonIndex: 0, lesson: t0.lessons[0] };
+}
+function coachAdvanceUnit() {
+  const cs = state.coachState;
+  const unit = coachCurrentUnit();
+  const track = TRACKS.find(t => t.id === unit.trackId);
+  if (track && unit.lessonIndex + 1 < track.lessons.length) {
+    cs.program.position = { trackId: track.id, lessonIndex: unit.lessonIndex + 1 };
+  } else {
+    const ti = TRACKS.findIndex(t => t.id === unit.trackId);
+    const nextTrack = TRACKS[ti + 1];
+    if (nextTrack) cs.program.position = { trackId: nextTrack.id, lessonIndex: 0 };
+    // else: last lesson of last track — hold position and keep drilling.
+  }
+}
+function coachPickPrompt(lesson, idx) {
+  const prompts = Array.isArray(lesson.prompts) && lesson.prompts.length ? lesson.prompts : null;
+  if (!prompts) return { text: lesson.example ? lesson.example.prompt : 'Give this a try.', modelResponse: lesson.example ? lesson.example.response : null };
+  return prompts[idx % prompts.length];
+}
+
+// ---------- VOICE OUT (coach speaking) ----------
+function coachSpeak(text) {
+  const cs = state.coachState;
+  if (!cs || !cs.voiceOn) return;
+  if (typeof speechSynthesis === 'undefined' || !text) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.rate = 1.02; u.pitch = 1.0; u.lang = 'en-US';
+    // Prefer a natural en voice if one is available
+    const voices = speechSynthesis.getVoices() || [];
+    const pref = voices.find(v => /en-US/i.test(v.lang) && /(Samantha|Google US English|Natural|Aria|Jenny)/i.test(v.name))
+              || voices.find(v => /en[-_]?US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang));
+    if (pref) u.voice = pref;
+    speechSynthesis.speak(u);
+  } catch (e) { /* TTS is best-effort */ }
+}
+function coachStopSpeaking() { try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {} }
+function coachToggleVoice() {
+  const cs = state.coachState;
+  cs.voiceOn = !cs.voiceOn;
+  if (!cs.voiceOn) coachStopSpeaking();
+  saveState();
+  const btn = document.getElementById('coach-voice-btn');
+  if (btn) {
+    btn.setAttribute('data-lucide', cs.voiceOn ? 'volume-2' : 'volume-x');
+    btn.parentElement && btn.parentElement.setAttribute('aria-label', cs.voiceOn ? 'Coach voice on' : 'Coach voice off');
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  showToast(cs.voiceOn ? 'Coach voice on' : 'Coach voice off');
+}
+
+// ---------- DIAGNOSIS: coach-turn (AI) with a local heuristic fallback ----------
+function localCoachTurn(ctx) {
+  const passed = ctx.score.total >= ctx.passMark;
+  const dim = coachDim(ctx.focus);
+  const sigs = ctx.score.signals || [];
+  const pick = sigs.find(s => s.category === ctx.focus && (s.type === 'miss' || s.type === 'partial'))
+            || sigs.find(s => s.type === 'miss')
+            || sigs.find(s => s.type === 'partial');
+  const fix = pick ? (pick.suggestion || pick.msg) : `Sharpen your ${dim.label.toLowerCase()} — focus on ${dim.blurb}.`;
+  const lead = passed ? `That's a pass — ${ctx.score.total}/100. Solid work.` : `Not there yet — ${ctx.score.total}/100.`;
+  return {
+    spoken: `${lead} One thing to sharpen: ${fix}`,
+    diagnosis: fix,
+    action: passed ? 'advance' : 'redo',
+    modelLine: '',
+    profileSummaryUpdate: ''
+  };
+}
+function normalizeCoachTurn(data, ctx) {
+  const passed = ctx.score.total >= ctx.passMark;
+  const okActions = ['redo', 'advance', 'promote', 'chat'];
+  let action = (data && typeof data.action === 'string') ? data.action.toLowerCase() : '';
+  if (action === 'assign-drill') action = 'advance';
+  if (!okActions.includes(action)) action = passed ? 'advance' : 'redo';
+  return {
+    spoken: (data && data.spoken) ? String(data.spoken) : localCoachTurn(ctx).spoken,
+    diagnosis: (data && data.diagnosis) ? String(data.diagnosis) : '',
+    action,
+    modelLine: (data && data.modelLine) ? String(data.modelLine) : '',
+    profileSummaryUpdate: (data && data.profileSummaryUpdate) ? String(data.profileSummaryUpdate) : ''
+  };
+}
+async function getCoachDiagnosis(ctx) {
+  // Offline / file:// — skip the network and use the local coach.
+  if (!location.protocol.startsWith('http')) return localCoachTurn(ctx);
+  try {
+    const data = await callAIChat({
+      mode: 'coach-turn',
+      focus: ctx.focus,
+      focusLabel: coachDim(ctx.focus).label,
+      goals: state.coachState.goals,
+      profileSummary: state.coachState.profileSummary,
+      weaknesses: ctx.weaknesses,
+      lessonTitle: ctx.lesson.title,
+      framework: ctx.lesson.elements.map(e => e.name),
+      prompt: ctx.prompt,
+      response: ctx.text,
+      passMark: ctx.passMark,
+      passed: ctx.score.total >= ctx.passMark,
+      masteryStreak: state.coachState.mastery.passStreak,
+      masteryThreshold: COACH_MASTERY_STREAK,
+      heuristicScore: {
+        structure: ctx.score.structure, clarity: ctx.score.clarity,
+        depth: ctx.score.depth, total: ctx.score.total,
+        signals: (ctx.score.signals || []).slice(0, 10).map(s => ({
+          category: s.category || 'general', type: s.type || 'partial', msg: s.msg || '', quote: s.quote || '', suggestion: s.suggestion || ''
+        }))
+      },
+      delivery: ctx.delivery || null, // seam for later on-device audio analysis
+      conversationHistory: (state.coachState.dialogue || []).slice(-6)
+    });
+    return normalizeCoachTurn(data, ctx);
+  } catch (e) {
+    return localCoachTurn(ctx); // graceful fallback keeps the coach usable
+  }
+}
+
+// ---------- SCORING + RECORDING (reuses the app's engine & data shapes) ----------
+function coachScore(text, lesson, elapsedSeconds, inputMode) {
+  const auto = autoScoreResponse(text, lesson, elapsedSeconds, inputMode);
+  const structure = Math.min(40, applyDifficulty(auto.structure));
+  const clarity = Math.min(30, applyDifficulty(auto.clarity));
+  const depth = Math.min(20, applyDifficulty(auto.depth));
+  const total = Math.min(100, structure + clarity + depth + auto.completion);
+  return { structure, clarity, depth, completion: auto.completion, total, signals: auto.signals || [], wpm: auto.wpm || 0, inputMode: auto.inputMode || inputMode };
+}
+function coachRecordAttempt(unit, lesson, promptText, text, score, elapsed) {
+  const lessonId = lesson.id;
+  const prev = state.lessonScores[lessonId];
+  const history = prev && Array.isArray(prev.history) ? prev.history.slice() : [];
+  history.push(score.total);
+  state.lessonScores[lessonId] = { best: Math.max(score.total, (prev && prev.best) || 0), attempts: ((prev && prev.attempts) || 0) + 1, history };
+  state.practiceLog.push({
+    lessonId, lessonTitle: lesson.title, trackId: unit.trackId, lessonIndex: unit.lessonIndex,
+    prompt: promptText, response: text, score: score.total,
+    structure: score.structure, clarity: score.clarity, depth: score.depth, completion: score.completion,
+    signals: (score.signals || []).slice(0, 8), wpm: score.wpm || 0,
+    inputMode: score.inputMode || 'speaking', timeSpent: elapsed, mode: 'coach', date: new Date().toISOString()
+  });
+  if (state.practiceLog.length > 200) state.practiceLog.shift();
+  state.totalPracticeSeconds = (state.totalPracticeSeconds || 0) + (elapsed || 0);
+  saveState();
+}
+
+// ---------- RENDER ----------
+function renderCoach() {
+  const cs = state.coachState;
+  const el = document.getElementById('coach-content');
+  if (!el) return;
+  if (!cs.onboarded) { el.innerHTML = coachOnboardingHTML(); if (typeof lucide !== 'undefined') lucide.createIcons(); return; }
+  if (_coachSession) { renderCoachConversation(); return; }
+  el.innerHTML = coachHomeHTML();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function coachOnboardingHTML() {
+  const chips = COACH_GOALS.map(g => `
+    <button type="button" class="coach-goal-chip" data-goal="${g.key}" onclick="coachToggleGoal(this,'${g.key}')"
+      style="display:flex;align-items:center;gap:8px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;cursor:pointer;text-align:left">
+      <i data-lucide="${g.icon}" style="width:18px;height:18px;color:var(--teal)"></i><span>${g.label}</span>
+    </button>`).join('');
+  return `
+  <div style="max-width:620px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--teal-light);display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px">
+        <i data-lucide="graduation-cap" style="width:28px;height:28px;color:var(--teal)"></i>
+      </div>
+      <h1 style="font-family:var(--font-display);font-size:1.7rem;margin:0 0 6px">Meet your speaking coach</h1>
+      <p style="color:var(--text-secondary);margin:0 0 4px">I'll take you from where you are to polished — one focused fix at a time. First, what do you most want to get better at?</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0">${chips}</div>
+    <label style="display:block;font-size:0.85rem;color:var(--text-secondary);margin-bottom:6px">Anything specific coming up? (optional)</label>
+    <textarea id="coach-goal-note" placeholder="e.g. I present inspection findings to management and freeze during Q&A"
+      style="width:100%;min-height:70px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;resize:vertical"></textarea>
+    <button class="btn btn-primary btn-lg" style="width:100%;margin-top:16px" onclick="coachFinishOnboarding()">
+      <i data-lucide="arrow-right" style="width:18px;height:18px"></i> Start coaching
+    </button>
+  </div>`;
+}
+function coachToggleGoal(btn, key) {
+  const on = btn.getAttribute('data-on') === '1';
+  btn.setAttribute('data-on', on ? '0' : '1');
+  btn.style.borderColor = on ? 'var(--border)' : 'var(--teal)';
+  btn.style.background = on ? 'var(--bg-card)' : 'var(--teal-light)';
+  if (typeof haptic === 'function') haptic('tick');
+}
+function coachFinishOnboarding() {
+  const cs = state.coachState;
+  const picked = Array.from(document.querySelectorAll('.coach-goal-chip[data-on="1"]')).map(b => b.getAttribute('data-goal'));
+  cs.goals = picked;
+  const noteEl = document.getElementById('coach-goal-note');
+  cs.goalNote = noteEl ? noteEl.value.trim() : '';
+  cs.onboarded = true;
+  cs.weaknesses = computeCoachWeaknesses();
+  cs.currentFocus = pickCoachFocus(cs.weaknesses);
+  cs.mastery = { skill: cs.currentFocus, passStreak: 0, threshold: COACH_MASTERY_STREAK };
+  const goalText = picked.length ? COACH_GOALS.filter(g => picked.includes(g.key)).map(g => g.label.toLowerCase()).join(', ') : 'becoming a more polished speaker';
+  cs.profileSummary = `New coachee. Goals: ${goalText}.${cs.goalNote ? ' Note: ' + cs.goalNote : ''} Starting focus: ${coachDim(cs.currentFocus).label}.`;
+  saveState();
+  coachStartSession();
+}
+
+function coachHomeHTML() {
+  const cs = state.coachState;
+  const dim = coachDim(cs.currentFocus);
+  const w = cs.weaknesses || {};
+  const bars = COACH_DIMENSIONS.map(d => {
+    const v = typeof w[d.key] === 'number' ? w[d.key] : 60;
+    const isFocus = d.key === cs.currentFocus;
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
+        <span style="color:var(--text-secondary)">${d.label}${isFocus ? ' &nbsp;<span style="color:var(--teal);font-weight:700">← focus</span>' : ''}</span>
+        <span style="color:var(--text-muted)">${v}</span>
+      </div>
+      <div style="height:8px;background:var(--bg-secondary);border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${v}%;background:${isFocus ? 'var(--teal)' : 'var(--text-muted)'};border-radius:99px"></div>
+      </div>
+    </div>`;
+  }).join('');
+  const pips = Array.from({ length: cs.mastery.threshold }, (_, i) =>
+    `<span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:${i < cs.mastery.passStreak ? 'var(--teal)' : 'var(--border)'}"></span>`).join(' ');
+  const sessLine = cs.sessionsCount > 0 ? `${cs.sessionsCount} session${cs.sessionsCount === 1 ? '' : 's'} together so far.` : `Let's begin.`;
+  return `
+  <div style="max-width:620px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--teal-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i data-lucide="graduation-cap" style="width:24px;height:24px;color:var(--teal)"></i>
+      </div>
+      <div>
+        <h1 style="font-family:var(--font-display);font-size:1.5rem;margin:0">Your coach</h1>
+        <p style="color:var(--text-secondary);margin:2px 0 0;font-size:0.9rem">${sessLine}</p>
+      </div>
+    </div>
+    <div class="card" style="padding:18px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">Today's focus</div>
+          <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--teal)">${dim.label}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">Mastery</div>
+          <div>${pips}</div>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);font-size:0.9rem;margin:0 0 14px">We'll work on ${dim.blurb}. I'll set a drill, listen, and give you one sharp fix each round.</p>
+      ${bars}
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%" onclick="coachStartSession()">
+      <i data-lucide="play" style="width:18px;height:18px"></i> Start today's session
+    </button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px;color:var(--text-muted)" onclick="coachReset()">
+      <i data-lucide="rotate-ccw" style="width:14px;height:14px"></i> Reset coach
+    </button>
+  </div>`;
+}
+function coachReset() {
+  if (!confirm('Reset your coach? This clears its memory of your goals and focus (your lesson progress and history are kept).')) return;
+  state.coachState = defaultCoachState();
+  _coachSession = null;
+  saveState();
+  renderCoach();
+}
+
+// ---------- CONVERSATION ----------
+function renderCoachConversation() {
+  const cs = state.coachState;
+  const el = document.getElementById('coach-content');
+  if (!el) return;
+  const dim = coachDim(cs.currentFocus);
+  const pips = Array.from({ length: cs.mastery.threshold }, (_, i) =>
+    `<span style="width:8px;height:8px;border-radius:50%;display:inline-block;background:${i < cs.mastery.passStreak ? 'var(--teal)' : 'var(--border)'}"></span>`).join(' ');
+  el.innerHTML = `
+  <div style="max-width:620px;margin:0 auto;display:flex;flex-direction:column;min-height:60vh">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:14px">
+      <div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">Focus</div>
+        <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--teal)">${dim.label} &nbsp;<span style="font-size:0.8rem">${pips}</span></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost" aria-label="${cs.voiceOn ? 'Coach voice on' : 'Coach voice off'}" onclick="coachToggleVoice()" style="padding:8px">
+          <i id="coach-voice-btn" data-lucide="${cs.voiceOn ? 'volume-2' : 'volume-x'}" style="width:18px;height:18px"></i>
+        </button>
+        <button class="btn btn-ghost" onclick="coachEndSession()" style="padding:8px 12px">End</button>
+      </div>
+    </div>
+    <div id="coach-thread" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:12px"></div>
+    <div id="coach-dock" style="border-top:1px solid var(--border);padding-top:12px"></div>
+  </div>`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  // Repaint the dialogue we already have this session
+  (_coachSession.thread || []).forEach(m => appendCoachBubble(m.role, m.text, m.meta, false));
+  renderCoachDock();
+}
+function appendCoachBubble(role, text, meta, record) {
+  const thread = document.getElementById('coach-thread');
+  if (!thread) return;
+  const isCoach = role === 'coach';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `display:flex;flex-direction:column;align-items:${isCoach ? 'flex-start' : 'flex-end'}`;
+  wrap.innerHTML = `
+    <div style="max-width:88%;padding:11px 14px;border-radius:var(--radius-lg);font-size:0.95rem;line-height:1.5;
+      ${isCoach ? 'background:var(--teal-light);border-bottom-left-radius:4px;color:var(--text-primary)' : 'background:var(--bg-secondary);border-bottom-right-radius:4px;color:var(--text-primary)'}">
+      ${isCoach ? '<span style="font-size:0.72rem;color:var(--teal);font-weight:700;display:block;margin-bottom:3px">COACH</span>' : ''}
+      <span>${coachEsc(text)}</span>
+      ${meta ? `<div style="margin-top:8px">${meta}</div>` : ''}
+    </div>`;
+  thread.appendChild(wrap);
+  thread.scrollTop = thread.scrollHeight;
+  if (record) {
+    _coachSession.thread = _coachSession.thread || [];
+    _coachSession.thread.push({ role, text, meta: meta || '' });
+    state.coachState.dialogue.push({ role: isCoach ? 'coach' : 'you', text });
+    if (state.coachState.dialogue.length > 12) state.coachState.dialogue = state.coachState.dialogue.slice(-12);
+  }
+}
+function coachSay(text, meta) { appendCoachBubble('coach', text, meta || '', true); coachSpeak(text); }
+
+function renderCoachDock() {
+  const dock = document.getElementById('coach-dock');
+  if (!dock || !_coachSession) return;
+  if (_coachSession.phase === 'reviewing') {
+    const modelBtn = _coachSession.lastModelLine
+      ? `<button class="btn btn-secondary" onclick="coachHearModel()"><i data-lucide="volume-2" style="width:16px;height:16px"></i> Hear it done well</button>` : '';
+    dock.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${modelBtn}
+      <button class="btn btn-primary" style="flex:1;min-width:140px" onclick="coachContinue()">
+        <i data-lucide="arrow-right" style="width:16px;height:16px"></i> ${_coachSession.lastPassed ? 'Next drill' : 'Try again'}
+      </button>
+    </div>`;
+  } else if (_coachSession.phase === 'thinking') {
+    dock.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);padding:8px 2px">
+      <i data-lucide="loader-2" style="width:16px;height:16px" class="coach-spin"></i> Listening & thinking…</div>`;
+  } else { // await response
+    dock.innerHTML = `
+      <textarea id="coach-input" placeholder="Speak your answer (tap the mic) or type it here…"
+        style="width:100%;min-height:64px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;resize:vertical"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-secondary" onclick="toggleAISpeech('coach-input', this)" aria-label="Toggle mic" style="padding:10px 14px">
+          <i data-lucide="mic" style="width:18px;height:18px"></i>
+        </button>
+        <button class="btn btn-primary" style="flex:1" onclick="coachSubmit()">
+          <i data-lucide="send" style="width:16px;height:16px"></i> Send to coach
+        </button>
+      </div>`;
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function coachStartSession() {
+  const cs = state.coachState;
+  cs.weaknesses = computeCoachWeaknesses();
+  cs.currentFocus = pickCoachFocus(cs.weaknesses, cs.mastery.passStreak > 0 ? null : undefined) || cs.currentFocus;
+  if (cs.mastery.skill !== cs.currentFocus) cs.mastery = { skill: cs.currentFocus, passStreak: 0, threshold: COACH_MASTERY_STREAK };
+  cs.sessionsCount = (cs.sessionsCount || 0) + 1;
+  cs.lastCoachDate = new Date().toISOString().slice(0, 10);
+  _coachSession = { promptIdx: 0, phase: 'await', thread: [], attempts: 0, lastModelLine: '', lastPassed: false };
+  saveState();
+  renderCoachConversation();
+  // Opening line — references memory when we have some.
+  const dim = coachDim(cs.currentFocus);
+  const opener = cs.sessionsCount > 1
+    ? `Good to see you back. Last time we were working on your ${dim.label.toLowerCase()} — let's keep sharpening it today.`
+    : `Let's get to work. We'll start with your ${dim.label.toLowerCase()} — ${dim.blurb}. I'll give you a prompt, you answer, and I'll give you one clear fix.`;
+  coachSay(opener);
+  setTimeout(() => coachPresentPrompt(), 500);
+}
+function coachPresentPrompt() {
+  const unit = coachCurrentUnit();
+  const prompt = coachPickPrompt(unit.lesson, _coachSession.promptIdx);
+  _coachSession.unit = unit;
+  _coachSession.prompt = prompt;
+  _coachSession.phase = 'await';
+  _coachSession.startTime = Date.now();
+  const meta = `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px">Framework: ${coachEsc(unit.lesson.title)} · ${coachEsc((unit.lesson.elements || []).map(e => e.name).join(' → '))}</div>`;
+  coachSay(`${prompt.text}`, meta);
+  renderCoachDock();
+  const ta = document.getElementById('coach-input'); if (ta) ta.focus();
+}
+async function coachSubmit() {
+  if (!_coachSession || _coachSession.phase !== 'await') return;
+  const ta = document.getElementById('coach-input');
+  const text = ta ? ta.value.trim() : '';
+  if (text.length < 12) { showToast('Give me a bit more to work with.'); return; }
+  try { stopAISpeech('coach-input'); } catch (e) {}
+  coachStopSpeaking();
+  const inputMode = text ? 'speaking' : 'typing';
+  appendCoachBubble('you', text, '', true);
+  _coachSession.phase = 'thinking';
+  renderCoachDock();
+
+  const unit = _coachSession.unit;
+  const lesson = unit.lesson;
+  const elapsed = Math.max(1, Math.round((Date.now() - (_coachSession.startTime || Date.now())) / 1000));
+  const score = coachScore(text, lesson, elapsed, inputMode);
+  coachRecordAttempt(unit, lesson, _coachSession.prompt.text, text, score, elapsed);
+
+  const cs = state.coachState;
+  const passMark = (state.settings && state.settings.passMark) || 70;
+  const passed = score.total >= passMark;
+  cs.weaknesses = computeCoachWeaknesses();
+
+  const turn = await getCoachDiagnosis({
+    lesson, prompt: _coachSession.prompt.text, text, score,
+    focus: cs.currentFocus, weaknesses: cs.weaknesses, passMark
+  });
+  if (turn.profileSummaryUpdate) cs.profileSummary = turn.profileSummaryUpdate;
+
+  // Model line for "hear it done well": AI's, else the prompt's model answer.
+  let modelLine = turn.modelLine;
+  if (!modelLine) {
+    const segs = _coachSession.prompt.modelResponse || (lesson.example && lesson.example.response);
+    if (Array.isArray(segs)) modelLine = segs.map(s => s.text).join(' ');
+  }
+  _coachSession.lastModelLine = modelLine || '';
+  _coachSession.lastPassed = passed;
+
+  // Mastery + promotion
+  const mastered = coachUpdateMastery(passed);
+  if (passed) coachAdvanceUnit();
+
+  const scoreChip = `<span style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:0.8rem;font-weight:700;background:${passed ? 'var(--green-light)' : 'var(--orange-light)'};color:${passed ? 'var(--green)' : 'var(--orange)'}">${score.total}/100 · ${passed ? 'pass' : 'keep going'}</span>`;
+  coachSay(turn.spoken, scoreChip);
+
+  if (mastered) {
+    const old = cs.currentFocus;
+    cs.currentFocus = pickCoachFocus(cs.weaknesses, old);
+    cs.mastery = { skill: cs.currentFocus, passStreak: 0, threshold: COACH_MASTERY_STREAK };
+    try { confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#01696f', '#e8762b', '#c4981a'] }); } catch (e) {}
+    if (typeof playPass === 'function') playPass();
+    const promo = `That's ${coachDim(old).label} handled — you've shown it three times running. I'm promoting you. Next we'll raise your ${coachDim(cs.currentFocus).label.toLowerCase()}.`;
+    setTimeout(() => coachSay(promo), 400);
+  }
+  saveState();
+  _coachSession.phase = 'reviewing';
+  renderCoachDock();
+}
+function coachUpdateMastery(passed) {
+  const cs = state.coachState;
+  if (cs.mastery.skill !== cs.currentFocus) cs.mastery = { skill: cs.currentFocus, passStreak: 0, threshold: COACH_MASTERY_STREAK };
+  cs.mastery.passStreak = passed ? cs.mastery.passStreak + 1 : 0;
+  return cs.mastery.passStreak >= cs.mastery.threshold;
+}
+function coachContinue() {
+  if (!_coachSession) return;
+  _coachSession.promptIdx += 1;
+  coachPresentPrompt();
+}
+function coachHearModel() { if (_coachSession && _coachSession.lastModelLine) coachSpeak(_coachSession.lastModelLine); }
+function coachEndSession() {
+  coachStopSpeaking();
+  try { stopAISpeech('coach-input'); } catch (e) {}
+  _coachSession = null;
+  saveState();
+  renderCoach();
+}
+
 function init() {
   // Load saved progress from localStorage (if any)
   const hadSavedState = loadState();
@@ -14525,6 +15108,9 @@ function init() {
   // Ensure the starting unlocks are always in place even on a fresh load
   if (!state.unlockedLessons["1-1"]) state.unlockedLessons["1-1"] = true;
   if (!state.unlockedTracks[1]) state.unlockedTracks[1] = true;
+
+  // Coach Mode: build/repair the coach user-model from defaults + any saved data
+  state.coachState = normalizeCoachState(state.coachState);
 
   // First-run only: respect system dark-mode preference, store in settings
   if (!hadSavedState) {

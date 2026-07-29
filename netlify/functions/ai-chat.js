@@ -52,6 +52,7 @@ exports.handler = async (event) => {
       case 'audience-round':        request = buildAudienceRoundRequest(payload); break;
       case 'debate-turn':           request = buildDebateTurnRequest(payload); break;
       case 'debate-verdict':        request = buildDebateVerdictRequest(payload); break;
+      case 'coach-turn':            request = buildCoachTurnRequest(payload); break;
       default:
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Unknown mode: ${mode}` }) };
     }
@@ -430,6 +431,95 @@ Render your verdict focused ONLY on the user's performance. Return the JSON.`;
     jsonMode: true,
     temperature: 0.4,
     maxTokens: 700
+  };
+}
+
+// coach-turn : the coaching spine. Given a scored attempt + the coach's memory of
+// the user, return ONE warm, high-leverage diagnosis (spoken aloud) and a decision
+// about what to do next. This is the AI layer above the app's own scoring engine.
+function buildCoachTurnRequest(p) {
+  const {
+    focus, focusLabel, goals, profileSummary, weaknesses,
+    lessonTitle, framework, prompt, response,
+    heuristicScore, passMark = 70, passed,
+    masteryStreak = 0, masteryThreshold = 3,
+    delivery, conversationHistory
+  } = p;
+  if (!prompt || !response) throw new Error('Missing prompt or response');
+
+  const fw = Array.isArray(framework) ? framework.join(' → ') : (framework || 'standard');
+  const goalsLine = Array.isArray(goals) && goals.length ? goals.join(', ') : 'become a more polished speaker';
+
+  const h = heuristicScore || {};
+  const sig = Array.isArray(h.signals)
+    ? h.signals.slice(0, 8).map(s => {
+        const tag = s.type === 'hit' ? '✓' : s.type === 'partial' ? '~' : '✗';
+        return `  ${tag} [${s.category || 'general'}] ${s.msg || ''}${s.quote ? ` ("${s.quote}")` : ''}${s.suggestion ? ` → ${s.suggestion}` : ''}`;
+      }).join('\n')
+    : '  (no signals)';
+
+  // Optional delivery metrics (on-device audio analysis) — present only in a later milestone.
+  const deliveryBlock = (delivery && typeof delivery === 'object')
+    ? `\n\nDELIVERY (how they SOUNDED):\n${Object.entries(delivery).map(([k, v]) => `  - ${k}: ${v}`).join('\n')}`
+    : '';
+
+  const systemPrompt = `You are an elite, warm public-speaking coach — think a seasoned speaking teacher who is genuinely invested in this person's growth. You are coaching them one-on-one, out loud. Your "spoken" text will be read aloud by a voice, so it must sound like a real person talking: warm, direct, encouraging, concise.
+
+YOUR METHOD:
+- Give exactly ONE highest-leverage fix per turn — the single thing that would most improve them right now. Never dump a list.
+- Prioritise the user's CURRENT FOCUS ("${focusLabel || focus}") unless something more important clearly stands out.
+- Be specific and quote their own words when useful. Praise what genuinely worked in one short beat, then the one fix.
+- Challenge them, but always in service of their progress. Never generic. Never harsh.
+- Build on the heuristic scores you're given; don't re-litigate the number, coach the human.
+
+DECISION (field "action"):
+- "redo": the attempt is below the pass mark (${passMark}) or the focus skill clearly failed — have them try again.
+- "advance": the attempt passed and the focus was handled — move on to a fresh drill.
+- "promote": they've now shown mastery of the focus (streak ${masteryStreak + (passed ? 1 : 0)}/${masteryThreshold}) — celebrate and level them up.
+- "chat": only if they asked a question rather than gave an answer.
+
+OUTPUT — return ONLY this JSON:
+{
+  "spoken": "<what you say aloud: <=55 words, warm, one clear fix, natural spoken rhythm>",
+  "diagnosis": "<the single fix in <=12 words, imperative>",
+  "action": "redo|advance|promote|chat",
+  "modelLine": "<optional: a short exemplar of THEIR point delivered the way it should sound — same content, better execution. Empty string if not useful.>",
+  "profileSummaryUpdate": "<optional: a refreshed 1-2 sentence running note on this speaker's strengths + recurring flaws, for your own memory. Empty string if unchanged.>"
+}`;
+
+  const historyBlock = (Array.isArray(conversationHistory) && conversationHistory.length)
+    ? '\n\nRECENT COACHING DIALOGUE:\n' + conversationHistory.map(t => `${t.role === 'coach' ? 'COACH' : 'THEM'}: ${t.text}`).join('\n')
+    : '';
+
+  const userPrompt = `WHO YOU'RE COACHING:
+- Their goals: ${goalsLine}
+- Your running notes on them: ${profileSummary || '(first impressions — no notes yet)'}
+- Current focus skill: ${focusLabel || focus}
+- Rolling strength (0-100, higher=stronger): ${weaknesses ? Object.entries(weaknesses).map(([k, v]) => `${k} ${v}`).join(', ') : 'unknown'}
+
+THE DRILL:
+- Framework: ${lessonTitle || 'practice'} (${fw})
+- Prompt you gave them: "${prompt}"
+
+THEIR ANSWER:
+"${response}"
+
+THE APP'S SCORING ENGINE ALREADY GRADED IT:
+- Structure ${h.structure ?? '?'}/40 · Clarity ${h.clarity ?? '?'}/30 · Depth ${h.depth ?? '?'}/20 · TOTAL ${h.total ?? '?'}/100 (pass mark ${passMark})
+- Result: ${passed ? 'PASS' : 'below pass'}
+Signals it found:
+${sig}${deliveryBlock}${historyBlock}
+
+Coach them now. Return the JSON.`;
+
+  return {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    jsonMode: true,
+    temperature: 0.7,
+    maxTokens: 450
   };
 }
 
