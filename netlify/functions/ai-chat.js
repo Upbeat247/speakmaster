@@ -459,10 +459,7 @@ function buildCoachTurnRequest(p) {
       }).join('\n')
     : '  (no signals)';
 
-  // Optional delivery metrics (on-device audio analysis) — present only in a later milestone.
-  const deliveryBlock = (delivery && typeof delivery === 'object')
-    ? `\n\nDELIVERY (how they SOUNDED):\n${Object.entries(delivery).map(([k, v]) => `  - ${k}: ${v}`).join('\n')}`
-    : '';
+  const deliveryBlock = deliveryBlockFor(delivery);
 
   const systemPrompt = `You are an elite, warm public-speaking coach — think a seasoned speaking teacher who is genuinely invested in this person's growth. You are coaching them one-on-one, out loud. Your "spoken" text will be read aloud by a voice, so it must sound like a real person talking: warm, direct, encouraging, concise.
 
@@ -529,7 +526,7 @@ Coach them now. Return the JSON.`;
 // lands for the stated audience, escalates through pushback and audience reframes,
 // and calls "done" when the delivery is fit-for-purpose.
 function buildCoachPrepTurnRequest(p) {
-  const { stage, brief, goals, profileSummary, response, wordCount, wpm, elapsed, conversationHistory } = p;
+  const { stage, brief, goals, profileSummary, response, wordCount, wpm, elapsed, delivery, conversationHistory } = p;
   if (!brief || !brief.title || !brief.message) throw new Error('Missing prep brief');
   if (!response) throw new Error('Missing response');
   const s = (stage || 'deliver').toLowerCase();
@@ -548,6 +545,7 @@ function buildCoachPrepTurnRequest(p) {
 METHOD:
 - ${guide}
 - Refer to what they actually said. Quote them when you praise or fix something.
+- If DELIVERY metrics are provided, weave in a concrete observation about HOW they sounded (pace, pauses, monotone, flat energy) when it's the highest-leverage note — but never dump all of them.
 - Never generic. Never harsh. Always in service of the real event.
 - Your ENTIRE spoken turn must be <= 65 words and sound natural spoken aloud.
 
@@ -586,7 +584,7 @@ ${brief.message}
 CURRENT STAGE: ${s}
 
 WHAT THEY JUST DELIVERED (${wordCount || 0} words, ${wpm || 0} wpm, ${elapsed || 0}s):
-"${response}"${historyBlock}
+"${response}"${deliveryBlockFor(delivery)}${historyBlock}
 
 Coach them now. Return the JSON.`;
 
@@ -602,6 +600,27 @@ Coach them now. Return the JSON.`;
 }
 
 // ---------- HELPERS ----------
+
+// Format on-device Web Audio delivery metrics into a short, human-readable block
+// the coach model can weave into its critique. Returns '' if no metrics.
+function deliveryBlockFor(d) {
+  if (!d || typeof d !== 'object') return '';
+  const bits = [];
+  if (typeof d.speakingMs === 'number' && d.speakingMs > 0) {
+    bits.push(`spoke for ${Math.round(d.speakingMs / 100) / 10}s of ${Math.round((d.totalMs || d.speakingMs) / 100) / 10}s total`);
+  }
+  if (typeof d.longPauseCount === 'number') {
+    bits.push(`${d.longPauseCount} long pause${d.longPauseCount === 1 ? '' : 's'} (>700ms)` + (d.avgPauseMs ? `, avg pause ${d.avgPauseMs}ms` : ''));
+  }
+  if (d.pitchMedianHz) {
+    bits.push(`pitch median ${d.pitchMedianHz}Hz, range ${d.pitchRangeHz}Hz${d.monotone ? ' — MONOTONE / flat' : ''}`);
+  }
+  if (typeof d.energyRangeDb === 'number' && d.energyRangeDb > 0) {
+    bits.push(`vocal dynamics ${d.energyRangeDb}dB${d.flatEnergy ? ' — FLAT, no emphasis' : ''}`);
+  }
+  if (!bits.length) return '';
+  return `\n\nDELIVERY (how they SOUNDED, on-device analysis):\n- ${bits.join('\n- ')}`;
+}
 
 function inferPersona(lessonTitle, hint) {
   const title = (lessonTitle || '').toLowerCase();

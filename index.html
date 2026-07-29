@@ -14700,6 +14700,163 @@ function coachToggleVoice() {
   showToast(cs.voiceOn ? 'Coach voice on' : 'Coach voice off');
 }
 
+// ---------- DELIVERY ANALYSIS (Tier 1) — on-device Web Audio metrics ----------
+// Runs in parallel with the existing speech recognition. Everything stays on device;
+// only the summarised metrics are sent to coach-turn. Degrades silently if the mic
+// or Web Audio isn't available — coaching still works with transcript-only signals.
+let _coachAnalyzer = null; // { stop() -> Promise<delivery|null> }
+
+async function coachStartMicAnalyzer() {
+  if (_coachAnalyzer) return; // already running
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  let stream, ctx, src, analyser;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    ctx = new AC();
+    src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.4;
+    src.connect(analyser);
+  } catch (e) {
+    // Permission denied, mic in use, etc. — analyzer is optional; carry on.
+    try { if (stream) stream.getTracks().forEach(t => t.stop()); } catch (e2) {}
+    try { if (ctx) ctx.close(); } catch (e2) {}
+    return;
+  }
+  const timeBuf = new Float32Array(analyser.fftSize);
+  const startedAt = performance.now();
+  const samples = []; // { t, rms, pitch }
+  let running = true, frame = 0;
+
+  function loop() {
+    if (!running) return;
+    // getFloatTimeDomainData not supported on very old Safari — fall back to byte data.
+    if (analyser.getFloatTimeDomainData) analyser.getFloatTimeDomainData(timeBuf);
+    else {
+      const b = new Uint8Array(analyser.fftSize);
+      analyser.getByteTimeDomainData(b);
+      for (let i = 0; i < b.length; i++) timeBuf[i] = (b[i] - 128) / 128;
+    }
+    let sum = 0;
+    for (let i = 0; i < timeBuf.length; i++) sum += timeBuf[i] * timeBuf[i];
+    const rms = Math.sqrt(sum / timeBuf.length);
+    // Pitch detection is O(N * lag range) — only run it every 4th frame to stay cheap.
+    const pitch = (frame++ % 4 === 0) ? _coachDetectPitch(timeBuf, ctx.sampleRate) : 0;
+    samples.push({ t: performance.now() - startedAt, rms, pitch });
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  _coachAnalyzer = {
+    async stop() {
+      running = false;
+      try { src.disconnect(); } catch (e) {}
+      try { await ctx.close(); } catch (e) {}
+      try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+      _coachAnalyzer = null;
+      return _coachSummarizeDelivery(samples);
+    }
+  };
+}
+async function coachStopMicAnalyzer() {
+  if (!_coachAnalyzer) return null;
+  try { return await _coachAnalyzer.stop(); } catch (e) { _coachAnalyzer = null; return null; }
+}
+
+// Basic autocorrelation pitch detector, ~60-500 Hz. Returns 0 for silence/unvoiced.
+function _coachDetectPitch(buf, sampleRate) {
+  const SIZE = buf.length;
+  let sum = 0;
+  for (let i = 0; i < SIZE; i++) sum += buf[i] * buf[i];
+  const rms = Math.sqrt(sum / SIZE);
+  if (rms < 0.015) return 0;
+  const minLag = Math.floor(sampleRate / 500);
+  const maxLag = Math.min(SIZE - 1, Math.floor(sampleRate / 60));
+  let bestLag = -1, bestScore = 0;
+  for (let lag = minLag; lag <= maxLag; lag += 2) { // stride 2 for speed
+    let score = 0, count = 0;
+    for (let i = 0; i + lag < SIZE; i += 2) { score += buf[i] * buf[i + lag]; count++; }
+    if (count > 0 && score > bestScore) { bestScore = score; bestLag = lag; }
+  }
+  if (bestLag <= 0) return 0;
+  return sampleRate / bestLag;
+}
+
+function _coachSummarizeDelivery(samples) {
+  if (!samples || samples.length < 8) return null;
+  const RMS_SILENCE = 0.02;
+  // Pauses: runs of low RMS >250ms
+  const pauses = [];
+  let curStart = null;
+  for (const s of samples) {
+    if (s.rms < RMS_SILENCE) {
+      if (curStart === null) curStart = s.t;
+    } else if (curStart !== null) {
+      const dur = s.t - curStart;
+      if (dur > 250) pauses.push(dur);
+      curStart = null;
+    }
+  }
+  if (curStart !== null) {
+    const dur = samples[samples.length - 1].t - curStart;
+    if (dur > 250) pauses.push(dur);
+  }
+  const voicedPitches = samples.map(s => s.pitch).filter(p => p > 60 && p < 500);
+  const voicedRms = samples.map(s => s.rms).filter(r => r > 0.02);
+  const percentiles = arr => {
+    if (!arr.length) return null;
+    const s = arr.slice().sort((a, b) => a - b);
+    return { p10: s[Math.floor(s.length * 0.1)], p50: s[Math.floor(s.length * 0.5)], p90: s[Math.floor(s.length * 0.9)] };
+  };
+  const pP = percentiles(voicedPitches);
+  const eP = percentiles(voicedRms);
+  const totalMs = samples[samples.length - 1].t;
+  const pauseTotal = pauses.reduce((a, b) => a + b, 0);
+  const speakingMs = Math.max(1, totalMs - pauseTotal);
+  const pitchRangeHz = pP ? Math.round(pP.p90 - pP.p10) : 0;
+  const energyRangeDb = eP && eP.p10 > 0 ? Math.round(20 * Math.log10(eP.p90 / eP.p10)) : 0;
+  return {
+    totalMs: Math.round(totalMs),
+    speakingMs: Math.round(speakingMs),
+    pauseCount: pauses.length,
+    longPauseCount: pauses.filter(p => p > 700).length,
+    avgPauseMs: pauses.length ? Math.round(pauseTotal / pauses.length) : 0,
+    pitchMedianHz: pP ? Math.round(pP.p50) : 0,
+    pitchRangeHz,
+    monotone: pP ? pitchRangeHz < 25 : false,
+    energyRangeDb,
+    flatEnergy: eP ? energyRangeDb < 6 : false
+  };
+}
+
+function _coachDeliveryChipHTML(d) {
+  if (!d) return '';
+  const bits = [];
+  bits.push(`${d.longPauseCount} long pause${d.longPauseCount === 1 ? '' : 's'}`);
+  if (d.pitchMedianHz) bits.push(`pitch range ${d.pitchRangeHz}Hz${d.monotone ? ' (flat)' : ''}`);
+  if (d.energyRangeDb) bits.push(`${d.energyRangeDb}dB dynamics${d.flatEnergy ? ' (flat)' : ''}`);
+  return `<span style="display:inline-block;margin-left:6px;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:0.75rem;background:var(--bg-secondary);color:var(--text-secondary)">delivery · ${bits.join(' · ')}</span>`;
+}
+
+// Mic-toggle wrapper: kicks off speech recognition AND the delivery analyzer together.
+function coachToggleMic(textareaId, btnEl) {
+  const session = _aiSpeechSessions.get(textareaId);
+  const wasRecording = session && session.isRecording;
+  toggleAISpeech(textareaId, btnEl);
+  if (!wasRecording) {
+    // just started — spin up analyzer alongside (fire and forget; degrades silently)
+    coachStartMicAnalyzer();
+  } else {
+    // just stopped — flush analyzer and stash for the next submission
+    coachStopMicAnalyzer().then(delivery => {
+      if (_coachSession) _coachSession.pendingDelivery = delivery || null;
+    });
+  }
+}
+
 // ---------- DIAGNOSIS: coach-turn (AI) with a local heuristic fallback ----------
 function localCoachTurn(ctx) {
   const passed = ctx.score.total >= ctx.passMark;
@@ -15077,6 +15234,7 @@ async function getCoachPrepDiagnosis(ctx) {
       wordCount: ctx.wc,
       wpm: ctx.wpm,
       elapsed: ctx.elapsed,
+      delivery: ctx.delivery || null,
       conversationHistory: (state.coachState.dialogue || []).slice(-6)
     });
     return normalizeCoachPrepTurn(data, ctx);
@@ -15185,7 +15343,7 @@ function renderCoachDock() {
       <textarea id="coach-input" placeholder="Speak your answer (tap the mic) or type it here…"
         style="width:100%;min-height:64px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn btn-secondary" onclick="toggleAISpeech('coach-input', this)" aria-label="Toggle mic" style="padding:10px 14px">
+        <button class="btn btn-secondary" onclick="coachToggleMic('coach-input', this)" aria-label="Toggle mic" style="padding:10px 14px">
           <i data-lucide="mic" style="width:18px;height:18px"></i>
         </button>
         <button class="btn btn-primary" style="flex:1" onclick="coachSubmit()">
@@ -15233,13 +15391,18 @@ async function coachSubmit() {
   if (text.length < 12) { showToast('Give me a bit more to work with.'); return; }
   try { stopAISpeech('coach-input'); } catch (e) {}
   coachStopSpeaking();
+  // Flush the analyzer (if the user submitted while still recording) BEFORE we send.
+  const flushed = await coachStopMicAnalyzer();
+  if (flushed) _coachSession.pendingDelivery = flushed;
+  const delivery = _coachSession.pendingDelivery || null;
+  _coachSession.pendingDelivery = null;
   const inputMode = text ? 'speaking' : 'typing';
   appendCoachBubble('you', text, '', true);
   _coachSession.phase = 'thinking';
   renderCoachDock();
 
   // Prep mode: score-light, AI-heavy critique against the user's real material.
-  if (_coachSession.mode === 'prep') { await coachSubmitPrep(text); return; }
+  if (_coachSession.mode === 'prep') { await coachSubmitPrep(text, delivery); return; }
 
   const unit = _coachSession.unit;
   const lesson = unit.lesson;
@@ -15254,7 +15417,8 @@ async function coachSubmit() {
 
   const turn = await getCoachDiagnosis({
     lesson, prompt: _coachSession.prompt.text, text, score,
-    focus: cs.currentFocus, weaknesses: cs.weaknesses, passMark
+    focus: cs.currentFocus, weaknesses: cs.weaknesses, passMark,
+    delivery: delivery || null
   });
   if (turn.profileSummaryUpdate) cs.profileSummary = turn.profileSummaryUpdate;
 
@@ -15271,7 +15435,7 @@ async function coachSubmit() {
   const mastered = coachUpdateMastery(passed);
   if (passed) coachAdvanceUnit();
 
-  const scoreChip = `<span style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:0.8rem;font-weight:700;background:${passed ? 'var(--green-light)' : 'var(--orange-light)'};color:${passed ? 'var(--green)' : 'var(--orange)'}">${score.total}/100 · ${passed ? 'pass' : 'keep going'}</span>`;
+  const scoreChip = `<span style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:0.8rem;font-weight:700;background:${passed ? 'var(--green-light)' : 'var(--orange-light)'};color:${passed ? 'var(--green)' : 'var(--orange)'}">${score.total}/100 · ${passed ? 'pass' : 'keep going'}</span>${_coachDeliveryChipHTML(delivery)}`;
   coachSay(turn.spoken, scoreChip);
 
   if (mastered) {
@@ -15293,7 +15457,7 @@ function coachUpdateMastery(passed) {
   cs.mastery.passStreak = passed ? cs.mastery.passStreak + 1 : 0;
   return cs.mastery.passStreak >= cs.mastery.threshold;
 }
-async function coachSubmitPrep(text) {
+async function coachSubmitPrep(text, delivery) {
   const cs = state.coachState;
   const brief = (cs.prepBriefs || []).find(b => b.id === _coachSession.prepId);
   if (!brief) { showToast('This brief is gone. Ending rehearsal.'); coachEndSession(); return; }
@@ -15301,14 +15465,14 @@ async function coachSubmitPrep(text) {
   const wc = text.split(/\s+/).filter(Boolean).length;
   const wpm = elapsed > 0 ? Math.round((wc / elapsed) * 60) : 0;
   coachRecordPrepAttempt(brief, text, wc, wpm, elapsed);
-  const turn = await getCoachPrepDiagnosis({ brief, text, stage: _coachSession.stage, elapsed, wc, wpm });
+  const turn = await getCoachPrepDiagnosis({ brief, text, stage: _coachSession.stage, elapsed, wc, wpm, delivery: delivery || null });
   if (turn.profileSummaryUpdate) cs.profileSummary = turn.profileSummaryUpdate;
 
   _coachSession.lastModelLine = turn.modelLine || '';
   _coachSession.lastAction = turn.action;
   _coachSession.lastPassed = turn.action !== 'redo';
 
-  const chip = `<span style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:0.78rem;background:var(--teal-light);color:var(--teal);font-weight:700">${wc} words · ${wpm} wpm · ${elapsed}s</span>`;
+  const chip = `<span style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font-size:0.78rem;background:var(--teal-light);color:var(--teal);font-weight:700">${wc} words · ${wpm} wpm · ${elapsed}s</span>${_coachDeliveryChipHTML(delivery)}`;
   coachSay(turn.spoken, chip);
 
   if (turn.action === 'done') {
@@ -15341,6 +15505,7 @@ function coachHearModel() { if (_coachSession && _coachSession.lastModelLine) co
 function coachEndSession() {
   coachStopSpeaking();
   try { stopAISpeech('coach-input'); } catch (e) {}
+  coachStopMicAnalyzer();
   if (state.coachState) state.coachState.activePrepId = null;
   _coachSession = null;
   saveState();
