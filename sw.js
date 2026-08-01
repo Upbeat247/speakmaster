@@ -2,7 +2,7 @@
 // Responsible for caching the app shell so it loads instantly and works offline.
 // Bump VERSION on every deploy so the browser picks up the new service worker
 // and invalidates the old cache.
-const VERSION = 'v2.4.0-coach-delivery';
+const VERSION = 'v2.5.0-coach-voice-picker';
 const CACHE_NAME = `speakmaster-${VERSION}`;
 
 // The bare minimum that must work offline: the app shell itself.
