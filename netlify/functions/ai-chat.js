@@ -54,6 +54,7 @@ exports.handler = async (event) => {
       case 'debate-verdict':        request = buildDebateVerdictRequest(payload); break;
       case 'coach-turn':            request = buildCoachTurnRequest(payload); break;
       case 'coach-prep-turn':       request = buildCoachPrepTurnRequest(payload); break;
+      case 'annotate-exemplar':     request = buildAnnotateExemplarRequest(payload); break;
       default:
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Unknown mode: ${mode}` }) };
     }
@@ -596,6 +597,64 @@ Coach them now. Return the JSON.`;
     jsonMode: true,
     temperature: 0.7,
     maxTokens: 450
+  };
+}
+
+// annotate-exemplar : the "Break it down" worked example. Show what a strong response
+// sounds like AND explain it line by line — the technique, why it's there / worded that
+// way, and how to deliver it. Teaches transferable reasoning, not a memorised script.
+function buildAnnotateExemplarRequest(p) {
+  const { promptText, lessonTitle, framework, expertTip, audience, segments, message, goals } = p;
+  if (!promptText && !message) throw new Error('Missing scenario (promptText or message)');
+
+  const fwList = (Array.isArray(framework) && framework.length)
+    ? framework.map((e, i) => `${i + 1}. ${e.name}${e.description ? ' — ' + e.description : ''}`).join('\n')
+    : '(no fixed framework — choose a clean shape that fits the situation)';
+  const hasSegments = Array.isArray(segments) && segments.length > 0;
+  const segsBlock = hasSegments ? segments.map((s, i) => `${i + 1}. [${s.element}] ${s.text}`).join('\n') : '';
+  const goalsLine = Array.isArray(goals) && goals.length ? goals.join(', ') : '';
+
+  const systemPrompt = `You are an elite public-speaking coach delivering a WORKED EXAMPLE. You show the learner EXACTLY what you would say in this situation, then explain your thinking line by line so they internalise the REASONING — never a script to memorise.
+
+For every line you must give:
+- the exact line (verbatim),
+- a short TECHNIQUE label, 2-4 words (e.g. "answer-first", "rule of three", "concrete number", "signpost", "contrast pair", "drop the hedge", "bookend", "name the stakes"),
+- WHY this line is here AND why it's worded this way — the reasoning a learner should carry forward,
+- HOW to deliver it — one short cue (pace, emphasis, pause).
+
+RULES:
+- Every explanation is tight, concrete, quote-worthy. No filler.
+- ${hasSegments
+      ? 'Annotate the GIVEN model answer line by line. Keep each line\'s text essentially as given (light polish only).'
+      : 'First WRITE a strong, realistic model answer (3-6 lines) that lands the message for this audience, THEN annotate each line.'}
+- Sound like a real expert teaching one-on-one.
+
+OUTPUT — return ONLY this JSON:
+{
+  "strategy": "<1-2 sentences: the overall approach and why it fits THIS situation/audience>",
+  "segments": [
+    { "element": "<part name>", "text": "<the line>", "technique": "<2-4 word label>",
+      "why": "<why it's here + why worded this way, <=32 words>", "howToSay": "<one delivery cue, <=12 words>" }
+  ],
+  "takeaway": "<one transferable principle to carry into similar situations, <=22 words>"
+}`;
+
+  const userPrompt = `SITUATION: ${lessonTitle || 'a speaking moment'}
+${audience ? `AUDIENCE: ${audience}\n` : ''}${goalsLine ? `LEARNER'S GOALS: ${goalsLine}\n` : ''}THE PROMPT / MOMENT: "${promptText || message}"
+${(message && !hasSegments) ? `\nTHE MESSAGE THEY NEED TO LAND:\n"""\n${message}\n"""\n` : ''}
+FRAMEWORK:
+${fwList}
+${expertTip ? `\nEXPERT TIP FOR THIS FRAMEWORK: ${expertTip}\n` : ''}${hasSegments ? `\nMODEL ANSWER TO ANNOTATE (line by line):\n${segsBlock}\n` : ''}
+Produce the worked example. Return the JSON.`;
+
+  return {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    jsonMode: true,
+    temperature: 0.6,
+    maxTokens: 1200
   };
 }
 

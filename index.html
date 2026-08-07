@@ -5595,6 +5595,9 @@ function showModelAnswer() {
         <button class="btn btn-ghost" onclick="this.closest('.model-overlay').remove()">
           Close
         </button>
+        <button class="btn btn-secondary" onclick="coachBreakdownFromModelOverlay(this)" title="Have the coach explain this line by line">
+          <i data-lucide="graduation-cap" style="width:14px;height:14px"></i> Break it down
+        </button>
         ${(state.settings?.aiReviewEnabled && location.protocol.startsWith('http')) ? `
           <button class="btn btn-secondary ai-review-btn" onclick="generateModelAnswerWithAI(this)" title="${isFallback ? 'Generate a model answer for YOUR prompt using AI' : 'Regenerate this model answer with AI'}">
             <i data-lucide="sparkles" style="width:14px;height:14px"></i>
@@ -14885,6 +14888,173 @@ function coachToggleMic(textareaId, btnEl) {
   }
 }
 
+// ---------- BREAK IT DOWN — annotated worked example ----------
+// Reusable across the app: give it a scenario, it shows a strong response and explains
+// each line (technique / why / how to say it). AI-powered with a local fallback so it
+// works offline. Reachable from a lesson's model answer AND from inside a coach session.
+function coachTechniqueFor(element) {
+  const e = String(element || '').toLowerCase();
+  if (/intro|point(?!\s*\(re)|thesis|attention|headline|answer/.test(e)) return 'answer-first';
+  if (/body|reason|because/.test(e)) return 'because-logic';
+  if (/example|evidence|proof|result|action/.test(e)) return 'concrete proof';
+  if (/conclusion|restat|close|takeaway|call to action|desire/.test(e)) return 'bookend';
+  if (/hook|interest/.test(e)) return 'make it stick';
+  if (/situation|context|task/.test(e)) return 'set the scene';
+  return 'on-message';
+}
+function localAnnotateExemplar(scenario) {
+  const fw = scenario.framework || [];
+  const segs = (scenario.segments && scenario.segments.length) ? scenario.segments : null;
+  if (!segs) {
+    return {
+      strategy: 'Lead with your headline, back it with your single strongest piece of evidence, then close on the decision you want. Keep it tight.',
+      segments: [{ element: 'Your message', text: scenario.message || scenario.promptText || '', technique: 'answer-first', why: 'A busy audience decides in the first sentence — give them the point before the detail.', howToSay: 'Steady pace; slow down to land the ask.' }],
+      takeaway: 'Say your conclusion first — everything after is support.'
+    };
+  }
+  return {
+    strategy: scenario.expertTip || 'Move cleanly through each part of the framework — each line does exactly one job, in order.',
+    segments: segs.map((s, i) => {
+      const fwEl = fw.find(e => e.name && s.element && String(e.name).toLowerCase() === String(s.element).toLowerCase());
+      return {
+        element: s.element,
+        text: s.text,
+        color: s.color || null,
+        technique: coachTechniqueFor(s.element),
+        why: (fwEl && fwEl.desc) ? fwEl.desc : `This is the ${s.element} — it carries that job in the framework, and nothing else muddies it.`,
+        howToSay: i === segs.length - 1 ? 'Slow down and land it — this is what they’ll remember.' : 'Clear and unhurried; let the idea breathe.'
+      };
+    }),
+    takeaway: scenario.expertTip ? (scenario.expertTip.split('. ')[0] + '.') : 'Each part of the framework does one job — do them in order and stop.'
+  };
+}
+function normalizeExemplar(data, scenario) {
+  if (!data || !Array.isArray(data.segments) || !data.segments.length) return localAnnotateExemplar(scenario);
+  return {
+    strategy: typeof data.strategy === 'string' ? data.strategy : '',
+    segments: data.segments.map(s => ({
+      element: s.element || '', text: s.text || '', color: s.color || null,
+      technique: s.technique || '', why: s.why || '', howToSay: s.howToSay || ''
+    })),
+    takeaway: typeof data.takeaway === 'string' ? data.takeaway : ''
+  };
+}
+async function getExemplarAnnotation(scenario) {
+  if (!location.protocol.startsWith('http')) return localAnnotateExemplar(scenario);
+  try {
+    const data = await callAIChat({
+      mode: 'annotate-exemplar',
+      promptText: scenario.promptText || '',
+      lessonTitle: scenario.lessonTitle || '',
+      framework: (scenario.framework || []).map(e => ({ name: e.name, description: e.desc || '' })),
+      expertTip: scenario.expertTip || '',
+      audience: scenario.audience || '',
+      message: scenario.message || '',
+      segments: scenario.segments ? scenario.segments.map(s => ({ element: s.element, text: s.text })) : null,
+      goals: state.coachState ? state.coachState.goals : []
+    });
+    return normalizeExemplar(data, scenario);
+  } catch (e) {
+    return localAnnotateExemplar(scenario);
+  }
+}
+function coachBreakdownBodyHTML(ann, scenario) {
+  const segs = (ann.segments || []).map(s => {
+    const cvar = s.color ? getElementColorVar(s.color) : '--teal';
+    const bvar = s.color ? getElementBgVar(s.color) : '--teal-light';
+    return `<div class="model-part" style="display:block;border-left-color:var(${cvar});background:var(${bvar})">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="model-part-label" style="background:var(${cvar});color:#fff">${coachEsc(s.element)}</span>
+        ${s.technique ? `<span style="font-size:0.72rem;padding:2px 9px;border-radius:99px;background:var(--bg-card);border:1px solid var(${cvar});color:var(${cvar});font-weight:700">${coachEsc(s.technique)}</span>` : ''}
+      </div>
+      <div class="model-part-text" style="font-weight:600;margin-bottom:10px">“${coachEsc(s.text)}”</div>
+      ${s.why ? `<div style="font-size:0.86rem;color:var(--text-secondary);margin-bottom:6px;line-height:1.5"><strong style="color:var(--text-primary)">Why:</strong> ${coachEsc(s.why)}</div>` : ''}
+      ${s.howToSay ? `<div style="font-size:0.86rem;color:var(--text-secondary);line-height:1.5"><strong style="color:var(--text-primary)">Say it:</strong> ${coachEsc(s.howToSay)}</div>` : ''}
+    </div>`;
+  }).join('');
+  const fullText = (ann.segments || []).map(s => s.text).join(' ');
+  return `
+    ${ann.strategy ? `<div class="model-insight" style="background:var(--teal-light);color:var(--teal);margin-bottom:14px">
+      <div class="model-insight-icon" style="color:var(--teal)"><i data-lucide="compass" style="width:16px;height:16px"></i></div>
+      <div><strong>My approach:</strong> ${coachEsc(ann.strategy)}</div>
+    </div>` : ''}
+    <div class="model-section-label">Line by line — what I'd say &amp; why</div>
+    <div class="model-response">${segs}</div>
+    ${ann.takeaway ? `<div class="model-insight" style="margin-top:12px">
+      <div class="model-insight-icon"><i data-lucide="key" style="width:16px;height:16px"></i></div>
+      <div><strong>Carry this forward:</strong> ${coachEsc(ann.takeaway)}</div>
+    </div>` : ''}
+    <div class="model-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="this.closest('.model-overlay').remove()">Close</button>
+      <button class="btn btn-secondary" onclick='coachSpeakForce(${JSON.stringify(fullText)})'>
+        <i data-lucide="volume-2" style="width:14px;height:14px"></i> Hear it delivered
+      </button>
+    </div>`;
+}
+// Speak on demand even when the coach voice toggle is off (user explicitly asked to hear it).
+function coachSpeakForce(text) {
+  const cs = state.coachState; const was = cs ? cs.voiceOn : true;
+  if (cs) cs.voiceOn = true;
+  coachSpeak(text);
+  if (cs) cs.voiceOn = was;
+}
+async function coachBreakdownOpen(scenario) {
+  if (!scenario) { showToast('Nothing to break down yet.'); return; }
+  const overlay = document.createElement('div');
+  overlay.className = 'model-overlay';
+  overlay.innerHTML = `
+    <div class="model-card">
+      <button class="model-close" onclick="this.closest('.model-overlay').remove()" aria-label="Close"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      <div class="model-header"><span class="model-header-badge"><i data-lucide="graduation-cap" style="width:12px;height:12px"></i> Coach breakdown</span></div>
+      <div class="model-title">${coachEsc(scenario.lessonTitle || "How I'd handle this")}</div>
+      <div class="model-subtitle">Here's what I'd say — and why, line by line.</div>
+      <div class="model-section-label">The scenario</div>
+      <div class="model-prompt-box">“${coachEsc(scenario.promptText || scenario.message || '')}”</div>
+      <div id="breakdown-body">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);padding:18px 2px"><i data-lucide="loader-2" style="width:16px;height:16px" class="coach-spin"></i> Working out how I'd deliver this…</div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  const ann = await getExemplarAnnotation(scenario);
+  const body = overlay.querySelector('#breakdown-body');
+  if (!body) return; // user closed it
+  body.innerHTML = coachBreakdownBodyHTML(ann, scenario);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+// Build a scenario from the current lesson/prompt (used by the model-answer overlay).
+function coachScenarioFromLesson() {
+  const lesson = state.currentLesson && state.currentLesson.lesson;
+  if (!lesson) return null;
+  let promptText = '', segments = null;
+  if (state.currentPrompt && state.currentPrompt.modelResponse) { promptText = state.currentPrompt.text; segments = state.currentPrompt.modelResponse; }
+  else if (lesson.example) { promptText = lesson.example.prompt; segments = lesson.example.response; }
+  return { origin: 'lesson', promptText, lessonTitle: lesson.title, subtitle: lesson.subtitle || '', framework: lesson.elements || [], expertTip: lesson.expertTip || '', segments };
+}
+function coachBreakdownFromModelOverlay(btn) {
+  const scenario = coachScenarioFromLesson();
+  const ov = btn && btn.closest('.model-overlay');
+  if (ov) ov.remove();
+  coachBreakdownOpen(scenario);
+}
+// Build a scenario from the active coach session (drill or prep).
+function coachBreakdownFromSession() {
+  if (!_coachSession) return;
+  let scenario;
+  if (_coachSession.mode === 'prep') {
+    const b = (state.coachState.prepBriefs || []).find(x => x.id === _coachSession.prepId);
+    if (!b) return;
+    scenario = { origin: 'prep', promptText: b.title + (b.audience ? ' — for ' + b.audience : ''), lessonTitle: 'Your prep: ' + b.title, framework: [], expertTip: b.notes || '', audience: b.audience || '', message: b.message, segments: null };
+  } else {
+    const unit = _coachSession.unit;
+    if (!unit || !_coachSession.prompt) return;
+    scenario = { origin: 'coach', promptText: _coachSession.prompt.text, lessonTitle: unit.lesson.title, subtitle: unit.lesson.subtitle || '', framework: unit.lesson.elements || [], expertTip: unit.lesson.expertTip || '', segments: _coachSession.prompt.modelResponse || (unit.lesson.example && unit.lesson.example.response) };
+  }
+  coachBreakdownOpen(scenario);
+}
+
 // ---------- DIAGNOSIS: coach-turn (AI) with a local heuristic fallback ----------
 function localCoachTurn(ctx) {
   const passed = ctx.score.total >= ctx.passMark;
@@ -15401,7 +15571,10 @@ function renderCoachDock() {
         <button class="btn btn-primary" style="flex:1" onclick="coachSubmit()">
           <i data-lucide="send" style="width:16px;height:16px"></i> Send to coach
         </button>
-      </div>`;
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:8px;color:var(--text-secondary);font-size:0.85rem" onclick="coachBreakdownFromSession()">
+        <i data-lucide="graduation-cap" style="width:15px;height:15px"></i> Stuck? Show me how you'd do this
+      </button>`;
   }
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
