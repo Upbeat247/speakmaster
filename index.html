@@ -14565,7 +14565,8 @@ const COACH_GOALS = [
   { key: 'exec',          label: 'Executive presence',       icon: 'crown' },
 ];
 
-let _coachSession = null; // transient per-session state (not persisted)
+let _coachSession = null;   // transient per-session state (not persisted)
+let _coachBreakdown = null;  // { scenario, ann, moves } for the active "Break it down" overlay
 
 function defaultCoachState() {
   return {
@@ -14989,7 +14990,154 @@ function coachBreakdownBodyHTML(ann, scenario) {
       <button class="btn btn-secondary" onclick='coachSpeakForce(${JSON.stringify(fullText)})'>
         <i data-lucide="volume-2" style="width:14px;height:14px"></i> Hear it delivered
       </button>
+      <button class="btn btn-primary" onclick="coachFadedStart()">
+        <i data-lucide="pen-line" style="width:14px;height:14px"></i> Now you try
+      </button>
     </div>`;
+}
+
+// ---------- FADED PRACTICE — "now you try" the same scenario, graded on the taught moves ----------
+function _coachFadedMoves(ann) {
+  const seen = new Set(), out = [];
+  (ann.segments || []).forEach(s => {
+    const k = (s.technique || '').toLowerCase();
+    if (s.technique && !seen.has(k)) { seen.add(k); out.push({ technique: s.technique, line: s.text }); }
+  });
+  return out.slice(0, 6);
+}
+function coachFadedStart() {
+  if (!_coachBreakdown) return;
+  coachStopSpeaking();
+  _coachBreakdown.moves = _coachFadedMoves(_coachBreakdown.ann);
+  coachFadedRenderAttempt();
+}
+function coachFadedRenderAttempt() {
+  const body = document.getElementById('breakdown-body');
+  if (!body || !_coachBreakdown) return;
+  const moves = _coachBreakdown.moves || [];
+  const chips = moves.map(m => `<span style="font-size:0.74rem;padding:3px 9px;border-radius:99px;background:var(--teal-light);color:var(--teal);font-weight:700">${coachEsc(m.technique)}</span>`).join(' ');
+  body.innerHTML = `
+    <div class="model-insight" style="background:var(--teal-light);color:var(--teal);margin-bottom:12px">
+      <div class="model-insight-icon" style="color:var(--teal)"><i data-lucide="target" style="width:16px;height:16px"></i></div>
+      <div><strong>Now you try.</strong> Deliver the same scenario in your own words — aim to land these moves:</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${chips || '<span style="color:var(--text-muted);font-size:0.85rem">Deliver it your way.</span>'}</div>
+    <textarea id="faded-input" placeholder="Your attempt — speak it (mic) or type…" style="width:100%;min-height:120px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);font-size:0.95rem;resize:vertical"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="toggleAISpeech('faded-input', this)" aria-label="Toggle mic" style="padding:10px 14px"><i data-lucide="mic" style="width:18px;height:18px"></i></button>
+      <button class="btn btn-primary" style="flex:1" onclick="coachFadedSubmit()"><i data-lucide="check" style="width:16px;height:16px"></i> Check my attempt</button>
+    </div>`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  const ta = document.getElementById('faded-input'); if (ta) ta.focus();
+}
+async function coachFadedSubmit() {
+  const ta = document.getElementById('faded-input');
+  const text = ta ? ta.value.trim() : '';
+  if (text.length < 12) { showToast('Give it a real attempt first.'); return; }
+  try { stopAISpeech('faded-input'); } catch (e) {}
+  const body = document.getElementById('breakdown-body');
+  if (!body) return;
+  body.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);padding:18px 2px"><i data-lucide="loader-2" style="width:16px;height:16px" class="coach-spin"></i> Checking which moves you landed…</div>`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  const res = await getFadedCheck(_coachBreakdown.scenario, _coachBreakdown.moves, text);
+  const body2 = document.getElementById('breakdown-body');
+  if (!body2) return;
+  body2.innerHTML = coachFadedResultHTML(res);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  coachSpeak(res.spoken);
+}
+function coachFadedResultHTML(res) {
+  const iconFor = l => l === 'yes' ? ['circle-check', '--green'] : (l === 'no' ? ['circle-x', '--red'] : ['circle-minus', '--orange']);
+  const rows = (res.moves || []).map(m => {
+    const pair = iconFor(m.landed);
+    return `<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)">
+      <i data-lucide="${pair[0]}" style="width:18px;height:18px;color:var(${pair[1]});flex-shrink:0;margin-top:1px"></i>
+      <div><div style="font-weight:700;font-size:0.9rem">${coachEsc(m.technique)}</div><div style="font-size:0.83rem;color:var(--text-secondary)">${coachEsc(m.note || '')}</div></div>
+    </div>`;
+  }).join('');
+  return `
+    ${res.encouragement ? `<div class="model-insight" style="background:var(--green-light);color:var(--green);margin-bottom:12px"><div class="model-insight-icon" style="color:var(--green)"><i data-lucide="party-popper" style="width:16px;height:16px"></i></div><div>${coachEsc(res.encouragement)}</div></div>` : ''}
+    <div class="model-section-label">Moves you landed</div>
+    <div>${rows}</div>
+    ${res.topFix ? `<div class="model-insight" style="margin-top:12px"><div class="model-insight-icon"><i data-lucide="arrow-up-right" style="width:16px;height:16px"></i></div><div><strong>Next time:</strong> ${coachEsc(res.topFix)}</div></div>` : ''}
+    <div class="model-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="this.closest('.model-overlay').remove()">Done</button>
+      <button class="btn btn-secondary" onclick="coachFadedShowExemplar()"><i data-lucide="eye" style="width:14px;height:14px"></i> Show me again</button>
+      <button class="btn btn-primary" onclick="coachFadedRenderAttempt()"><i data-lucide="rotate-ccw" style="width:14px;height:14px"></i> Try again</button>
+    </div>`;
+}
+function coachFadedShowExemplar() {
+  const body = document.getElementById('breakdown-body');
+  if (!body || !_coachBreakdown) return;
+  body.innerHTML = coachBreakdownBodyHTML(_coachBreakdown.ann, _coachBreakdown.scenario);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+async function getFadedCheck(scenario, moves, text) {
+  if (!location.protocol.startsWith('http')) return localFadedCheck(moves, text);
+  try {
+    const data = await callAIChat({
+      mode: 'faded-check',
+      promptText: scenario.promptText || scenario.message || '',
+      lessonTitle: scenario.lessonTitle || '',
+      audience: scenario.audience || '',
+      moves: (moves || []).map(m => ({ technique: m.technique, line: m.line })),
+      response: text
+    });
+    return normalizeFadedCheck(data, moves, text);
+  } catch (e) {
+    return localFadedCheck(moves, text);
+  }
+}
+function normalizeFadedCheck(data, moves, text) {
+  if (data && Array.isArray(data.moves) && data.moves.length) {
+    return {
+      spoken: data.spoken || '',
+      moves: (moves || []).map((m, i) => {
+        const d = data.moves[i] || {};
+        return { technique: m.technique, landed: ['yes', 'partial', 'no'].includes(d.landed) ? d.landed : 'partial', note: d.note || '' };
+      }),
+      encouragement: data.encouragement || '',
+      topFix: data.topFix || ''
+    };
+  }
+  return localFadedCheck(moves, text);
+}
+function localFadedCheck(moves, text) {
+  const t = (text || '').trim();
+  const firstSentence = (t.split(/[.!?]/)[0] || '').trim();
+  const has = re => re.test(t);
+  const judged = (moves || []).map(m => {
+    const tech = (m.technique || '').toLowerCase();
+    let landed = 'partial', note = 'Present — keep sharpening it.';
+    if (/answer|thesis|headline|point/.test(tech)) {
+      landed = firstSentence.split(/\s+/).filter(Boolean).length <= 22 ? 'yes' : 'partial';
+      note = landed === 'yes' ? 'You led with your point — good.' : 'Lead more directly with your main point.';
+    } else if (/concrete|number|proof|evidence|result|specific/.test(tech)) {
+      landed = has(/\d/) ? 'yes' : 'no';
+      note = landed === 'yes' ? 'You used a specific figure.' : 'Add a concrete number or named example.';
+    } else if (/three|rule of/.test(tech)) {
+      landed = (t.match(/,/g) || []).length >= 2 ? 'partial' : 'no';
+      note = 'Group your supporting points in threes.';
+    } else if (/bookend|restat|close|conclusion|takeaway/.test(tech)) {
+      landed = /\b(so|therefore|that's why|thats why|in short|overall|to sum)\b/i.test(t) ? 'yes' : 'partial';
+      note = landed === 'yes' ? 'You closed with a clear landing.' : 'Close by echoing your opening point.';
+    } else if (/hedge/.test(tech)) {
+      landed = /\b(maybe|i think|sort of|kind of|probably|i guess|just)\b/i.test(t) ? 'no' : 'yes';
+      note = landed === 'yes' ? 'Committed, no hedging — good.' : 'Drop the hedging words.';
+    } else if (/scene|situation|context/.test(tech)) {
+      landed = t.split(/\s+/).length > 20 ? 'partial' : 'no';
+      note = 'Set the scene briefly before the detail.';
+    }
+    return { technique: m.technique, landed, note };
+  });
+  const wins = judged.filter(j => j.landed === 'yes').length;
+  const fix = (judged.find(j => j.landed === 'no') || judged.find(j => j.landed === 'partial') || {});
+  return {
+    spoken: `You landed ${wins} of ${judged.length} moves. ${wins >= judged.length - 1 && judged.length ? 'Strong rep.' : 'Good start — go again and tighten it.'}`,
+    moves: judged,
+    encouragement: wins ? 'Real progress on the moves that matter.' : 'Every rep sharpens this — keep going.',
+    topFix: fix.note || 'Tighten it and run it once more.'
+  };
 }
 // Speak on demand even when the coach voice toggle is off (user explicitly asked to hear it).
 function coachSpeakForce(text) {
@@ -15021,6 +15169,7 @@ async function coachBreakdownOpen(scenario) {
   const ann = await getExemplarAnnotation(scenario);
   const body = overlay.querySelector('#breakdown-body');
   if (!body) return; // user closed it
+  _coachBreakdown = { scenario, ann, moves: null };
   body.innerHTML = coachBreakdownBodyHTML(ann, scenario);
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }

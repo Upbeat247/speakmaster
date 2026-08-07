@@ -55,6 +55,7 @@ exports.handler = async (event) => {
       case 'coach-turn':            request = buildCoachTurnRequest(payload); break;
       case 'coach-prep-turn':       request = buildCoachPrepTurnRequest(payload); break;
       case 'annotate-exemplar':     request = buildAnnotateExemplarRequest(payload); break;
+      case 'faded-check':           request = buildFadedCheckRequest(payload); break;
       default:
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Unknown mode: ${mode}` }) };
     }
@@ -655,6 +656,51 @@ Produce the worked example. Return the JSON.`;
     jsonMode: true,
     temperature: 0.6,
     maxTokens: 1200
+  };
+}
+
+// faded-check : the "now you try" step after a worked example. The learner attempts the
+// SAME scenario; judge which of the TAUGHT MOVES they actually landed — honest but
+// encouraging, formative, one next fix. This closes the worked-example → practice loop.
+function buildFadedCheckRequest(p) {
+  const { promptText, lessonTitle, audience, moves, response } = p;
+  if (!response) throw new Error('Missing response');
+  if (!Array.isArray(moves) || !moves.length) throw new Error('Missing taught moves');
+
+  const movesList = moves.map((m, i) => `${i + 1}. ${m.technique}${m.line ? ` — demonstrated by: "${m.line}"` : ''}`).join('\n');
+
+  const systemPrompt = `You are a warm public-speaking coach running a FADED-PRACTICE check. The learner just studied a worked example and is now attempting the SAME scenario in their own words. Judge which of the TAUGHT MOVES they actually landed in THEIR attempt — honest but encouraging. This is formative: celebrate real wins, name what's missing, give ONE next fix.
+
+For each taught move, decide landed = "yes" | "partial" | "no", with a <=16 word note grounded in what they actually said (quote a few of their words when useful). Do NOT reward a move that isn't really there.
+
+OUTPUT — return ONLY this JSON:
+{
+  "spoken": "<1-2 warm sentences summarising how they did, natural spoken rhythm>",
+  "moves": [ { "technique": "<the move>", "landed": "yes|partial|no", "note": "<<=16 words>" } ],
+  "encouragement": "<one genuine positive about their attempt, <=14 words>",
+  "topFix": "<the single most useful next improvement, <=20 words>"
+}
+The "moves" array MUST have exactly one entry per taught move, in the same order given.`;
+
+  const userPrompt = `SCENARIO: ${lessonTitle || 'a speaking moment'}
+${audience ? `AUDIENCE: ${audience}\n` : ''}PROMPT / MOMENT: "${promptText || ''}"
+
+TAUGHT MOVES (what the worked example demonstrated — judge each against their attempt):
+${movesList}
+
+THE LEARNER'S OWN ATTEMPT:
+"${response}"
+
+Judge which moves they landed. Return the JSON.`;
+
+  return {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    jsonMode: true,
+    temperature: 0.4,
+    maxTokens: 700
   };
 }
 
