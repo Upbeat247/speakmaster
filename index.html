@@ -4484,6 +4484,10 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
       <i data-lucide="graduation-cap" style="width:16px;height:16px"></i>
       <span>Coach</span>
     </button>
+    <button class="nav-link" data-view="playbook" onclick="navigate('playbook')">
+      <i data-lucide="book-open" style="width:16px;height:16px"></i>
+      <span>Playbook</span>
+    </button>
     <button class="nav-link" data-view="tracks" onclick="navigate('tracks')">
       <i data-lucide="map" style="width:16px;height:16px"></i>
       <span>Tracks</span>
@@ -4520,6 +4524,10 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <button class="mobile-nav-link" data-view="coach" onclick="navigate('coach')">
       <i data-lucide="graduation-cap"></i>
       Coach
+    </button>
+    <button class="mobile-nav-link" data-view="playbook" onclick="navigate('playbook')">
+      <i data-lucide="book-open"></i>
+      Playbook
     </button>
     <button class="mobile-nav-link" data-view="tracks" onclick="navigate('tracks')">
       <i data-lucide="map"></i>
@@ -4674,6 +4682,11 @@ body.focus-mode .mic-status { font-size: 0.82rem; }
     <!-- COACH VIEW -->
     <div id="view-coach" class="view">
       <div id="coach-content"></div>
+    </div>
+
+    <!-- PLAYBOOK VIEW -->
+    <div id="view-playbook" class="view">
+      <div id="playbook-content"></div>
     </div>
 
     <!-- SAVED REVIEWS (LIBRARY) VIEW -->
@@ -8564,6 +8577,7 @@ function handleRoute() {
       if (viewName === 'packs') renderPacksList();
       if (viewName === 'fluency') renderFluencyHub();
       if (viewName === 'coach') renderCoach();
+      if (viewName === 'playbook') renderPlaybook();
     } else {
       document.getElementById('view-dashboard').classList.add('active');
       state.currentView = 'dashboard';
@@ -14966,7 +14980,7 @@ function coachBreakdownBodyHTML(ann, scenario) {
     return `<div class="model-part" style="display:block;border-left-color:var(${cvar});background:var(${bvar})">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
         <span class="model-part-label" style="background:var(${cvar});color:#fff">${coachEsc(s.element)}</span>
-        ${s.technique ? `<span style="font-size:0.72rem;padding:2px 9px;border-radius:99px;background:var(--bg-card);border:1px solid var(${cvar});color:var(${cvar});font-weight:700">${coachEsc(s.technique)}</span>` : ''}
+        ${s.technique ? coachTechniqueChipHTML(s.technique, cvar) : ''}
       </div>
       <div class="model-part-text" style="font-weight:600;margin-bottom:10px">“${coachEsc(s.text)}”</div>
       ${s.why ? `<div style="font-size:0.86rem;color:var(--text-secondary);margin-bottom:6px;line-height:1.5"><strong style="color:var(--text-primary)">Why:</strong> ${coachEsc(s.why)}</div>` : ''}
@@ -15204,6 +15218,192 @@ function coachBreakdownFromSession() {
   coachBreakdownOpen(scenario);
 }
 
+// ---------- PLAYBOOK — the curated canon of communication moves ----------
+// Hand-written (not AI-generated) so it's reliable, offline, and consistently good.
+// Each principle links to a real drill (Break it down on a representative lesson) and,
+// via `tags`, to the technique labels the coach surfaces — so tags become tappable.
+const COACH_PLAYBOOK = [
+  {
+    id: 'answer-first', title: 'Answer First', theme: 'Structure', tags: ['answer-first'],
+    hook: 'Lead with your conclusion — support comes after.',
+    what: `State your main point in the very first sentence, before any context, build-up, or reasoning. Then back it up. The order is: conclusion → because → evidence, never the reverse.`,
+    why: `People decide what to think in the first few seconds, and busy or senior audiences may only fully hear your opening. Leading with the answer makes you sound decisive and turns everything after into support rather than suspense. Burying the point makes even a great idea feel like rambling.`,
+    bad: `"So there are a few things going on… we looked at the data, there were some trade-offs, and, well, I think we should probably delay the launch."`,
+    good: `"We should delay the launch by two weeks. The payment bug isn't fully fixed, and shipping now risks the exact enterprise customers we're trying to win."`,
+    drill: { t: 1, li: 0, pi: 0 }
+  },
+  {
+    id: 'one-idea', title: 'One Idea at a Time', theme: 'Clarity', tags: ['one-idea', 'signpost'],
+    hook: 'Introduce nothing before the thing it depends on.',
+    what: `Carry one idea per sentence, and sequence ideas so each builds on the last. Most confusion isn't complexity — it's something mentioned before the thing that makes sense of it.`,
+    why: `Working memory is tiny. When you stack three ideas into one breath, or reference something you haven't set up yet, the listener drops the thread and spends the rest of the time catching up instead of listening. Clean sequencing feels effortless to follow.`,
+    bad: `"The migration, which affects billing and the API rate limits we discussed, needs the new auth layer first, unless we defer the caching work."`,
+    good: `"First, the new auth layer. Once that's in, the migration is safe. Only then do we touch billing. Caching can wait."`,
+    drill: { t: 1, li: 3, pi: 0 }
+  },
+  {
+    id: 'concrete-first', title: 'Concrete Before Abstract', theme: 'Clarity', tags: ['concrete proof', 'concrete number', 'concrete before abstract'],
+    hook: 'Lead with a specific example, then generalise.',
+    what: `Open with one vivid, specific instance — a number, a name, a moment — and let the general principle follow it. Brains grab the concrete first and only then accept the abstraction.`,
+    why: `"We have efficiency problems" slides off. "Engineers spend three hours every Monday copying data between two systems by hand" lands, and makes the abstraction feel earned. Specifics are also more credible — vague language reads as "you don't actually know."`,
+    bad: `"Our onboarding has some friction that's impacting activation metrics across the funnel."`,
+    good: `"Last month, 4 in 10 new users never finished setup — they hit the integrations screen and quit. That one screen is our biggest activation leak."`,
+    drill: { t: 1, li: 1, pi: 0 }
+  },
+  {
+    id: 'rule-of-three', title: 'The Rule of Three', theme: 'Structure', tags: ['rule of three'],
+    hook: 'Group your support into three — no more, no fewer.',
+    what: `When you have supporting points, cluster them into three. Three feels complete and is easy to hold; two feels thin, five feels like a list nobody will remember.`,
+    why: `Three is the smallest number that creates a pattern, and patterns are memorable ("life, liberty, and the pursuit of happiness"). It also forces you to prioritise — picking your best three is an act of editing, and editing is most of clarity.`,
+    bad: `"There are lots of reasons: cost, timing, the team, the tech debt, the roadmap, the customers, and honestly a few others."`,
+    good: `"Three reasons: it's cheaper now than later, the team is finally free, and our biggest customer is asking for it."`,
+    drill: { t: 1, li: 0, pi: 2 }
+  },
+  {
+    id: 'drop-the-hedge', title: 'Drop the Hedge', theme: 'Delivery', tags: ['drop the hedge'],
+    hook: 'Cut "I think, maybe, sort of, just" — commit.',
+    what: `Strip the qualifiers that leak from your sentences when you're nervous: "I think", "maybe", "kind of", "sort of", "probably", "just", "does that make sense?". Say the thing.`,
+    why: `Hedging is the fastest way to sound junior, especially under challenge. "I just think maybe we should possibly consider delaying" and "We should delay" carry the same information — but only one sounds like someone you'd follow. Confidence is often just the absence of hedging.`,
+    bad: `"I just think that maybe, if it's okay, we could possibly hold off a bit? Does that make sense?"`,
+    good: `"We should hold off. Here's the one thing that changes my mind — if the fix ships by Friday."`,
+    drill: { t: 3, li: 2, pi: 0 }
+  },
+  {
+    id: 'name-the-stakes', title: 'Name the Stakes', theme: 'Influence', tags: ['name the stakes'],
+    hook: 'Say why it matters before you say what to do.',
+    what: `Before the mechanism, give the motive: what's at risk, what's the prize, why should they care right now. Motive before mechanism — always.`,
+    why: `Nobody absorbs "how" until they feel "why". Stakes create the attention that makes your detail worth hearing. For a budget-focused audience especially, framing a technical finding as risk-to-them ("this protects $4M of revenue") is the difference between a nod and a decision.`,
+    bad: `"We need to replace eight metres of the flare line and re-insulate it with foamglas during the next window."`,
+    good: `"If we don't act, we're risking an unplanned outage in six months that costs seven figures. The fix is small: eight metres of pipe, re-insulated, in the next window."`,
+    drill: { t: 3, li: 0, pi: 0 }
+  },
+  {
+    id: 'use-silence', title: 'Use Silence', theme: 'Delivery', tags: ['pause'],
+    hook: 'Pause before and after the line that matters.',
+    what: `Deliberately leave a beat of silence right before your key point (to create anticipation) and right after it (to let it land). Silence is a tool, not dead air to be filled with "um".`,
+    why: `Rushing your most important sentence is the most common self-sabotage there is — the words the audience most needed go by fastest. A pause signals "this matters", gives people time to absorb, and reads as composure and authority. Amateurs fear silence; experts wield it.`,
+    bad: `"…so the recommendation is we delay and that's basically it any questions?" (all one breath)`,
+    good: `"So here's my recommendation." [pause] "We delay by two weeks." [pause] "Let me tell you why that's the safe call."`,
+    drill: { t: 2, li: 3, pi: 0 }
+  },
+  {
+    id: 'curse-of-knowledge', title: 'Beat the Curse of Knowledge', theme: 'Mindset', tags: ['curse of knowledge'],
+    hook: 'Remember what it was like not to know.',
+    what: `The moment you understand something, you lose the ability to remember not understanding it — and you start skipping the steps a newcomer needs. Actively rebuild the beginner's view and explain from their world, not yours.`,
+    why: `This single blind spot causes more bad explanations than anything else. You use jargon you've forgotten is jargon, skip the setup that now feels "obvious", and mistake their confusion for slowness. Explaining from where they stand — not where the idea lives — is the whole craft.`,
+    bad: `"It's just CUI under the cladding past the retirement threshold, so obviously we intercept." (to a finance audience)`,
+    good: `"Insulation traps moisture against the pipe, and the steel underneath has been quietly corroding where we couldn't see it. It's now thin enough to worry me — here's what that means for us."`,
+    drill: { t: 2, li: 3, pi: 0 }
+  },
+  {
+    id: 'and-but-therefore', title: 'And, But, Therefore', theme: 'Structure', tags: ['and-but-therefore', 'abt', 'story'],
+    hook: 'Turn a flat list into a story with tension.',
+    what: `Structure it as: "This AND this were true, BUT then a problem/tension appeared, THEREFORE here's what we do." The "but" is the engine — it creates the tension that makes people lean in.`,
+    why: `A list of facts ("and… and… and…") is forgettable; a story is not. The ABT shape is the smallest possible story, and it works for impromptu answers, updates, and pitches alike. The turn on "but" is what separates "informing" from "engaging".`,
+    bad: `"We shipped the feature, and adoption was okay, and we're iterating, and there's more to do."`,
+    good: `"We shipped the feature and early adoption looked healthy — but then power users started churning. Therefore we're pausing new work to fix retention first."`,
+    drill: { t: 3, li: 1, pi: 0 }
+  },
+  {
+    id: 'own-the-transfer', title: 'Own the Transfer', theme: 'Mindset', tags: ['own-the-transfer'],
+    hook: `If they didn't get it, that's yours to fix.`,
+    what: `Take responsibility for whether the idea lands. When you see confusion, get curious ("where did I lose you?") and adjust — instead of repeating the same words louder or blaming the listener for not following.`,
+    why: `This posture quietly changes every other decision you make: you watch faces, you check in, you pick simpler words, you treat confusion as feedback on your explanation rather than their intelligence. It's also disarming — an audience feels it when you're genuinely trying to help them get it, and they trust you more.`,
+    bad: `"As I already said, it's the auth layer." (visibly impatient, same words repeated)`,
+    good: `"I don't think I explained that well — let me try a different way. Think of it like a bouncer who checks IDs before anyone gets in…"`,
+    drill: { t: 3, li: 2, pi: 0 }
+  }
+];
+const COACH_PLAYBOOK_THEMES = ['Structure', 'Clarity', 'Delivery', 'Influence', 'Mindset'];
+
+function renderPlaybook() {
+  const el = document.getElementById('playbook-content');
+  if (!el) return;
+  const byTheme = {};
+  COACH_PLAYBOOK.forEach(p => { (byTheme[p.theme] = byTheme[p.theme] || []).push(p); });
+  const sections = COACH_PLAYBOOK_THEMES.filter(t => byTheme[t]).map(theme => `
+    <div style="margin-bottom:22px">
+      <div style="font-size:0.76rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);font-weight:700;margin-bottom:10px">${theme}</div>
+      ${byTheme[theme].map(p => `
+        <button onclick="coachPlaybookOpen('${p.id}')" style="display:block;width:100%;text-align:left;padding:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-card);margin-bottom:8px;cursor:pointer">
+          <div style="font-family:var(--font-display);font-size:1.05rem;color:var(--text-primary);margin-bottom:2px">${coachEsc(p.title)}</div>
+          <div style="font-size:0.85rem;color:var(--text-secondary)">${coachEsc(p.hook)}</div>
+        </button>`).join('')}
+    </div>`).join('');
+  el.innerHTML = `
+    <div style="max-width:620px;margin:0 auto">
+      <div style="margin-bottom:18px">
+        <h1 style="font-family:var(--font-display);font-size:1.6rem;margin:0 0 4px">Playbook</h1>
+        <p style="color:var(--text-secondary);margin:0;font-size:0.9rem">The core moves of great communication — each with an example and a drill. Tap any card.</p>
+      </div>
+      ${sections}
+    </div>`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function coachPlaybookOpen(id) {
+  const p = COACH_PLAYBOOK.find(x => x.id === id);
+  if (!p) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'model-overlay';
+  overlay.innerHTML = `
+    <div class="model-card">
+      <button class="model-close" onclick="this.closest('.model-overlay').remove()" aria-label="Close"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      <div class="model-header"><span class="model-header-badge"><i data-lucide="book-open" style="width:12px;height:12px"></i> ${coachEsc(p.theme)}</span></div>
+      <div class="model-title">${coachEsc(p.title)}</div>
+      <div class="model-subtitle">${coachEsc(p.hook)}</div>
+      <div class="model-section-label">What it is</div>
+      <div style="font-size:0.92rem;line-height:1.55;color:var(--text-primary);margin-bottom:12px">${coachEsc(p.what)}</div>
+      <div class="model-section-label">Why it works</div>
+      <div style="font-size:0.92rem;line-height:1.55;color:var(--text-secondary);margin-bottom:14px">${coachEsc(p.why)}</div>
+      <div class="model-part" style="display:block;border-left-color:var(--red);background:var(--red-light);margin-bottom:8px">
+        <div style="font-size:0.7rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Weak</div>
+        <div style="font-size:0.9rem;color:var(--text-primary);line-height:1.5">${coachEsc(p.bad)}</div>
+      </div>
+      <div class="model-part" style="display:block;border-left-color:var(--green);background:var(--green-light)">
+        <div style="font-size:0.7rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Strong</div>
+        <div style="font-size:0.9rem;color:var(--text-primary);line-height:1.5">${coachEsc(p.good)}</div>
+      </div>
+      <div class="model-actions" style="margin-top:16px">
+        <button class="btn btn-ghost" onclick="this.closest('.model-overlay').remove()">Close</button>
+        <button class="btn btn-secondary" onclick='coachSpeakForce(${JSON.stringify(p.good)})'><i data-lucide="volume-2" style="width:14px;height:14px"></i> Hear the strong version</button>
+        <button class="btn btn-primary" onclick="coachPlaybookDrill('${p.id}')"><i data-lucide="graduation-cap" style="width:14px;height:14px"></i> Practice this</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+function coachScenarioFromRef(t, li, pi) {
+  const lesson = getLessonData(t, li);
+  if (!lesson) return null;
+  const prompt = (lesson.prompts && lesson.prompts[pi || 0]) || null;
+  const promptText = prompt ? prompt.text : (lesson.example ? lesson.example.prompt : '');
+  const segments = prompt ? prompt.modelResponse : (lesson.example ? lesson.example.response : null);
+  return { origin: 'playbook', promptText, lessonTitle: lesson.title, subtitle: lesson.subtitle || '', framework: lesson.elements || [], expertTip: lesson.expertTip || '', segments };
+}
+function coachPlaybookDrill(id) {
+  const p = COACH_PLAYBOOK.find(x => x.id === id);
+  if (!p) return;
+  document.querySelectorAll('.model-overlay').forEach(o => o.remove());
+  const sc = coachScenarioFromRef(p.drill.t, p.drill.li, p.drill.pi);
+  if (!sc) { showToast('Drill unavailable.'); return; }
+  coachBreakdownOpen(sc);
+}
+// Match a coach technique label to a Playbook principle (for tappable tags).
+function coachPrincipleByTag(tech) {
+  const t = String(tech || '').toLowerCase().trim();
+  if (!t) return null;
+  return COACH_PLAYBOOK.find(p => (p.tags || []).some(tag => tag.toLowerCase() === t)) || null;
+}
+function coachTechniqueChipHTML(technique, cvar) {
+  const base = `font-size:0.72rem;padding:2px 9px;border-radius:99px;background:var(--bg-card);border:1px solid var(${cvar});color:var(${cvar});font-weight:700`;
+  const p = coachPrincipleByTag(technique);
+  if (p) {
+    return `<button onclick="coachPlaybookOpen('${p.id}')" style="${base};cursor:pointer;display:inline-flex;align-items:center;gap:4px" title="Open in Playbook">${coachEsc(technique)} <i data-lucide="book-open" style="width:11px;height:11px"></i></button>`;
+  }
+  return `<span style="${base}">${coachEsc(technique)}</span>`;
+}
+
 // ---------- DIAGNOSIS: coach-turn (AI) with a local heuristic fallback ----------
 function localCoachTurn(ctx) {
   const passed = ctx.score.total >= ctx.passMark;
@@ -15412,6 +15612,9 @@ function coachHomeHTML() {
 
     <button class="btn btn-primary btn-lg" style="width:100%" onclick="coachStartSession()">
       <i data-lucide="play" style="width:18px;height:18px"></i> Start today's session
+    </button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="navigate('playbook')">
+      <i data-lucide="book-open" style="width:15px;height:15px"></i> Open the Playbook — the core moves
     </button>
 
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
