@@ -15312,9 +15312,135 @@ const COACH_PLAYBOOK = [
     bad: `"As I already said, it's the auth layer." (visibly impatient, same words repeated)`,
     good: `"I don't think I explained that well — let me try a different way. Think of it like a bouncer who checks IDs before anyone gets in…"`,
     drill: { t: 3, li: 2, pi: 0 }
+  },
+  {
+    id: 'signpost-map', title: 'Signpost the Map', theme: 'Structure', tags: ['signpost'],
+    hook: 'Tell them the shape before the journey.',
+    what: `Give the audience the structure up front: "I'll cover three things, then my recommendation." Then label each turn as you take it ("first…", "second…", "so my recommendation…").`,
+    why: `A listener who knows the map relaxes and follows; one who doesn't spends energy guessing where you're going and how much is left. Signposting also keeps you on track and makes you sound organised even when improvising.`,
+    bad: `"…and another thing is the timeline, oh and also cost, and I guess the team, which reminds me about the tech risk…"`,
+    good: `"Three things before my recommendation: cost, timeline, and risk. Cost first. …Second, timeline. …So, my recommendation."`,
+    drill: { t: 2, li: 1, pi: 0 }
+  },
+  {
+    id: 'bookend', title: 'Bookend It', theme: 'Structure', tags: ['bookend'],
+    hook: 'Open and close on the same line.',
+    what: `End where you began. If you opened with "The real risk here is time," close with "…and that's why time is the risk we act on today." The echo closes a loop.`,
+    why: `A talk that returns to its opening feels complete and intentional — the audience gets a little hit of satisfaction, and your core message is the last thing they hear as well as the first. It's the cheapest way to sound polished.`,
+    bad: `"…so yeah, I think that's everything, any questions?" (trails off, no landing)`,
+    good: `"I started by saying alignment is our biggest risk. Fix the weekly sync, and it stops being one. That's the whole ask."`,
+    drill: { t: 1, li: 0, pi: 0 }
+  },
+  {
+    id: 'cut-preamble', title: 'Cut the Preamble', theme: 'Clarity', tags: [],
+    hook: 'Delete the throat-clearing. Start on the point.',
+    what: `Strip the runway you taxi on before takeoff: "So, basically, I just wanted to quickly touch on…". Begin with the sentence that actually matters.`,
+    why: `Preamble trains people to tune out, because you've taught them the first ten seconds are filler. Starting cold on your point is jarring in the best way — it signals confidence and respect for their time.`,
+    bad: `"So, um, I guess I just wanted to quickly maybe share a few quick thoughts on the thing we discussed, if that's alright?"`,
+    good: `"We're going to miss the deadline. Here's what I'd cut to still ship something strong."`,
+    drill: { t: 1, li: 3, pi: 0 }
+  },
+  {
+    id: 'show-dont-tell', title: `Show, Don't Tell`, theme: 'Clarity', tags: ['show not tell'],
+    hook: 'Replace adjectives with evidence.',
+    what: `Instead of asserting a quality, show the fact that proves it. Not "our support is fast" but "we reply in under five minutes." Let the listener conclude the adjective themselves.`,
+    why: `Adjectives are claims; evidence is proof. "We're innovative / efficient / world-class" is what everyone says and no one believes. A specific fact does the persuading for you, and it's far harder to argue with.`,
+    bad: `"Our team is incredibly hard-working, really dedicated, and very high-performing."`,
+    good: `"Last quarter this team shipped the migration two weeks early and cut incidents by half — while two people were on leave."`,
+    drill: { t: 1, li: 1, pi: 0 }
+  },
+  {
+    id: 'slow-down', title: 'Slow Down', theme: 'Delivery', tags: [],
+    hook: 'Nerves speed you up. Composure slows you down.',
+    what: `Consciously take your overall tempo down a notch, especially at the start and on your key lines. Leave gaps between sentences instead of racing to the next one.`,
+    why: `Under adrenaline everyone speeds up, and fast talking reads as nervous and hard to follow. A slower, deliberate pace does the opposite — it signals "I'm in control, and what I'm saying is worth your attention." Almost no one is too slow; nearly everyone is too fast.`,
+    bad: `A 200-word answer delivered in one breathless 20-second rush.`,
+    good: `The same answer, 25% slower, with a beat between each point — and suddenly it sounds like authority.`,
+    drill: { t: 3, li: 3, pi: 0 }
+  },
+  {
+    id: 'emphasis', title: 'Land the Key Word', theme: 'Delivery', tags: ['emphasis'],
+    hook: 'Stress the one word that carries the meaning.',
+    what: `In your most important sentence, decide which single word matters most — and hit it. Slightly louder, slightly slower, a tiny pause before it. Flat delivery buries the point.`,
+    why: `The same sentence means different things depending on what you stress. "We should not ship this" lands only if "not" is the word you lean on. Emphasis is how the voice does what bold text does on a page — without it, the audience doesn't know what to hold on to.`,
+    bad: `"we really should not ship this on friday" (every word equal, meaning lost)`,
+    good: `"We should NOT ship this on Friday." (one word carries the whole decision)`,
+    drill: { t: 3, li: 3, pi: 0 }
+  },
+  {
+    id: 'steelman', title: 'Steelman the Other Side', theme: 'Influence', tags: ['steelman'],
+    hook: `State their best case before your own.`,
+    what: `Before you argue your position, articulate the strongest version of the opposing view — better than they'd put it themselves — then explain why you still land where you do.`,
+    why: `It disarms resistance instantly: people can't argue with you while you're making their point for them, and they feel understood rather than steamrolled. It also makes you look fair and thorough, which makes your conclusion far more trustworthy.`,
+    bad: `"Delaying is obviously the only sensible option, I don't know why anyone would rush this."`,
+    good: `"The case for shipping now is real — we lose momentum and a competitor is close. I've weighed that, and I still think a two-week delay is the right call, because…"`,
+    drill: { t: 3, li: 0, pi: 0 }
+  },
+  {
+    id: 'make-it-about-them', title: 'Make It About Them', theme: 'Influence', tags: ['make it about them'],
+    hook: 'Frame it in their interests, not yours.',
+    what: `Translate what you want into what it does for them. Lead with their priorities, their risk, their win — not your project, your effort, or your preference.`,
+    why: `People act on their own motivations, not yours. "I've worked really hard on this" moves no one; "this protects the revenue your board is worried about" moves everyone. The same request, reframed around their stakes, becomes something they want to say yes to.`,
+    bad: `"I really want us to adopt this tool because I think it's cool and I spent months evaluating it."`,
+    good: `"This tool cuts the manual work your team complains about every Monday — you'd get roughly six hours a week back per engineer."`,
+    drill: { t: 3, li: 0, pi: 0 }
+  },
+  {
+    id: 'answer-then-bridge', title: 'Answer, Then Bridge', theme: 'Under Fire', tags: ['bridge'],
+    hook: 'Answer the question — then return to your message.',
+    what: `When you get a question, actually answer it first (don't dodge), then bridge back to the point you want to leave them with: "…and that's exactly why the recommendation is X."`,
+    why: `Dodging destroys trust; but answering and stopping cedes control of where the conversation goes. The bridge lets you be responsive and stay on-message. It's how skilled people turn any question into another chance to reinforce their core point.`,
+    bad: `"Cost? Um, yeah, it's about 180k I think." (answers, then drifts, message lost)`,
+    good: `"It's about 180k — and that's the point: 180k now versus a seven-figure outage later. That's why intercepting in this window is the cheap option."`,
+    drill: { t: 3, li: 2, pi: 0 }
+  },
+  {
+    id: 'i-dont-know', title: `"I Don't Know" Is Fine`, theme: 'Under Fire', tags: [],
+    hook: 'Composure beats bluffing. Say what you\'ll do next.',
+    what: `When you genuinely don't know, say so plainly — then say how you'll find out and by when. Never invent an answer under pressure.`,
+    why: `Bluffing is high-risk and everyone can smell it; one exposed guess costs you the whole room's trust. "I don't know, but I'll have it to you by Thursday" reads as honest and in-control — often more credible than a shaky real answer. Authority isn't knowing everything; it's being reliable about what you don't.`,
+    bad: `"Uh, yeah, I think it's probably fine, should be around… yeah it's fine." (visible guessing)`,
+    good: `"I don't have that number in front of me. I'll confirm it and send it by end of day — I don't want to guess on something this important."`,
+    drill: { t: 3, li: 2, pi: 0 }
+  },
+  {
+    id: 'reframe-question', title: 'Reframe the Hostile Question', theme: 'Under Fire', tags: ['reframe'],
+    hook: `Don't repeat the attack — neutralise, then answer.`,
+    what: `When a question is loaded ("Why did your team blow the budget?"), restate it in neutral terms before answering ("The question is really about what drove the cost — let me walk through that."). Then answer the neutral version.`,
+    why: `Repeating a hostile framing ("Well, we didn't *blow* the budget…") keeps you on the back foot and cements their words in everyone's mind. Calmly re-framing takes the heat out, shows composure, and lets you answer the real question instead of the jab.`,
+    bad: `"We did NOT blow the budget, that's not fair, the budget was totally reasonable actually."`,
+    good: `"The real question is what drove the cost above plan — and it's a fair one. Two things changed mid-project, and here's how we handled them."`,
+    drill: { t: 3, li: 2, pi: 0 }
+  },
+  {
+    id: 'first-30', title: 'Own Your First 30 Seconds', theme: 'Presence', tags: [],
+    hook: 'Memorise the open cold.',
+    what: `Know your first two or three sentences by heart, word for word, so you can deliver them without thinking. Improvise the rest if you like — but not the start.`,
+    why: `Nerves peak in the first moments, exactly when you're establishing whether the room takes you seriously. A rock-solid open buys you calm: once the first lines land, your body settles and the adrenaline converts to energy. Fumbling the open does the reverse and haunts the whole talk.`,
+    bad: `"Okay so, um, can everyone hear me? Right, so, where do I start, uh…"`,
+    good: `A clean, rehearsed first line delivered while you're still steadying — then you're rolling, and the nerves are behind you.`,
+    drill: { t: 3, li: 3, pi: 0 }
+  },
+  {
+    id: 'talk-to-one', title: 'Talk to One Person', theme: 'Presence', tags: [],
+    hook: 'Shrink the room to a single pair of eyes.',
+    what: `Instead of broadcasting at a crowd, hold a real (few-second) look with one person, finish a thought, then move to another. Speak to individuals in turn, never to a faceless mass.`,
+    why: `"An audience" is abstract and frightening; one human being is not. Talking to individuals makes your delivery warmer and more conversational, steadies your nerves, and makes each person feel personally addressed. It's the single fastest fix for a stiff, presentational delivery.`,
+    bad: `Eyes scanning the back wall or glued to slides, voice flat and "presenting at" the room.`,
+    good: `A calm look to one person for a sentence, a nod, then to the next — the talk feels like a series of small, direct conversations.`,
+    drill: { t: 3, li: 3, pi: 0 }
+  },
+  {
+    id: 'nerves-are-fuel', title: 'Nerves Are Fuel', theme: 'Mindset', tags: [],
+    hook: 'Reframe the adrenaline as energy, not threat.',
+    what: `Stop trying to make the nerves go away. Relabel the racing heart as excitement and readiness — the same physical arousal, pointed at performance instead of fear.`,
+    why: `The bodily state of "anxious" and "excited" is nearly identical; the only difference is the story you tell about it. Fighting nerves makes them worse; reframing them ("I'm fired up") channels that energy into presence and animation. The goal was never to be calm — it's to be charged and in control.`,
+    bad: `"I need to calm down, why am I so nervous, everyone can tell, this is going badly…" (fighting it, spiralling)`,
+    good: `"My heart's pounding because this matters and I'm ready. Let's use it." (same feeling, aimed forward)`,
+    drill: { t: 3, li: 1, pi: 0 }
   }
 ];
-const COACH_PLAYBOOK_THEMES = ['Structure', 'Clarity', 'Delivery', 'Influence', 'Mindset'];
+const COACH_PLAYBOOK_THEMES = ['Structure', 'Clarity', 'Delivery', 'Influence', 'Under Fire', 'Presence', 'Mindset'];
 
 function renderPlaybook() {
   const el = document.getElementById('playbook-content');
